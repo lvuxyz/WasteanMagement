@@ -206,18 +206,30 @@ class _LoginFormState extends State<LoginForm> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/facebook_logo.png',
-                        height: 24,
-                        width: 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.facebook,
-                            size: 24,
-                            color: Colors.blue,
-                          );
-                        },
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/images/facebook_logo.png',
+                            height: 24,
+                            width: 24,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.facebook,
+                                size: 24,
+                                color: Colors.blue,
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 8), // Thêm khoảng cách giữa icon và text
+                          Text(
+                            'Facebook',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
                       )
+
 
                     ],
                   ),
