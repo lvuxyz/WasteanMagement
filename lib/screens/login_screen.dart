@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/auth_bloc.dart';
-import '../../bloc/auth_state.dart';
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/auth/auth_state.dart';
 import '../widgets/login_form.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../utils/app_colors.dart' show AppColors;
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +14,14 @@ class LoginPage extends StatelessWidget {
       backgroundColor: AppColors.backgroundColor,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthFailure) {
+          if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
+              SnackBar(content: Text(state.message)),
+            );
+          } else if (state is AuthAuthenticated) {
+            // TODO: Navigate to home screen
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Chào mừng ${state.username}')),
             );
           }
         },
@@ -28,4 +33,4 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
-} 
+}
