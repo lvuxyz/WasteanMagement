@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'features/auth/bloc/auth_bloc.dart';
-import 'features/auth/presentation/pages/login_page.dart';
+import 'blocs/auth/auth_bloc.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       ),
       home: BlocProvider(
         create: (context) => AuthBloc(),
-        child: const LoginPage(),
+        child: const LoginScreen(),
       ),
     );
   }
