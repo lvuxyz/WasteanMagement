@@ -101,7 +101,6 @@ class _LoginFormState extends State<LoginForm> {
             label: "Địa chỉ email",
             hintText: "Email của bạn",
             controller: _emailController,
-            icon: Icons.email,
           ),
           const SizedBox(height: 20),
           _buildPasswordField(),
@@ -171,7 +170,6 @@ class _LoginFormState extends State<LoginForm> {
     required String label,
     required String hintText,
     required TextEditingController controller,
-    required IconData icon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +180,6 @@ class _LoginFormState extends State<LoginForm> {
           controller: controller,
           decoration: InputDecoration(
             hintText: hintText,
-            prefixIcon: Icon(icon),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
@@ -201,7 +198,6 @@ class _LoginFormState extends State<LoginForm> {
           obscureText: !_passwordVisible,
           decoration: InputDecoration(
             hintText: 'Mật khẩu',
-            prefixIcon: const Icon(Icons.lock),
             suffixIcon: IconButton(
               icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
               onPressed: () {
