@@ -7,7 +7,7 @@ import '../repositories/auth_repository.dart';
 import '../utils/app_colors.dart';
 
 class LoginForm extends StatelessWidget {
-  const LoginForm({Key? key}) : super(key: key);
+  const LoginForm({super.key});
 
   @override
   Widget build(BuildContext context) {
