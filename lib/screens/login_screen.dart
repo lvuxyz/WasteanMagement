@@ -23,10 +23,14 @@ class LoginScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
             );
           } else if (state is AuthAuthenticated) {
-            // TODO: Navigate to home screen
+            // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
           }
         },
         child: const LoginForm(),
@@ -46,6 +50,35 @@ class _LoginFormState extends State<LoginForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
+  bool _passwordVisible = false;
+  String? _errorMessage;
+
+  void _handleLogin(BuildContext context) {
+    setState(() {
+      _errorMessage = null;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = "Vui lòng nhập email!";
+      });
+      return;
+    }
+
+    if (password.isEmpty) {
+      setState(() {
+        _errorMessage = "Vui lòng nhập mật khẩu!";
+      });
+      return;
+    }
+
+    context.read<AuthBloc>().add(
+      LoginEvent(username: email, password: password),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,55 +97,21 @@ class _LoginFormState extends State<LoginForm> {
             ),
           ),
           const SizedBox(height: 30),
-          Text(
-            'Địa chỉ email',
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
+          _buildTextField(
+            label: "Địa chỉ email",
+            hintText: "Email của bạn",
             controller: _emailController,
-            style: textTheme.bodyMedium,
-            decoration: InputDecoration(
-              hintText: 'Email của bạn',
-              hintStyle: textTheme.bodyMedium?.copyWith(color: Colors.grey),
-              filled: true,
-              fillColor: Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
+            icon: Icons.email,
           ),
           const SizedBox(height: 20),
-          Text(
-            'Mật khẩu',
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+          _buildPasswordField(),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.red),
             ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _passwordController,
-            style: textTheme.bodyMedium,
-            obscureText: true,
-            decoration: InputDecoration(
-              hintText: 'Mật khẩu',
-              hintStyle: textTheme.bodyMedium?.copyWith(color: Colors.grey),
-              filled: true,
-              fillColor: Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              suffixIcon: const Icon(Icons.visibility_off, color: Colors.grey),
-            ),
-          ),
+          ],
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -128,21 +127,16 @@ class _LoginFormState extends State<LoginForm> {
                     },
                     activeColor: Colors.green,
                   ),
-                  Text(
-                    'Nhớ mình nha',
-                    style: textTheme.bodyMedium,
-                  ),
+                  Text('Nhớ mình nha', style: textTheme.bodyMedium),
                 ],
               ),
               TextButton(
                 onPressed: () {
-                  // TODO: Implement forgot password
+                  // TODO: Thêm chức năng quên mật khẩu
                 },
                 child: Text(
                   'Quên mật khẩu?',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: Colors.green,
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: Colors.green),
                 ),
               ),
             ],
@@ -152,14 +146,7 @@ class _LoginFormState extends State<LoginForm> {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(
-                  LoginEvent(
-                    username: _emailController.text,
-                    password: _passwordController.text,
-                  ),
-                );
-              },
+              onPressed: () => _handleLogin(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 shape: RoundedRectangleBorder(
@@ -175,123 +162,58 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Expanded(child: Divider()),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Hoặc với',
-                  style: textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                ),
-              ),
-              const Expanded(child: Divider()),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Implement Facebook login
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset(
-                            'assets/images/facebook_logo.png',
-                            height: 24,
-                            width: 24,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.facebook,
-                                size: 24,
-                                color: Colors.blue,
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8), // Thêm khoảng cách giữa icon và text
-                          Text(
-                            'Facebook',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      )
-
-
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Implement Google login
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/google_logo.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Google',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Chưa có tài khoản?',
-                style: textTheme.bodyMedium?.copyWith(color: Colors.grey),
-              ),
-              TextButton(
-                onPressed: () {
-                  // TODO: Navigate to register screen
-                },
-                child: Text(
-                  'Đăng ký',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    required IconData icon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: Icon(icon),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Mật khẩu', style: TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _passwordController,
+          obscureText: !_passwordVisible,
+          decoration: InputDecoration(
+            hintText: 'Mật khẩu',
+            prefixIcon: const Icon(Icons.lock),
+            suffixIcon: IconButton(
+              icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+              onPressed: () {
+                setState(() {
+                  _passwordVisible = !_passwordVisible;
+                });
+              },
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ],
     );
   }
 
