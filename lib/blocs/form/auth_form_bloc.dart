@@ -58,7 +58,13 @@ class AuthFormBloc extends Bloc<AuthFormEvent, AuthFormState> {
       );
       emit(state.copyWith(isSuccess: true, isSubmitting: false));
     } catch (error) {
-      emit(state.copyWith(isSubmitting: false, errorMessage: 'Đã xảy ra lỗi khi đăng nhập: $error'));
+      String errorMessage = 'Đăng nhập thất bại';
+      if (error.toString().contains('mật khẩu không chính xác')) {
+        errorMessage = 'Email hoặc mật khẩu không đúng!';
+      } else if (error.toString().contains('network')) {
+        errorMessage = 'Không có kết nối mạng, vui lòng thử lại!';
+      }
+      emit(state.copyWith(isSubmitting: false, errorMessage: errorMessage));
     }
   }
 }
