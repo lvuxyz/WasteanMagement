@@ -17,7 +17,11 @@ class LoginForm extends StatelessWidget {
         listener: (context, state) {
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!), backgroundColor: AppColors.errorRed),
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: AppColors.errorRed,
+                duration: const Duration(seconds: 3),
+              ),
             );
           }
         },
@@ -33,7 +37,10 @@ class LoginForm extends StatelessWidget {
                   const SizedBox(height: 30),
                   _buildLoginButton(context, state),
                   if (state.isSubmitting)
-                    const Padding(padding: EdgeInsets.only(top: 10), child: Center(child: CircularProgressIndicator())),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                 ],
               ),
             ),
@@ -49,7 +56,11 @@ class LoginForm extends StatelessWidget {
         labelText: 'Email',
         errorText: !state.isEmailValid && state.email.isNotEmpty ? 'Email không hợp lệ' : null,
         prefixIcon: const Icon(Icons.email),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: state.isEmailValid ? Colors.green : Colors.red, width: 2.0),
+        ),
       ),
+      keyboardType: TextInputType.emailAddress,
       onChanged: (value) => context.read<AuthFormBloc>().add(EmailChanged(value)),
     );
   }
@@ -59,8 +70,17 @@ class LoginForm extends StatelessWidget {
       obscureText: !state.isPasswordVisible,
       decoration: InputDecoration(
         labelText: 'Mật khẩu',
-        errorText: !state.isPasswordValid && state.password.isNotEmpty ? 'Mật khẩu yếu' : null,
+        errorText: !state.isPasswordValid && state.password.isNotEmpty
+            ? 'Mật khẩu phải có ít nhất 6 ký tự, 1 chữ hoa, 1 số'
+            : null,
         prefixIcon: const Icon(Icons.lock),
+        suffixIcon: IconButton(
+          icon: Icon(state.isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+          onPressed: () => context.read<AuthFormBloc>().add(const TogglePasswordVisibility()),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: state.isPasswordValid ? Colors.green : Colors.red, width: 2.0),
+        ),
       ),
       onChanged: (value) => context.read<AuthFormBloc>().add(PasswordChanged(value)),
     );
@@ -69,9 +89,20 @@ class LoginForm extends StatelessWidget {
   Widget _buildLoginButton(BuildContext context, AuthFormState state) {
     return ElevatedButton(
       onPressed: state.isFormValid && !state.isSubmitting
-          ? () => context.read<AuthFormBloc>().add(FormSubmitted())
+          ? () => context.read<AuthFormBloc>().add(const FormSubmitted())
           : null,
-      child: Text(state.isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: state.isFormValid ? Colors.green : Colors.grey,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: state.isSubmitting
+          ? const SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+      )
+          : const Text('Đăng nhập', style: TextStyle(color: Colors.white)),
     );
   }
 }
