@@ -1,118 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth/auth_bloc.dart';
-import '../blocs/auth/auth_event.dart';
-import '../utils/app_colors.dart' show AppColors;
+import '../blocs/form/auth_form_bloc.dart';
+import '../blocs/form/auth_form_event.dart';
+import '../blocs/form/auth_form_state.dart';
+import '../repositories/auth_repository.dart';
+import '../utils/app_colors.dart';
 
-class LoginForm extends StatefulWidget {
+class LoginForm extends StatelessWidget {
   const LoginForm({Key? key}) : super(key: key);
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
-}
-
-class _LoginFormState extends State<LoginForm> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'LVuRác',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(height: 40),
-          TextField(
-            controller: _usernameController,
-            decoration: const InputDecoration(
-              filled: true,
-              fillColor: AppColors.white,
-              hintText: 'Tên đăng nhập',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _passwordController,
-            obscureText: true,
-            decoration: const InputDecoration(
-              filled: true,
-              fillColor: AppColors.white,
-              hintText: 'Mật khẩu',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(
-                  LoginEvent(
-                    username: _usernameController.text,
-                    password: _passwordController.text,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Đăng Nhập',
-                style: TextStyle(
-                  color: AppColors.primaryGreen,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+    return BlocProvider(
+      create: (context) => AuthFormBloc(authRepository: context.read<AuthRepository>()),
+      child: BlocConsumer<AuthFormBloc, AuthFormState>(
+        listener: (context, state) {
+          if (state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!), backgroundColor: AppColors.errorRed),
+            );
+          }
+        },
+        builder: (context, state) {
+          return Form(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  _buildEmailField(context, state),
+                  const SizedBox(height: 20),
+                  _buildPasswordField(context, state),
+                  const SizedBox(height: 30),
+                  _buildLoginButton(context, state),
+                  if (state.isSubmitting)
+                    const Padding(padding: EdgeInsets.only(top: 10), child: Center(child: CircularProgressIndicator())),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(RegisterEvent());
-              },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.white),
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Tạo Tài Khoản',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  Widget _buildEmailField(BuildContext context, AuthFormState state) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Email',
+        errorText: !state.isEmailValid && state.email.isNotEmpty ? 'Email không hợp lệ' : null,
+        prefixIcon: const Icon(Icons.email),
+      ),
+      onChanged: (value) => context.read<AuthFormBloc>().add(EmailChanged(value)),
+    );
+  }
+
+  Widget _buildPasswordField(BuildContext context, AuthFormState state) {
+    return TextFormField(
+      obscureText: !state.isPasswordVisible,
+      decoration: InputDecoration(
+        labelText: 'Mật khẩu',
+        errorText: !state.isPasswordValid && state.password.isNotEmpty ? 'Mật khẩu yếu' : null,
+        prefixIcon: const Icon(Icons.lock),
+      ),
+      onChanged: (value) => context.read<AuthFormBloc>().add(PasswordChanged(value)),
+    );
+  }
+
+  Widget _buildLoginButton(BuildContext context, AuthFormState state) {
+    return ElevatedButton(
+      onPressed: state.isFormValid && !state.isSubmitting
+          ? () => context.read<AuthFormBloc>().add(FormSubmitted())
+          : null,
+      child: Text(state.isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'),
+    );
   }
 }
