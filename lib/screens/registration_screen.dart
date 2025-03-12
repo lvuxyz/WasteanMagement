@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/login/login_bloc.dart';
-import '../blocs/login/login_state.dart';
+import '../blocs/registration/registration_bloc.dart';
+import '../blocs/registration/registration_state.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_app_bar.dart';
-import '../widgets/login/login_form.dart';
+import '../widgets/registration/registration_form.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegistrationScreen extends StatelessWidget {
+  const RegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LoginBloc(),
+      create: (context) => RegistrationBloc(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(),
-        body: BlocListener<LoginBloc, LoginState>(
+        body: BlocListener<RegistrationBloc, RegistrationState>(
           listener: (context, state) {
-            if (state is LoginFailure) {
+            if (state is RegistrationFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.error),
@@ -26,20 +26,21 @@ class LoginScreen extends StatelessWidget {
                   duration: const Duration(seconds: 3),
                 ),
               );
-            } else if (state is LoginSuccess) {
+            } else if (state is RegistrationSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đăng nhập thành công! Xin chào ${state.username}'),
+                  content: Text('Đăng ký thành công! Xin chào ${state.username}'),
                   backgroundColor: AppColors.primaryGreen,
                   duration: const Duration(seconds: 3),
                 ),
               );
-              // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
+              // Navigate to main screen after successful registration
+              // Navigator.pushReplacementNamed(context, '/home');
             }
           },
-          child: const LoginForm(),
+          child: const RegistrationForm(),
         ),
       ),
     );
   }
-}
+} 
