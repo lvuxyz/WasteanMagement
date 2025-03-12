@@ -18,4 +18,12 @@ class RegistrationCredentials {
     required this.password,
     required this.confirmPassword,
   });
+}
+
+class ForgotPasswordCredentials {
+  final String email;
+  
+  ForgotPasswordCredentials({
+    required this.email,
+  });
 } 
