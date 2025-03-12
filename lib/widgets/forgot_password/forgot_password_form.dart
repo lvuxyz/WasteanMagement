@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/forgot_password/forgot_password_bloc.dart';
-import '../../blocs/forgot_password/forgot_password_event.dart';
-import '../../blocs/forgot_password/forgot_password_state.dart';
-import '../../utils/app_colors.dart';
 import 'forgot_password_form_field.dart';
 import 'forgot_password_submit_button.dart';
 import 'login_link.dart';

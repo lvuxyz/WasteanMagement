@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/registration/registration_bloc.dart';
-import '../../blocs/registration/registration_event.dart';
-import '../../blocs/registration/registration_state.dart';
-import '../../utils/app_colors.dart';
 import 'registration_form_fields.dart';
 import 'registration_submit_button.dart';
 import 'login_link.dart';
