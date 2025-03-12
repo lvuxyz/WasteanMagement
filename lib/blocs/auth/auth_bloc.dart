@@ -41,7 +41,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onRegisterEvent(RegisterEvent event, Emitter<AuthState> emit) async {
-    // TODO: Implement register logic
+    emit(AuthLoading());
+    
+    try {
+      // Validate passwords match
+      if (event.password != event.confirmPassword) {
+        emit(AuthError(message: 'Mật khẩu xác nhận không khớp'));
+        return;
+      }
+      
+      // Check if email already exists
+      final existingUser = _sampleUsers.any((user) => user['username'] == event.email);
+      if (existingUser) {
+        emit(AuthError(message: 'Email đã được sử dụng'));
+        return;
+      }
+      
+      // Simulating API call for registration
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Add new user to sample data (in a real app, this would be an API call)
+      _sampleUsers.add({
+        'username': event.email,
+        'password': event.password,
+        'fullName': event.email.split('@')[0],
+      });
+      
+      emit(AuthAuthenticated(username: event.email.split('@')[0]));
+    } catch (e) {
+      emit(AuthError(message: 'Đăng ký thất bại: $e'));
+    }
   }
 
   Future<void> _onLogoutEvent(LogoutEvent event, Emitter<AuthState> emit) async {
