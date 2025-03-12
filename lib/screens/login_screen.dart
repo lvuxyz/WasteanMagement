@@ -30,6 +30,13 @@ class LoginScreen extends StatelessWidget {
               ),
             );
           } else if (state is AuthAuthenticated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đăng nhập thành công! Xin chào ${state.username}'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
             // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
           }
         },
@@ -96,7 +103,36 @@ class _LoginFormState extends State<LoginForm> {
               color: Colors.black,
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
+          // Sample login info card
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Thông tin đăng nhập mẫu:',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text('Email: admin@example.com', style: textTheme.bodyMedium),
+                Text('Mật khẩu: Admin123', style: textTheme.bodyMedium),
+                const SizedBox(height: 4),
+                Text('Hoặc', style: textTheme.bodyMedium),
+                Text('Email: admin', style: textTheme.bodyMedium),
+                Text('Mật khẩu: password', style: textTheme.bodyMedium),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           _buildTextField(
             label: "Địa chỉ email",
             hintText: "Email của bạn",
