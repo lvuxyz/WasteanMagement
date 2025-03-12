@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../screens/forgot_password_screen.dart';
 import '../../utils/app_colors.dart';
 
 class ForgotPasswordLink extends StatelessWidget {
@@ -10,7 +11,12 @@ class ForgotPasswordLink extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: () {
-          // Navigate to forgot password screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ForgotPasswordScreen(),
+            ),
+          );
         },
         child: const Text(
           'Quên mật khẩu?',
