@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'forgot_password_form_field.dart';
 import 'forgot_password_submit_button.dart';
 import 'login_link.dart';
@@ -22,6 +23,10 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final forgotPasswordTitle = l10n != null ? l10n.forgotPasswordTitle : 'Forgot Password';
+    final forgotPasswordDescription = l10n != null ? l10n.forgotPasswordDescription : 'Enter your email address and we\'ll send you a link to reset your password';
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -30,18 +35,18 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Quên mật khẩu?',
-                style: TextStyle(
+              Text(
+                forgotPasswordTitle,
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Đừng lo lắng! Điều đó xảy ra. Vui lòng nhập email được liên kết với tài khoản của bạn.',
-                style: TextStyle(
+              Text(
+                forgotPasswordDescription,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.black54,
                 ),

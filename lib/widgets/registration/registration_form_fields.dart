@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../utils/app_colors.dart';
+import '../common/custom_text_field.dart';
 
 class RegistrationFormFields extends StatefulWidget {
   final TextEditingController emailController;
@@ -23,151 +25,91 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final emailLabel = l10n != null ? l10n.email : 'Email';
+    final emailHint = l10n != null ? l10n.enterEmail : 'Enter your email address';
+    final emailRequired = l10n != null ? l10n.emailRequired : 'Email is required';
+    final invalidEmail = l10n != null ? l10n.invalidEmail : 'Please enter a valid email address';
+    final passwordLabel = l10n != null ? l10n.password : 'Password';
+    final passwordHint = l10n != null ? l10n.enterPassword : 'Enter your password';
+    final passwordRequired = l10n != null ? l10n.passwordRequired : 'Password is required';
+    final confirmPasswordLabel = l10n != null ? l10n.confirmPassword : 'Confirm Password';
+    final confirmPasswordHint = l10n != null ? l10n.enterConfirmPassword : 'Re-enter your password';
+    final confirmPasswordRequired = l10n != null ? l10n.confirmPasswordRequired : 'Please confirm your password';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Email field
-        _buildEmailField(),
+        CustomTextField(
+          label: emailLabel,
+          hintText: emailHint,
+          controller: widget.emailController,
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return emailRequired;
+            }
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return invalidEmail;
+            }
+            return null;
+          },
+        ),
         const SizedBox(height: 20),
         
         // Password field
-        _buildPasswordField(),
+        CustomTextField(
+          label: passwordLabel,
+          hintText: passwordHint,
+          controller: widget.passwordController,
+          obscureText: _obscurePassword,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              color: AppColors.textGrey,
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return passwordRequired;
+            }
+            if (value.length < 6) {
+              return passwordRequired;
+            }
+            return null;
+          },
+        ),
         const SizedBox(height: 20),
         
         // Confirm Password field
-        _buildConfirmPasswordField(),
-      ],
-    );
-  }
-
-  Widget _buildEmailField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Gmail',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: widget.emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            hintText: 'example@gmail.com',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.textGrey),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Vui lòng nhập email';
-            }
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-              return 'Email không hợp lệ';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Tạo mật khẩu',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: widget.passwordController,
-          obscureText: _obscurePassword,
-          decoration: InputDecoration(
-            hintText: 'tối đa 8 kí tự',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.textGrey),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textGrey,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Vui lòng nhập mật khẩu';
-            }
-            if (value.length < 6) {
-              return 'Mật khẩu phải có ít nhất 6 ký tự';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildConfirmPasswordField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Xác nhận mật khẩu',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
+        CustomTextField(
+          label: confirmPasswordLabel,
+          hintText: confirmPasswordHint,
           controller: widget.confirmPasswordController,
           obscureText: _obscureConfirmPassword,
-          decoration: InputDecoration(
-            hintText: 'lặp lại mật khẩu',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.textGrey),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+              color: AppColors.textGrey,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textGrey,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                });
-              },
-            ),
+            onPressed: () {
+              setState(() {
+                _obscureConfirmPassword = !_obscureConfirmPassword;
+              });
+            },
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Vui lòng xác nhận mật khẩu';
+              return confirmPasswordRequired;
             }
             if (value != widget.passwordController.text) {
-              return 'Mật khẩu xác nhận không khớp';
+              return confirmPasswordRequired;
             }
             return null;
           },
