@@ -37,5 +37,30 @@
   "enterUsername": "Enter your username",
   "enterPassword": "Enter your password",
   "usernameRequired": "Username is required",
-  "passwordRequired": "Password is required"
+  "passwordRequired": "Password is required",
+
+  "forgotPasswordTitle": "Forgot Password",
+  "forgotPasswordDescription": "Enter your email address and we'll send you a link to reset your password",
+  "email": "Email",
+  "enterEmail": "Enter your email address",
+  "emailRequired": "Email is required",
+  "invalidEmail": "Please enter a valid email address",
+  "resetPassword": "Reset Password",
+  "resetPasswordSuccess": "Password reset link has been sent to your email",
+  "resetPasswordError": "Failed to send reset password link",
+  "backToLogin": "Back to Login",
+
+  "registrationTitle": "Create Account",
+  "registrationDescription": "Fill in your details to create a new account",
+  "fullName": "Full Name",
+  "enterFullName": "Enter your full name",
+  "fullNameRequired": "Full name is required",
+  "confirmPassword": "Confirm Password",
+  "enterConfirmPassword": "Re-enter your password",
+  "confirmPasswordRequired": "Please confirm your password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "register": "Register",
+  "registrationSuccess": "Account created successfully",
+  "registrationError": "Failed to create account",
+  "alreadyHaveAccount": "Already have an account? Login"
 } 

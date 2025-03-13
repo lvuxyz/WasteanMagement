@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../screens/login_screen.dart';
 import '../../utils/app_colors.dart';
 
@@ -7,6 +8,9 @@ class LoginLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final backToLoginText = l10n != null ? l10n.backToLogin : 'Back to Login';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -26,9 +30,9 @@ class LoginLink extends StatelessWidget {
               ),
             );
           },
-          child: const Text(
-            'Đăng nhập',
-            style: TextStyle(
+          child: Text(
+            backToLoginText,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryGreen,
