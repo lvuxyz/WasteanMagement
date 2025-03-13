@@ -21,8 +21,7 @@ class LanguageList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final noLanguagesFoundText = l10n != null ? l10n.noLanguagesFound : 'No languages found';
-    final languageChangeSuccessText = l10n != null ? l10n.languageChangeSuccess : 'Language changed successfully';
+    final noLanguagesFoundText = l10n.noLanguagesFound;
     
     return BlocConsumer<LanguageBloc, LanguageState>(
       listener: (context, state) {

@@ -21,7 +21,7 @@ class LoginSubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final loginButtonText = l10n != null ? l10n.login : 'Login';
+    final loginButtonText = l10n.login;
     
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {

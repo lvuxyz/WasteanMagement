@@ -26,7 +26,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final loginTitle = l10n != null ? l10n.loginTitle : 'Login';
+    final loginTitle = l10n.loginTitle;
     
     return SingleChildScrollView(
       child: Padding(

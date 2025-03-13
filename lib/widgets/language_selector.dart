@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/language/language_bloc.dart';
-import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import '../utils/language_utils.dart';
 
@@ -12,14 +11,14 @@ class LanguageSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final englishText = l10n != null ? l10n.english : 'English';
-    final vietnameseText = l10n != null ? l10n.vietnamese : 'Vietnamese';
-    final changeLanguageTitle = l10n != null ? l10n.changeLanguageTitle : 'Change Language';
-    final changeLanguageContent = l10n != null ? l10n.changeLanguageContent : 'Do you want to change the language?';
-    final confirmText = l10n != null ? l10n.confirm : 'Confirm';
-    final cancelText = l10n != null ? l10n.cancel : 'Cancel';
-    final languageChangeSuccessText = l10n != null ? l10n.languageChangeSuccess : 'Language changed successfully';
-    final languageChangeErrorText = l10n != null ? l10n.languageChangeError : 'Failed to change language';
+    final englishText = l10n.english;
+    final vietnameseText = l10n.vietnamese;
+    final changeLanguageTitle = l10n.changeLanguageTitle;
+    final changeLanguageContent = l10n.changeLanguageContent;
+    final confirmText = l10n.confirm;
+    final cancelText = l10n.cancel;
+    final languageChangeSuccessText = l10n.languageChangeSuccess;
+    final languageChangeErrorText = l10n.languageChangeError;
     
     return BlocConsumer<LanguageBloc, LanguageState>(
       listener: (context, state) {

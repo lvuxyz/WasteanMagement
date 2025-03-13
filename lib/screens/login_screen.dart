@@ -30,9 +30,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
-              final successMessage = l10n != null 
-                  ? l10n.loginSuccess(state.username)
-                  : 'Login successful! Welcome, ${state.username}';
+              final successMessage = l10n.loginSuccess(state.username);
                   
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

@@ -23,12 +23,12 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final usernameLabel = l10n != null ? l10n.username : 'Username';
-    final usernameHint = l10n != null ? l10n.enterUsername : 'Enter your username';
-    final usernameRequired = l10n != null ? l10n.usernameRequired : 'Username is required';
-    final passwordLabel = l10n != null ? l10n.password : 'Password';
-    final passwordHint = l10n != null ? l10n.enterPassword : 'Enter your password';
-    final passwordRequired = l10n != null ? l10n.passwordRequired : 'Password is required';
+    final usernameLabel = l10n.username;
+    final usernameHint = l10n.enterUsername;
+    final usernameRequired = l10n.usernameRequired;
+    final passwordLabel = l10n.password;
+    final passwordHint = l10n.enterPassword;
+    final passwordRequired = l10n.passwordRequired;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
