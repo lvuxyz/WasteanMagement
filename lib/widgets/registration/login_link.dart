@@ -9,18 +9,11 @@ class LoginLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final alreadyHaveAccountText = l10n != null ? l10n.alreadyHaveAccount : 'Already have an account? Login';
+    final alreadyHaveAccountText = l10n.alreadyHaveAccount;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Đã có tài khoản? ',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
         GestureDetector(
           onTap: () {
             Navigator.push(

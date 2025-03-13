@@ -62,5 +62,5 @@
   "register": "Đăng Ký",
   "registrationSuccess": "Tạo tài khoản thành công",
   "registrationError": "Không thể tạo tài khoản",
-  "alreadyHaveAccount": "Đã có tài khoản? Đăng nhập"
+  "alreadyHaveAccount": "Đã có tài khoản?"
 } 

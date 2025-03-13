@@ -20,8 +20,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
 
     try {
       final l10n = AppLocalizations.of(context);
-      final passwordsDoNotMatchText = l10n != null ? l10n.passwordsDoNotMatch : 'Passwords do not match';
-      final registrationErrorText = l10n != null ? l10n.registrationError : 'Failed to create account';
+      final passwordsDoNotMatchText = l10n.passwordsDoNotMatch;
 
       // Validate passwords match
       if (event.password != event.confirmPassword) {
@@ -38,7 +37,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       emit(RegistrationSuccess(username: username));
     } catch (e) {
       final l10n = AppLocalizations.of(context);
-      final registrationErrorText = l10n != null ? l10n.registrationError : 'Failed to create account';
+      final registrationErrorText = l10n.registrationError;
       emit(RegistrationFailure(error: '$registrationErrorText: $e'));
     }
   }

@@ -20,8 +20,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
 
     try {
       final l10n = AppLocalizations.of(context);
-      final invalidEmailText = l10n != null ? l10n.invalidEmail : 'Please enter a valid email address';
-      final resetPasswordErrorText = l10n != null ? l10n.resetPasswordError : 'Failed to send reset password link';
+      final invalidEmailText = l10n.invalidEmail;
 
       // Validate email format
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -38,7 +37,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
       emit(ForgotPasswordSuccess(email: event.email));
     } catch (e) {
       final l10n = AppLocalizations.of(context);
-      final resetPasswordErrorText = l10n != null ? l10n.resetPasswordError : 'Failed to send reset password link';
+      final resetPasswordErrorText = l10n.resetPasswordError;
       emit(ForgotPasswordFailure(error: '$resetPasswordErrorText: $e'));
     }
   }

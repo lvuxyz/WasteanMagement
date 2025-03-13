@@ -13,7 +13,7 @@ class RegistrationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final registrationSuccessText = l10n != null ? l10n.registrationSuccess : 'Account created successfully';
+    final registrationSuccessText = l10n.registrationSuccess;
 
     return BlocProvider(
       create: (context) => RegistrationBloc(context: context),

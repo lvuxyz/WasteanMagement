@@ -26,16 +26,16 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final emailLabel = l10n != null ? l10n.email : 'Email';
-    final emailHint = l10n != null ? l10n.enterEmail : 'Enter your email address';
-    final emailRequired = l10n != null ? l10n.emailRequired : 'Email is required';
-    final invalidEmail = l10n != null ? l10n.invalidEmail : 'Please enter a valid email address';
-    final passwordLabel = l10n != null ? l10n.password : 'Password';
-    final passwordHint = l10n != null ? l10n.enterPassword : 'Enter your password';
-    final passwordRequired = l10n != null ? l10n.passwordRequired : 'Password is required';
-    final confirmPasswordLabel = l10n != null ? l10n.confirmPassword : 'Confirm Password';
-    final confirmPasswordHint = l10n != null ? l10n.enterConfirmPassword : 'Re-enter your password';
-    final confirmPasswordRequired = l10n != null ? l10n.confirmPasswordRequired : 'Please confirm your password';
+    final emailLabel = l10n.email;
+    final emailHint = l10n.enterEmail;
+    final emailRequired = l10n.emailRequired;
+    final invalidEmail = l10n.invalidEmail;
+    final passwordLabel = l10n.password;
+    final passwordHint = l10n.enterPassword;
+    final passwordRequired = l10n.passwordRequired;
+    final confirmPasswordLabel = l10n.confirmPassword;
+    final confirmPasswordHint = l10n.enterConfirmPassword;
+    final confirmPasswordRequired = l10n.confirmPasswordRequired;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

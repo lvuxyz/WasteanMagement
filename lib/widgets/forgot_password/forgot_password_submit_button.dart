@@ -19,7 +19,7 @@ class ForgotPasswordSubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final resetPasswordText = l10n != null ? l10n.resetPassword : 'Reset Password';
+    final resetPasswordText = l10n.resetPassword;
 
     return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
       builder: (context, state) {

@@ -9,18 +9,11 @@ class LoginLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final backToLoginText = l10n != null ? l10n.backToLogin : 'Back to Login';
+    final backToLoginText = l10n.backToLogin;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Bạn đã nhớ mật khẩu? ',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
         GestureDetector(
           onTap: () {
             Navigator.push(
