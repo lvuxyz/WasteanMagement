@@ -25,7 +25,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LanguageBloc, LanguageState>(
+    return BlocConsumer<LanguageBloc, LanguageState>(
+      listener: (context, state) {
+        // Lắng nghe sự thay đổi ngôn ngữ để xử lý nếu cần
+        if (state is LanguageError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
       builder: (context, state) {
         if (state is LanguageLoaded) {
           return MaterialApp(
@@ -78,13 +90,30 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Mở màn hình chọn ngôn ngữ và đợi kết quả
+                final result = await Navigator.push<String>(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const LanguageSelectionScreen(),
                   ),
                 );
+                
+                // Nếu có kết quả trả về (mã ngôn ngữ), cập nhật ngôn ngữ cho toàn bộ ứng dụng
+                if (result != null && context.mounted) {
+                  // Cập nhật ngôn ngữ cho LanguageBloc toàn cục
+                  context.read<LanguageBloc>().add(ChangeLanguage(result));
+                  
+                  // Hiển thị thông báo thành công
+                  final successMessage = l10n != null ? l10n.languageChangeSuccess : 'Language changed successfully';
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(successMessage),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
               child: Text(languageScreenTitle),
             ),

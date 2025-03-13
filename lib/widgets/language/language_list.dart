@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/language_model.dart';
 import '../../blocs/language/language_bloc.dart';
+import '../../blocs/language/language_event.dart';
 import '../../blocs/language/language_state.dart';
 import 'language_list_item.dart';
 
@@ -22,8 +23,14 @@ class LanguageList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final noLanguagesFoundText = l10n != null ? l10n.noLanguagesFound : 'No languages found';
+    final languageChangeSuccessText = l10n != null ? l10n.languageChangeSuccess : 'Language changed successfully';
     
-    return BlocBuilder<LanguageBloc, LanguageState>(
+    return BlocConsumer<LanguageBloc, LanguageState>(
+      listener: (context, state) {
+        if (state is LanguageLoaded) {
+          // Không cần hiển thị thông báo ở đây vì sẽ hiển thị khi nhấn nút Tiếp tục
+        }
+      },
       builder: (context, state) {
         if (state is LanguageLoaded) {
           final displayLanguages = state.searchQuery.isEmpty 
@@ -47,12 +54,16 @@ class LanguageList extends StatelessWidget {
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final language = displayLanguages[index];
-              final isSelected = selectedLanguage.code == language.code;
+              // Sử dụng trạng thái hiện tại để xác định ngôn ngữ đã chọn
+              final isSelected = state.selectedLanguage.code == language.code;
               
               return LanguageListItem(
                 language: language,
                 isSelected: isSelected,
-                onTap: () => onLanguageSelected(language),
+                onTap: () {
+                  // Khi người dùng chọn một ngôn ngữ
+                  onLanguageSelected(language);
+                },
               );
             },
           );

@@ -59,7 +59,7 @@ class LanguageSelectionForm extends StatelessWidget {
                         : state.filteredLanguages,
                     selectedLanguage: state.selectedLanguage,
                     onLanguageSelected: (language) {
-                      context.read<LanguageBloc>().add(LanguageSelected(language: language));
+                      context.read<LanguageBloc>().add(ChangeLanguage(language.code));
                     },
                   ),
                 ),

@@ -36,12 +36,19 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
   ) async {
     emit(LanguageLoading());
     try {
+      // Thêm độ trễ nhỏ để đảm bảo UI hiển thị loading indicator
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Lấy mã ngôn ngữ đã lưu
       final String languageCode = await repository.getLanguageCode();
+      
+      // Tìm đối tượng ngôn ngữ tương ứng
       final selectedLanguage = _supportedLanguages.firstWhere(
         (lang) => lang.code == languageCode,
         orElse: () => _supportedLanguages.first,
       );
       
+      // Cập nhật trạng thái với ngôn ngữ đã tải
       emit(LanguageLoaded(
         languageCode: languageCode,
         languages: _supportedLanguages,
@@ -49,7 +56,22 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
         filteredLanguages: _supportedLanguages,
       ));
     } catch (e) {
-      emit(LanguageError('Failed to load language preference'));
+      // Xử lý lỗi và cung cấp thông tin chi tiết hơn
+      emit(LanguageError(
+        'Failed to load language preference',
+        error: e.toString(),
+      ));
+      
+      // Sau một khoảng thời gian, thử tải lại với ngôn ngữ mặc định
+      Future.delayed(const Duration(seconds: 2), () {
+        final defaultLanguage = _supportedLanguages.first;
+        emit(LanguageLoaded(
+          languageCode: defaultLanguage.code,
+          languages: _supportedLanguages,
+          selectedLanguage: defaultLanguage,
+          filteredLanguages: _supportedLanguages,
+        ));
+      });
     }
   }
   
@@ -59,20 +81,49 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
   ) async {
     if (state is LanguageLoaded) {
       final currentState = state as LanguageLoaded;
+      
+      // Kiểm tra xem ngôn ngữ đã được chọn chưa để tránh thay đổi không cần thiết
+      if (currentState.languageCode == event.languageCode) {
+        return; // Không cần thay đổi nếu ngôn ngữ đã được chọn
+      }
+      
+      // Lưu trạng thái hiện tại để khôi phục nếu có lỗi
+      final previousState = currentState;
+      
+      // Thông báo đang tải để hiển thị loading indicator
       emit(LanguageLoading());
+      
       try {
-        await repository.setLanguageCode(event.languageCode);
+        // Lưu mã ngôn ngữ mới vào bộ nhớ
+        final success = await repository.setLanguageCode(event.languageCode);
+        
+        if (!success) {
+          // Nếu không lưu được, ném lỗi
+          throw Exception('Could not save language preference');
+        }
+        
+        // Tìm đối tượng ngôn ngữ tương ứng
         final selectedLanguage = _supportedLanguages.firstWhere(
           (lang) => lang.code == event.languageCode,
           orElse: () => _supportedLanguages.first,
         );
         
+        // Cập nhật trạng thái với ngôn ngữ mới
         emit(currentState.copyWith(
           languageCode: event.languageCode,
           selectedLanguage: selectedLanguage,
         ));
       } catch (e) {
-        emit(LanguageError('Failed to change language'));
+        // Khôi phục trạng thái trước đó nếu có lỗi
+        emit(previousState);
+        
+        // Thông báo lỗi
+        emit(LanguageError('Failed to change language: ${e.toString()}'));
+        
+        // Khôi phục trạng thái sau khi hiển thị lỗi
+        Future.delayed(const Duration(seconds: 2), () {
+          emit(previousState);
+        });
       }
     }
   }
