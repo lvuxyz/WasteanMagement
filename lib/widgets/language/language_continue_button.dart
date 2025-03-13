@@ -26,8 +26,16 @@ class LanguageContinueButton extends StatelessWidget {
               // Lấy mã ngôn ngữ đã chọn
               final selectedLanguageCode = state.languageCode;
               
-              // Quay về màn hình chính và truyền mã ngôn ngữ đã chọn
-              Navigator.of(context).pop(selectedLanguageCode);
+              // Chuyển đến màn hình Welcome và đồng thời trả về mã ngôn ngữ
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WelcomeScreen(),
+                ),
+              ).then((_) {
+                // Khi WelcomeScreen được đóng, trả về mã ngôn ngữ
+                Navigator.of(context).pop(selectedLanguageCode);
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
