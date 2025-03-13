@@ -24,8 +24,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final forgotPasswordTitle = l10n != null ? l10n.forgotPasswordTitle : 'Forgot Password';
-    final forgotPasswordDescription = l10n != null ? l10n.forgotPasswordDescription : 'Enter your email address and we\'ll send you a link to reset your password';
+    final forgotPasswordTitle = l10n.forgotPasswordTitle;
+    final forgotPasswordDescription = l10n.forgotPasswordDescription;
 
     return SingleChildScrollView(
       child: Padding(

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/language_model.dart';
 import '../../blocs/language/language_bloc.dart';
-import '../../blocs/language/language_event.dart';
 import '../../blocs/language/language_state.dart';
 import 'language_list_item.dart';
 

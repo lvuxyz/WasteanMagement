@@ -28,8 +28,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final registrationTitle = l10n != null ? l10n.registrationTitle : 'Create Account';
-    final registrationDescription = l10n != null ? l10n.registrationDescription : 'Fill in your details to create a new account';
+    final registrationTitle = l10n.registrationTitle;
+    final registrationDescription = l10n.registrationDescription;
 
     return SingleChildScrollView(
       child: Padding(

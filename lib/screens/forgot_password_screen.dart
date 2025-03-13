@@ -13,8 +13,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final resetPasswordSuccessText = l10n != null ? l10n.resetPasswordSuccess : 'Password reset link has been sent to your email';
-    final resetPasswordErrorText = l10n != null ? l10n.resetPasswordError : 'Failed to send reset password link';
+    final resetPasswordSuccessText = l10n.resetPasswordSuccess;
 
     return BlocProvider(
       create: (context) => ForgotPasswordBloc(context: context),

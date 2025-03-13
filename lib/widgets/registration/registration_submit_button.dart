@@ -23,7 +23,7 @@ class RegistrationSubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final registerText = l10n != null ? l10n.register : 'Register';
+    final registerText = l10n.register;
 
     return SizedBox(
       width: double.infinity,
