@@ -1,13 +1,48 @@
 import '../../models/language_model.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class LanguageEvent {}
+abstract class LanguageEvent extends Equatable {
+  const LanguageEvent();
+  
+  @override
+  List<Object> get props => [];
+}
 
-class LanguageInitialized extends LanguageEvent {}
+class LoadLanguage extends LanguageEvent {
+  const LoadLanguage();
+}
+
+class ChangeLanguage extends LanguageEvent {
+  final String languageCode;
+  
+  const ChangeLanguage(this.languageCode);
+  
+  @override
+  List<Object> get props => [languageCode];
+}
+
+class LanguageInitialized extends LanguageEvent {
+  const LanguageInitialized();
+}
 
 class LanguageSelected extends LanguageEvent {
   final Language language;
 
-  LanguageSelected({required this.language});
+  const LanguageSelected({required this.language});
+
+  @override
+  List<Object> get props => [language];
 }
 
-class LanguageConfirmed extends LanguageEvent {} 
+class LanguageConfirmed extends LanguageEvent {
+  const LanguageConfirmed();
+}
+
+class SearchLanguage extends LanguageEvent {
+  final String query;
+  
+  const SearchLanguage(this.query);
+  
+  @override
+  List<Object> get props => [query];
+} 
