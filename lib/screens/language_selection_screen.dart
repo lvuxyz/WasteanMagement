@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
+import '../blocs/language/language_repository.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/language/language_selection_form.dart';
 
@@ -12,7 +13,9 @@ class LanguageSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LanguageBloc()..add(LanguageInitialized()),
+      create: (context) => LanguageBloc(
+        repository: LanguageRepository(),
+      )..add(const LanguageInitialized()),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(
@@ -23,7 +26,7 @@ class LanguageSelectionScreen extends StatelessWidget {
             if (state is LanguageError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.error),
+                  content: Text(state.message),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),
