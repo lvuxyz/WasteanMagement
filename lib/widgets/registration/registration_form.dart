@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'registration_form_fields.dart';
 import 'registration_submit_button.dart';
 import 'login_link.dart';
@@ -26,6 +27,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final registrationTitle = l10n != null ? l10n.registrationTitle : 'Create Account';
+    final registrationDescription = l10n != null ? l10n.registrationDescription : 'Fill in your details to create a new account';
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -34,12 +39,20 @@ class _RegistrationFormState extends State<RegistrationForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Đăng ký',
-                style: TextStyle(
+              Text(
+                registrationTitle,
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                registrationDescription,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
                 ),
               ),
               const SizedBox(height: 30),
