@@ -8,6 +8,11 @@
   "languageChanged": "Đã thay đổi ngôn ngữ thành công",
   "searchLanguage": "Tìm kiếm ngôn ngữ",
   "continueButton": "Tiếp tục",
+  "confirm": "Xác nhận",
+  "changeLanguageTitle": "Thay đổi ngôn ngữ",
+  "changeLanguageContent": "Bạn có muốn thay đổi ngôn ngữ không?",
+  "languageChangeSuccess": "Đã thay đổi ngôn ngữ thành công",
+  "languageChangeError": "Không thể thay đổi ngôn ngữ",
   
   "welcomeTitle": "LVuRác",
   "welcomeSubtitle": "Khám phá ứng dụng",
