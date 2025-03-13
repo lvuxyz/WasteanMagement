@@ -1,0 +1,36 @@
+{
+  "appTitle": "My Application",
+  "languageScreenTitle": "Select Language",
+  "english": "English",
+  "vietnamese": "Vietnamese",
+  "save": "Save",
+  "cancel": "Cancel",
+  "languageChanged": "Language changed successfully",
+  "searchLanguage": "Search language",
+  "continueButton": "Continue",
+  
+  "welcomeTitle": "LVuRác",
+  "welcomeSubtitle": "Explore the application",
+  "welcomeDescription": "Now your account is in one place and always under control",
+  "login": "Login",
+  "createAccount": "Create Account",
+  
+  "noLanguagesFound": "No languages found",
+  
+  "loginTitle": "Login",
+  "forgotPassword": "Forgot password?",
+  "loginSuccess": "Login successful! Welcome, {username}",
+  "@loginSuccess": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "username": "Username",
+  "password": "Password",
+  "enterUsername": "Enter your username",
+  "enterPassword": "Enter your password",
+  "usernameRequired": "Username is required",
+  "passwordRequired": "Password is required"
+} 

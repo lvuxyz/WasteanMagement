@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../blocs/language/language_bloc.dart';
 import '../../blocs/language/language_event.dart';
 import '../../screens/welcome_screen.dart';
@@ -10,32 +11,40 @@ class LanguageContinueButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: () {
-          context.read<LanguageBloc>().add(LanguageConfirmed());
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WelcomeScreen(),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryGreen,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+    final l10n = AppLocalizations.of(context);
+    final continueText = l10n != null ? l10n.continueButton : 'Continue';
+    
+    return ElevatedButton(
+      onPressed: () {
+        context.read<LanguageBloc>().add(const LanguageConfirmed());
+        
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) {
+              final languageBloc = BlocProvider.of<LanguageBloc>(context);
+              
+              return BlocProvider.value(
+                value: languageBloc,
+                child: const WelcomeScreen(),
+              );
+            },
           ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: const Text(
-          'Tiếp tục',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: Text(
+        continueText,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
