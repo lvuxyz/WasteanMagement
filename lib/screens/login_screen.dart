@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../utils/app_colors.dart';
@@ -11,6 +12,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return BlocProvider(
       create: (context) => LoginBloc(),
       child: Scaffold(
@@ -27,9 +30,13 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
+              final successMessage = l10n != null 
+                  ? l10n.loginSuccess(state.username)
+                  : 'Login successful! Welcome, ${state.username}';
+                  
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đăng nhập thành công! Xin chào ${state.username}'),
+                  content: Text(successMessage),
                   backgroundColor: AppColors.primaryGreen,
                   duration: const Duration(seconds: 3),
                 ),
