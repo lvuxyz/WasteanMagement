@@ -1,0 +1,36 @@
+{
+  "appTitle": "Ứng dụng của tôi",
+  "languageScreenTitle": "Chọn ngôn ngữ",
+  "english": "Tiếng Anh",
+  "vietnamese": "Tiếng Việt",
+  "save": "Lưu",
+  "cancel": "Hủy",
+  "languageChanged": "Đã thay đổi ngôn ngữ thành công",
+  "searchLanguage": "Tìm kiếm ngôn ngữ",
+  "continueButton": "Tiếp tục",
+  
+  "welcomeTitle": "LVuRác",
+  "welcomeSubtitle": "Khám phá ứng dụng",
+  "welcomeDescription": "Bây giờ tài khoản của bạn ở cùng một nơi và luôn được kiểm soát",
+  "login": "Đăng Nhập",
+  "createAccount": "Tạo Tài Khoản",
+  
+  "noLanguagesFound": "Không tìm thấy ngôn ngữ nào",
+  
+  "loginTitle": "Đăng nhập",
+  "forgotPassword": "Quên mật khẩu?",
+  "loginSuccess": "Đăng nhập thành công! Xin chào, {username}",
+  "@loginSuccess": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "username": "Tên đăng nhập",
+  "password": "Mật khẩu",
+  "enterUsername": "Nhập tên đăng nhập",
+  "enterPassword": "Nhập mật khẩu",
+  "usernameRequired": "Tên đăng nhập là bắt buộc",
+  "passwordRequired": "Mật khẩu là bắt buộc"
+} 
