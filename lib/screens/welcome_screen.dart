@@ -12,11 +12,11 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final welcomeTitle = l10n != null ? l10n.welcomeTitle : 'LVuRác';
-    final welcomeSubtitle = l10n != null ? l10n.welcomeSubtitle : 'Explore the application';
-    final welcomeDescription = l10n != null ? l10n.welcomeDescription : 'Now your account is in one place and always under control';
-    final loginText = l10n != null ? l10n.login : 'Login';
-    final createAccountText = l10n != null ? l10n.createAccount : 'Create Account';
+    final welcomeTitle = l10n.welcomeTitle;
+    final welcomeSubtitle = l10n.welcomeSubtitle;
+    final welcomeDescription = l10n.welcomeDescription;
+    final loginText = l10n.login;
+    final createAccountText = l10n.createAccount;
     
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,

@@ -13,7 +13,7 @@ class LanguageContinueButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final continueText = l10n != null ? l10n.continueButton : 'Continue';
+    final continueText = l10n.continueButton;
     
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {

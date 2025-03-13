@@ -73,8 +73,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final appTitle = l10n != null ? l10n.appTitle : 'Waste Management App';
-    final languageScreenTitle = l10n != null ? l10n.languageScreenTitle : 'Select Language';
+    final appTitle = l10n.appTitle;
+    final languageScreenTitle = l10n.languageScreenTitle;
     
     return Scaffold(
       appBar: AppBar(
@@ -105,7 +105,7 @@ class HomePage extends StatelessWidget {
                   context.read<LanguageBloc>().add(ChangeLanguage(result));
                   
                   // Hiển thị thông báo thành công
-                  final successMessage = l10n != null ? l10n.languageChangeSuccess : 'Language changed successfully';
+                  final successMessage = l10n.languageChangeSuccess;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(successMessage),
