@@ -6,6 +6,10 @@ import '../blocs/login/login_state.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/login/login_form.dart';
+import '../blocs/language/language_bloc.dart';
+import '../blocs/language/language_event.dart';
+import '../blocs/language/language_state.dart';
+import 'registration_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -18,7 +22,15 @@ class LoginScreen extends StatelessWidget {
       create: (context) => LoginBloc(),
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CustomAppBar(),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(l10n.loginTitle),
+          actions: [
+            // Language selector in app bar
+            _buildLanguageSelector(context),
+          ],
+        ),
         body: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
             if (state is LoginFailure) {
@@ -42,7 +54,104 @@ class LoginScreen extends StatelessWidget {
               // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
             }
           },
-          child: const LoginForm(),
+          child: Column(
+            children: [
+              const Expanded(
+                child: LoginForm(),
+              ),
+              // Phần đăng ký ở cuối màn hình
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(l10n.dontHaveAccount),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegistrationScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        l10n.signUp,
+                        style: const TextStyle(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildLanguageSelector(BuildContext context) {
+    return BlocBuilder<LanguageBloc, LanguageState>(
+      builder: (context, state) {
+        if (state is LanguageLoaded) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // English language option
+              _buildLanguageOption(
+                context: context, 
+                languageCode: 'en',
+                flagAsset: 'assets/flags/gb.png',
+                isSelected: state.languageCode == 'en',
+              ),
+              
+              const SizedBox(width: 8),
+              
+              // Vietnamese language option
+              _buildLanguageOption(
+                context: context, 
+                languageCode: 'vi',
+                flagAsset: 'assets/flags/vn.png',
+                isSelected: state.languageCode == 'vi',
+              ),
+              
+              const SizedBox(width: 8),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+  
+  Widget _buildLanguageOption({
+    required BuildContext context,
+    required String languageCode,
+    required String flagAsset,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        if (!isSelected) {
+          context.read<LanguageBloc>().add(ChangeLanguage(languageCode));
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Image.asset(
+          flagAsset,
+          width: 24,
+          height: 24,
         ),
       ),
     );

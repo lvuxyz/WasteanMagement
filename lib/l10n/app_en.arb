@@ -1,5 +1,6 @@
 {
   "appTitle": "My Application",
+  "appDescription": "Waste Management and Recycling App",
   "languageScreenTitle": "Select Language",
   "english": "English",
   "vietnamese": "Vietnamese",
@@ -62,5 +63,7 @@
   "register": "Register",
   "registrationSuccess": "Account created successfully",
   "registrationError": "Failed to create account",
-  "alreadyHaveAccount": "Already have an account? Login"
+  "alreadyHaveAccount": "Already have an account? Login",
+  "dontHaveAccount": "Don't have an account?",
+  "signUp": "Sign Up"
 } 
