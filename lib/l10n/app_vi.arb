@@ -1,5 +1,6 @@
 {
   "appTitle": "Ứng dụng của tôi",
+  "appDescription": "Ứng dụng Quản lý Chất thải và Tái chế",
   "languageScreenTitle": "Chọn ngôn ngữ",
   "english": "Tiếng Anh",
   "vietnamese": "Tiếng Việt",
@@ -62,5 +63,7 @@
   "register": "Đăng Ký",
   "registrationSuccess": "Tạo tài khoản thành công",
   "registrationError": "Không thể tạo tài khoản",
-  "alreadyHaveAccount": "Đã có tài khoản?"
+  "alreadyHaveAccount": "Đã có tài khoản?",
+  "dontHaveAccount": "Bạn chưa có tài khoản?",
+  "signUp": "Đăng ký"
 } 

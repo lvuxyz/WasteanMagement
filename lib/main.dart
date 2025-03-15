@@ -5,7 +5,7 @@ import 'blocs/language/language_bloc.dart';
 import 'blocs/language/language_event.dart';
 import 'blocs/language/language_state.dart';
 import 'blocs/language/language_repository.dart';
-import 'screens/language_selection_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,15 +47,17 @@ class MyApp extends StatelessWidget {
               visualDensity: VisualDensity.adaptivePlatformDensity,
               fontFamily: 'Poppins',
             ),
+            debugShowCheckedModeBanner: false,
             locale: Locale(state.languageCode),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const HomePage(),
+            home: const LoginScreen(),
           );
         }
         
         // Màn hình loading khi đang tải ngôn ngữ
         return const MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
@@ -63,63 +65,6 @@ class MyApp extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final appTitle = l10n.appTitle;
-    final languageScreenTitle = l10n.languageScreenTitle;
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appTitle),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              appTitle,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                // Mở màn hình chọn ngôn ngữ và đợi kết quả
-                final result = await Navigator.push<String>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LanguageSelectionScreen(),
-                  ),
-                );
-                
-                // Nếu có kết quả trả về (mã ngôn ngữ), cập nhật ngôn ngữ cho toàn bộ ứng dụng
-                if (result != null && context.mounted) {
-                  // Cập nhật ngôn ngữ cho LanguageBloc toàn cục
-                  context.read<LanguageBloc>().add(ChangeLanguage(result));
-                  
-                  // Hiển thị thông báo thành công
-                  final successMessage = l10n.languageChangeSuccess;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(successMessage),
-                      backgroundColor: Colors.green,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              child: Text(languageScreenTitle),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
