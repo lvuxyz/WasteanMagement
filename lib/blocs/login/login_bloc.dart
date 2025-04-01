@@ -9,6 +9,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     {'username': 'user1', 'password': '123456', 'fullName': 'Regular User'},
     {'username': 'test@example.com', 'password': 'test123', 'fullName': 'Test User'},
     {'username': 'admin@example.com', 'password': 'Admin123', 'fullName': 'Admin Example'},
+    {'username': 'minh@demo.com', 'password': 'demo123', 'fullName': 'Minh'},
   ];
 
   LoginBloc() : super(LoginInitial()) {
