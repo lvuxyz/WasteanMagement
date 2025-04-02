@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
+import '../repositories/user_repository.dart';
+import '../blocs/profile/profile_bloc.dart';
+import '../blocs/profile/profile_event.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -891,8 +895,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProfilePage() {
-    return const Center(
-      child: Text('Trang Cá Nhân'),
+    return BlocProvider(
+      create: (context) => ProfileBloc(
+        userRepository: RepositoryProvider.of<UserRepository>(context),
+      )..add(ProfileFetchEvent()),
+      child: const ProfileScreen(),
     );
   }
 
