@@ -10,6 +10,7 @@ import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import 'registration_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -52,6 +53,13 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
               // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const HomeScreen(),
+                  ),
+                );
+              });
             }
           },
           child: Column(
