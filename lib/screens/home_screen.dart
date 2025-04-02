@@ -455,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return SizedBox(
-      height: 200,
+      height: 240,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: mockCollectionPoints.length,
@@ -482,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 8,
+                  height: 6,
                   decoration: BoxDecoration(
                     color: capacityPercentage > 80 
                         ? Colors.red 
@@ -494,123 +494,152 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              point['name'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryGreen.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '$capacityPercentage%',
-                              style: TextStyle(
-                                color: capacityPercentage > 80 
-                                    ? Colors.red 
-                                    : AppColors.primaryGreen,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  point['name'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: AppColors.textGrey,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              '${point['distance']} km - ${point['address']}',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: point['status'] == 'active'
-                                  ? AppColors.primaryGreen.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              point['status'] == 'active' ? 'Mở cửa' : 'Đóng cửa',
-                              style: TextStyle(
-                                color: point['status'] == 'active'
-                                    ? AppColors.primaryGreen
-                                    : Colors.grey,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                margin: const EdgeInsets.only(left: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryGreen.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '$capacityPercentage%',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: capacityPercentage > 80 
+                                        ? Colors.red 
+                                        : AppColors.primaryGreen,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            point['operating_hours'],
-                            style: const TextStyle(
-                              color: AppColors.textGrey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: point['current_load'] / point['capacity'],
-                        backgroundColor: Colors.grey[200],
-                        color: capacityPercentage > 80
-                            ? Colors.red
-                            : capacityPercentage > 50
-                                ? Colors.orange
-                                : AppColors.primaryGreen,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Công suất: ${point['current_load']}/${point['capacity']} kg',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: AppColors.textGrey,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                '${point['distance']} km - ${point['address']}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 10,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: point['status'] == 'active'
+                                    ? AppColors.primaryGreen.withOpacity(0.1)
+                                    : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                point['status'] == 'active' ? 'Mở cửa' : 'Đóng cửa',
+                                style: TextStyle(
+                                  color: point['status'] == 'active'
+                                      ? AppColors.primaryGreen
+                                      : Colors.grey,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                point['operating_hours'],
+                                style: const TextStyle(
+                                  color: AppColors.textGrey,
+                                  fontSize: 9,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        LinearProgressIndicator(
+                          value: point['current_load'] / point['capacity'],
+                          backgroundColor: Colors.grey[200],
+                          minHeight: 3,
+                          color: capacityPercentage > 80
+                              ? Colors.red
+                              : capacityPercentage > 50
+                                  ? Colors.orange
+                                  : AppColors.primaryGreen,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Công suất:',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              '${point['current_load']}/${point['capacity']} kg',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -663,7 +692,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return SizedBox(
-      height: 120,
+      height: 130,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: mockWasteTypes.length,
@@ -685,34 +714,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: wasteType['color'].withOpacity(0.2),
-                  child: Icon(
-                    wasteType['icon'],
-                    color: wasteType['color'],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: wasteType['color'].withOpacity(0.2),
+                    child: Icon(
+                      wasteType['icon'],
+                      color: wasteType['color'],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  wasteType['name'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      wasteType['name'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${wasteType['unit_price']} đ/kg',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                  const SizedBox(height: 4),
+                  Text(
+                    '${wasteType['unit_price']} đ/kg',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -783,6 +820,8 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,6 +832,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.grey[600],
                   fontSize: 14,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 transaction['date'],
@@ -800,10 +841,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.grey[600],
                   fontSize: 12,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
-          trailing: transaction['status'] == 'completed'
+          trailing: Container(
+            constraints: const BoxConstraints(maxWidth: 80),
+            child: transaction['status'] == 'completed'
               ? Text(
                   '+${transaction['points']}',
                   style: const TextStyle(
@@ -827,6 +872,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+          ),
         );
       },
     );
