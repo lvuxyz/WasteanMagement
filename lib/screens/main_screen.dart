@@ -5,6 +5,7 @@ import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
 import 'profile_screen.dart';
 import 'simple_profile_screen.dart';
+import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -27,18 +28,108 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildBody() {
     switch (_currentIndex) {
       case 0:
-        return const Center(child: Text('Trang chủ'));
+        return const HomeScreen();
       case 1:
-        return const Center(child: Text('Địa điểm'));
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.location_on, size: 80, color: Color(0xFF8BC34A)),
+                SizedBox(height: 20),
+                Text(
+                  'Địa Điểm',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8BC34A),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    'Tìm các điểm thu gom rác gần bạn',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       case 2:
-        return const Center(child: Text('Tái chế'));
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.recycling, size: 80, color: Color(0xFF8BC34A)),
+                SizedBox(height: 20),
+                Text(
+                  'Tái Chế',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8BC34A),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    'Quản lý hoạt động tái chế của bạn',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       case 3:
-        return const Center(child: Text('Thống kê'));
+        return Container(
+          color: Colors.white,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.bar_chart, size: 80, color: Color(0xFF8BC34A)),
+                SizedBox(height: 20),
+                Text(
+                  'Thống Kê',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8BC34A),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    'Xem thống kê rác thải và tái chế của bạn',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       case 4:
-        // Sử dụng simple_profile_screen khi cần 1 màn hình không phức tạp để test
-        // return const SimpleProfileScreen();
-        
-        // Sử dụng profile_screen với BLoC khi cần hoàn thiện
+        // Sử dụng profile_screen với BLoC
         return BlocProvider(
           create: (context) => ProfileBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
@@ -46,7 +137,7 @@ class _MainScreenState extends State<MainScreen> {
           child: const ProfileScreen(),
         );
       default:
-        return const Center(child: Text('Trang chủ'));
+        return const HomeScreen();
     }
   }
 
