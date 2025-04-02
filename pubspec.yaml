@@ -32,6 +32,8 @@ dependencies:
   equatable: ^2.0.5
   rxdart: ^0.27.7
   email_validator: ^2.1.17
+  http: ^1.1.2
+  flutter_secure_storage: ^9.0.0
 
   cupertino_icons: ^1.0.8
 

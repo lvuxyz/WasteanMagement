@@ -5,17 +5,30 @@ import 'blocs/language/language_bloc.dart';
 import 'blocs/language/language_event.dart';
 import 'blocs/language/language_state.dart';
 import 'blocs/language/language_repository.dart';
+import 'repositories/user_repository.dart';
 import 'screens/login_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/simple_profile_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
   runApp(
-    BlocProvider(
-      create: (context) => LanguageBloc(
-        repository: LanguageRepository(),
-      )..add(const LoadLanguage()),
-      child: const MyApp(),
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<LanguageRepository>(
+          create: (context) => LanguageRepository(),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (context) => UserRepository(),
+        ),
+      ],
+      child: BlocProvider(
+        create: (context) => LanguageBloc(
+          repository: context.read<LanguageRepository>(),
+        )..add(const LoadLanguage()),
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -51,7 +64,11 @@ class MyApp extends StatelessWidget {
             locale: Locale(state.languageCode),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const LoginScreen(),
+            home: const SimpleProfileScreen(),
+            routes: {
+              '/profile': (context) => const ProfileScreen(),
+              '/simple_profile': (context) => const SimpleProfileScreen(),
+            },
           );
         }
         
