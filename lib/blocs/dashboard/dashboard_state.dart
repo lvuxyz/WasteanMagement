@@ -18,7 +18,7 @@ class DashboardLoaded extends DashboardState {
   final double progressPercentage;
   final RecyclingGoal monthlyGoal;
   final List<RecentActivity> recentActivities;
-  
+
   const DashboardLoaded({
     required this.totalWaste,
     required this.progressPercentage,
@@ -29,6 +29,6 @@ class DashboardLoaded extends DashboardState {
 
 class DashboardError extends DashboardState {
   final String message;
-  
+
   const DashboardError({required this.message});
-} 
+}

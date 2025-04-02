@@ -1,33 +1,30 @@
-import '../models/waste_type_model.dart';
 import '../models/recycling_goal_model.dart';
 import '../models/recent_activity_model.dart';
-import '../models/transaction_model.dart';
-import 'dart:convert';
 
 class DashboardRepository {
   // In a real app, this would make API calls to your backend
   // For now, we'll simulate with mock data
-  
+
   Future<double> getTotalWasteAmount(int userId) async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     // Mock data
     return 32.5; // 32.5kg
   }
-  
+
   Future<double> getMonthlyGoalProgress(int userId) async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     // Mock data - 75% of goal
     return 75.0;
   }
-  
+
   Future<RecyclingGoal> getMonthlyGoal(int userId) async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     // Mock data
     return RecyclingGoal(
       userId: userId,
@@ -38,11 +35,11 @@ class DashboardRepository {
       currentAmount: 32.5,
     );
   }
-  
+
   Future<List<RecentActivity>> getRecentActivities(int userId) async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     // Mock data
     return [
       RecentActivity(
@@ -86,4 +83,4 @@ class DashboardRepository {
       ),
     ];
   }
-} 
+}

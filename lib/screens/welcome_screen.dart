@@ -17,9 +17,9 @@ class WelcomeScreen extends StatelessWidget {
     final welcomeDescription = l10n.welcomeDescription;
     final loginText = l10n.login;
     final createAccountText = l10n.createAccount;
-    
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.backgroundColor, // Maintenant cette propriété existe
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -56,7 +56,7 @@ class WelcomeScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     final languageBloc = BlocProvider.of<LanguageBloc>(context);
-                    
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -90,7 +90,7 @@ class WelcomeScreen extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () {
                     final languageBloc = BlocProvider.of<LanguageBloc>(context);
-                    
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(

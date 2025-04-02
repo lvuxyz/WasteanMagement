@@ -9,7 +9,7 @@ import 'screens/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   runApp(
     BlocProvider(
       create: (context) => LanguageBloc(
@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
             home: const LoginScreen(),
           );
         }
-        
+
         // Màn hình loading khi đang tải ngôn ngữ
         return const MaterialApp(
           debugShowCheckedModeBanner: false,

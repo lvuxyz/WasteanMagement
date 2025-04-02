@@ -4,7 +4,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../utils/app_colors.dart';
-import '../widgets/common/custom_app_bar.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';

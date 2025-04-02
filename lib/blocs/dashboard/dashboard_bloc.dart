@@ -12,17 +12,17 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   }
 
   Future<void> _onLoadDashboard(
-    LoadDashboard event,
-    Emitter<DashboardState> emit,
-  ) async {
+      LoadDashboard event,
+      Emitter<DashboardState> emit,
+      ) async {
     emit(const DashboardLoading());
-    
+
     try {
       final totalWaste = await repository.getTotalWasteAmount(event.userId);
       final progressPercentage = await repository.getMonthlyGoalProgress(event.userId);
       final monthlyGoal = await repository.getMonthlyGoal(event.userId);
       final recentActivities = await repository.getRecentActivities(event.userId);
-      
+
       emit(DashboardLoaded(
         totalWaste: totalWaste,
         progressPercentage: progressPercentage,
@@ -35,19 +35,19 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   }
 
   Future<void> _onRefreshDashboard(
-    RefreshDashboard event,
-    Emitter<DashboardState> emit,
-  ) async {
+      RefreshDashboard event,
+      Emitter<DashboardState> emit,
+      ) async {
     try {
       final currentState = state;
-      
+
       if (currentState is DashboardLoaded) {
         // Keep current state while refreshing in background
         final totalWaste = await repository.getTotalWasteAmount(event.userId);
         final progressPercentage = await repository.getMonthlyGoalProgress(event.userId);
         final monthlyGoal = await repository.getMonthlyGoal(event.userId);
         final recentActivities = await repository.getRecentActivities(event.userId);
-        
+
         emit(DashboardLoaded(
           totalWaste: totalWaste,
           progressPercentage: progressPercentage,
@@ -64,4 +64,4 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       }
     }
   }
-} 
+}

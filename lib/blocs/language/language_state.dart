@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 
 abstract class LanguageState extends Equatable {
   const LanguageState();
-  
+
   @override
   List<Object> get props => [];
 }
@@ -18,7 +18,7 @@ class LanguageLoaded extends LanguageState {
   final Language selectedLanguage;
   final List<Language> filteredLanguages;
   final String searchQuery;
-  
+
   const LanguageLoaded({
     required this.languageCode,
     required this.languages,
@@ -26,10 +26,10 @@ class LanguageLoaded extends LanguageState {
     this.filteredLanguages = const [],
     this.searchQuery = '',
   });
-  
+
   @override
   List<Object> get props => [languageCode, languages, selectedLanguage, filteredLanguages, searchQuery];
-  
+
   LanguageLoaded copyWith({
     String? languageCode,
     List<Language>? languages,
@@ -50,9 +50,9 @@ class LanguageLoaded extends LanguageState {
 class LanguageError extends LanguageState {
   final String message;
   final String error;
-  
+
   const LanguageError(this.message, {this.error = ''});
-  
+
   @override
   List<Object> get props => [message, error];
-} 
+}
