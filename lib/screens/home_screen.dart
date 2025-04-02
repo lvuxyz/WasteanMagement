@@ -21,10 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _pages = [
       _buildHomePage(),
-      const Center(child: Text('Location Page')),
+      _buildCollectionPointsPage(),
       const Center(child: Text('Placeholder')), // This is for the center button
-      const Center(child: Text('Refresh Page')),
-      const Center(child: Text('Menu Page')),
+      _buildStatisticsPage(),
+      _buildProfilePage(),
     ];
   }
 
@@ -39,8 +39,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onCenterButtonPressed() {
     // Handle center button press - special action
-    print('Center button pressed');
-    // Add your logic here
+    // This could open a form to submit a new transaction/waste collection
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gửi rác tái chế'),
+        content: const Text('Chức năng đang phát triển'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -63,15 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildAppBar(),
             const SizedBox(height: 24),
-            _buildWelcomeCard(),
+            _buildUserSummaryCard(),
             const SizedBox(height: 24),
             _buildSectionTitle('Điểm thu gom gần bạn'),
             const SizedBox(height: 16),
             _buildCollectionPointsList(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Hoạt động gần đây'),
+            _buildSectionTitle('Loại rác được thu gom'),
             const SizedBox(height: 16),
-            _buildRecentActivitiesList(),
+            _buildWasteTypeList(),
+            const SizedBox(height: 24),
+            _buildSectionTitle('Giao dịch gần đây'),
+            const SizedBox(height: 16),
+            _buildRecentTransactionsList(),
             const SizedBox(height: 16),
           ],
         ),
@@ -94,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const Text(
-              'Nguyễn Văn A',
+              'Nguyễn Văn A', // Từ bảng Users.full_name
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -115,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWelcomeCard() {
+  Widget _buildUserSummaryCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -145,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                'Tổng điểm tích lũy',
+                'Tổng điểm thưởng', // Từ bảng Rewards.points
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -156,23 +172,36 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           const Text(
-            '2,450',
+            '1,250', // Tổng Rewards.points của user
             style: TextStyle(
               color: Colors.white,
               fontSize: 36,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Hạng: Bạc',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '15.5 kg', // Tổng Transactions.quantity
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Rác đã xử lý',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
               ElevatedButton(
                 onPressed: () {},
@@ -185,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Đổi quà',
+                  'Đổi điểm',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -222,12 +251,49 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCollectionPointsList() {
+    // Hiển thị từ bảng CollectionPoints
+    List<Map<String, dynamic>> mockCollectionPoints = [
+      {
+        'id': 1,
+        'name': 'Điểm thu gom Nguyễn Trãi',
+        'address': 'Số 123 Nguyễn Trãi, Quận 1, TP.HCM',
+        'distance': 2.5,
+        'operating_hours': '08:00 - 17:00',
+        'status': 'active',
+        'capacity': 1000,
+        'current_load': 450,
+      },
+      {
+        'id': 2,
+        'name': 'Điểm thu gom Lê Duẩn',
+        'address': 'Số 456 Lê Duẩn, Quận 3, TP.HCM',
+        'distance': 3.7,
+        'operating_hours': '07:30 - 18:00',
+        'status': 'active',
+        'capacity': 800,
+        'current_load': 650,
+      },
+      {
+        'id': 3,
+        'name': 'Điểm thu gom Nguyễn Đình Chiểu',
+        'address': 'Số 789 Nguyễn Đình Chiểu, Quận 3, TP.HCM',
+        'distance': 4.2,
+        'operating_hours': '08:00 - 17:30',
+        'status': 'active',
+        'capacity': 1200,
+        'current_load': 300,
+      },
+    ];
+
     return SizedBox(
       height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 5,
+        itemCount: mockCollectionPoints.length,
         itemBuilder: (context, index) {
+          final point = mockCollectionPoints[index];
+          final capacityPercentage = (point['current_load'] / point['capacity'] * 100).toInt();
+          
           return Container(
             width: 280,
             margin: const EdgeInsets.only(right: 16),
@@ -246,13 +312,17 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Image.network(
-                    'https://via.placeholder.com/280x100',
-                    height: 100,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: capacityPercentage > 80 
+                        ? Colors.red 
+                        : capacityPercentage > 50 
+                            ? Colors.orange 
+                            : Colors.green,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
                   ),
                 ),
                 Padding(
@@ -260,34 +330,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Điểm thu gom Nguyễn Trãi',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: AppColors.textGrey,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '2.5 km - Quận 1, TP.HCM',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
+                          Expanded(
+                            child: Text(
+                              point['name'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -297,24 +353,93 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: AppColors.primaryGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
-                              'Mở cửa',
+                            child: Text(
+                              '$capacityPercentage%',
                               style: TextStyle(
-                                color: AppColors.primaryGreen,
+                                color: capacityPercentage > 80 
+                                    ? Colors.red 
+                                    : AppColors.primaryGreen,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: AppColors.textGrey,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              '${point['distance']} km - ${point['address']}',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: point['status'] == 'active'
+                                  ? AppColors.primaryGreen.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              point['status'] == 'active' ? 'Mở cửa' : 'Đóng cửa',
+                              style: TextStyle(
+                                color: point['status'] == 'active'
+                                    ? AppColors.primaryGreen
+                                    : Colors.grey,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            '08:00 - 17:00',
-                            style: TextStyle(
+                          Text(
+                            point['operating_hours'],
+                            style: const TextStyle(
                               color: AppColors.textGrey,
                               fontSize: 12,
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: point['current_load'] / point['capacity'],
+                        backgroundColor: Colors.grey[200],
+                        color: capacityPercentage > 80
+                            ? Colors.red
+                            : capacityPercentage > 50
+                                ? Colors.orange
+                                : AppColors.primaryGreen,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Công suất: ${point['current_load']}/${point['capacity']} kg',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
@@ -327,51 +452,232 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRecentActivitiesList() {
+  Widget _buildWasteTypeList() {
+    // Hiển thị từ bảng WasteTypes
+    List<Map<String, dynamic>> mockWasteTypes = [
+      {
+        'id': 1,
+        'name': 'Nhựa tái chế',
+        'description': 'Chai, lọ, hộp nhựa đã qua sử dụng',
+        'recyclable': true,
+        'unit_price': 5000,
+        'icon': Icons.delete_outline,
+        'color': Colors.blue,
+      },
+      {
+        'id': 2,
+        'name': 'Giấy, bìa carton',
+        'description': 'Sách báo, hộp giấy, bìa carton',
+        'recyclable': true,
+        'unit_price': 3000,
+        'icon': Icons.description_outlined,
+        'color': Colors.amber,
+      },
+      {
+        'id': 3,
+        'name': 'Kim loại',
+        'description': 'Vỏ lon, đồ kim loại cũ',
+        'recyclable': true,
+        'unit_price': 7000,
+        'icon': Icons.settings_outlined,
+        'color': Colors.grey,
+      },
+      {
+        'id': 4,
+        'name': 'Kính, thủy tinh',
+        'description': 'Chai lọ thủy tinh, đồ thủy tinh vỡ',
+        'recyclable': true,
+        'unit_price': 2000,
+        'icon': Icons.wine_bar_outlined,
+        'color': Colors.lightBlue,
+      },
+    ];
+
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: mockWasteTypes.length,
+        itemBuilder: (context, index) {
+          final wasteType = mockWasteTypes[index];
+          
+          return Container(
+            width: 150,
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  backgroundColor: wasteType['color'].withOpacity(0.2),
+                  child: Icon(
+                    wasteType['icon'],
+                    color: wasteType['color'],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  wasteType['name'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${wasteType['unit_price']} đ/kg',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactionsList() {
+    // Hiển thị từ bảng Transactions
+    List<Map<String, dynamic>> mockTransactions = [
+      {
+        'id': 1,
+        'waste_type': 'Nhựa tái chế',
+        'quantity': 2.5,
+        'collection_point': 'Điểm thu gom Nguyễn Trãi',
+        'date': 'Hôm nay, 10:30',
+        'status': 'completed',
+        'points': 125,
+        'color': Colors.blue,
+      },
+      {
+        'id': 2,
+        'waste_type': 'Giấy, bìa carton',
+        'quantity': 3.2,
+        'collection_point': 'Điểm thu gom Lê Duẩn',
+        'date': 'Hôm qua, 15:45',
+        'status': 'completed',
+        'points': 96,
+        'color': Colors.amber,
+      },
+      {
+        'id': 3,
+        'waste_type': 'Kim loại',
+        'quantity': 1.8,
+        'collection_point': 'Điểm thu gom Nguyễn Trãi',
+        'date': '22/05/2023, 09:15',
+        'status': 'pending',
+        'points': 0,
+        'color': Colors.grey,
+      },
+    ];
+
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      itemCount: 3,
+      itemCount: mockTransactions.length,
       separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
+        final transaction = mockTransactions[index];
+        
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: transaction['color'].withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.recycling,
-              color: AppColors.primaryGreen,
+              color: transaction['color'],
             ),
           ),
-          title: const Text(
-            'Bạn đã gửi rác tại điểm thu gom',
-            style: TextStyle(
+          title: Text(
+            '${transaction['waste_type']} (${transaction['quantity']} kg)',
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
-          subtitle: Text(
-            'Hôm nay, 10:30 AM',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                transaction['collection_point'],
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                transaction['date'],
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          trailing: const Text(
-            '+150',
-            style: TextStyle(
-              color: AppColors.primaryGreen,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
+          trailing: transaction['status'] == 'completed'
+              ? Text(
+                  '+${transaction['points']}',
+                  style: const TextStyle(
+                    color: AppColors.primaryGreen,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Đang xử lý',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
         );
       },
+    );
+  }
+
+  Widget _buildCollectionPointsPage() {
+    return const Center(
+      child: Text('Trang Điểm Thu Gom'),
+    );
+  }
+
+  Widget _buildStatisticsPage() {
+    return const Center(
+      child: Text('Trang Thống Kê'),
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return const Center(
+      child: Text('Trang Cá Nhân'),
     );
   }
 
@@ -402,8 +708,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildNavItem(Icons.location_on_outlined, 1),
               // Empty space for the center button
               const SizedBox(width: 65),
-              _buildNavItem(Icons.refresh_outlined, 3),
-              _buildNavItem(Icons.apps_outlined, 4),
+              _buildNavItem(Icons.bar_chart_outlined, 3),
+              _buildNavItem(Icons.person_outline, 4),
             ],
           ),
           // Center button
@@ -450,8 +756,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        child: Icon(
-          Icons.currency_exchange,
+        child: const Icon(
+          Icons.add,
           color: AppColors.primaryGreen,
           size: 30,
         ),
