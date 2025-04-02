@@ -11,10 +11,7 @@ class SimpleProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
         title: const Text(
           'User Profile',
           style: TextStyle(
@@ -31,7 +28,6 @@ class SimpleProfileScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -95,53 +91,6 @@ class SimpleProfileScreen extends StatelessWidget {
             onTap: () {
               // Handle logout
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        color: Color(0xFF8BC34A),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.home, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.location_on, color: Colors.white),
-            onPressed: () {},
-          ),
-          Container(
-            height: 50,
-            width: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF8BC34A), width: 3),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.recycling, color: Color(0xFF8BC34A)),
-              onPressed: () {},
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.bar_chart, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person, color: Colors.white),
-            onPressed: () {},
           ),
         ],
       ),

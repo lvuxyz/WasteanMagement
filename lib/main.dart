@@ -9,6 +9,7 @@ import 'repositories/user_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/simple_profile_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,7 +65,7 @@ class MyApp extends StatelessWidget {
             locale: Locale(state.languageCode),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const SimpleProfileScreen(),
+            home: const MainScreen(),
             routes: {
               '/profile': (context) => const ProfileScreen(),
               '/simple_profile': (context) => const SimpleProfileScreen(),
