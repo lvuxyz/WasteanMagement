@@ -21,9 +21,14 @@ class LanguageList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final noLanguagesFoundText = l10n != null ? l10n.noLanguagesFound : 'No languages found';
+    final noLanguagesFoundText = l10n.noLanguagesFound;
     
-    return BlocBuilder<LanguageBloc, LanguageState>(
+    return BlocConsumer<LanguageBloc, LanguageState>(
+      listener: (context, state) {
+        if (state is LanguageLoaded) {
+          // Không cần hiển thị thông báo ở đây vì sẽ hiển thị khi nhấn nút Tiếp tục
+        }
+      },
       builder: (context, state) {
         if (state is LanguageLoaded) {
           final displayLanguages = state.searchQuery.isEmpty 
@@ -47,12 +52,16 @@ class LanguageList extends StatelessWidget {
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final language = displayLanguages[index];
-              final isSelected = selectedLanguage.code == language.code;
+              // Sử dụng trạng thái hiện tại để xác định ngôn ngữ đã chọn
+              final isSelected = state.selectedLanguage.code == language.code;
               
               return LanguageListItem(
                 language: language,
                 isSelected: isSelected,
-                onTap: () => onLanguageSelected(language),
+                onTap: () {
+                  // Khi người dùng chọn một ngôn ngữ
+                  onLanguageSelected(language);
+                },
               );
             },
           );

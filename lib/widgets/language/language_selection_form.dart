@@ -21,7 +21,7 @@ class LanguageSelectionForm extends StatelessWidget {
         
         if (state is LanguageLoaded) {
           final l10n = AppLocalizations.of(context);
-          final title = l10n != null ? l10n.languageScreenTitle : 'Select Language';
+          final title = l10n.languageScreenTitle;
           final subtitle = 'Choose your preferred language for the application';
           
           return Padding(
@@ -59,7 +59,7 @@ class LanguageSelectionForm extends StatelessWidget {
                         : state.filteredLanguages,
                     selectedLanguage: state.selectedLanguage,
                     onLanguageSelected: (language) {
-                      context.read<LanguageBloc>().add(LanguageSelected(language: language));
+                      context.read<LanguageBloc>().add(ChangeLanguage(language.code));
                     },
                   ),
                 ),

@@ -11,7 +11,7 @@ class ForgotPasswordLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final forgotPasswordText = l10n != null ? l10n.forgotPassword : 'Forgot password?';
+    final forgotPasswordText = l10n.forgotPassword;
     
     // Lấy LanguageBloc hiện tại để truyền sang màn hình mới
     final languageBloc = BlocProvider.of<LanguageBloc>(context);

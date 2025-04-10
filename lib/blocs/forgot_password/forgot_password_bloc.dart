@@ -1,9 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'forgot_password_event.dart';
 import 'forgot_password_state.dart';
 
 class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
-  ForgotPasswordBloc() : super(ForgotPasswordInitial()) {
+  final BuildContext context;
+
+  ForgotPasswordBloc({required this.context}) : super(ForgotPasswordInitial()) {
     on<ForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
     on<ForgotPasswordReset>(_onForgotPasswordReset);
   }
@@ -15,10 +19,13 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     emit(ForgotPasswordLoading());
 
     try {
+      final l10n = AppLocalizations.of(context);
+      final invalidEmailText = l10n.invalidEmail;
+
       // Validate email format
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
       if (!emailRegex.hasMatch(event.email)) {
-        emit(ForgotPasswordFailure(error: 'Email không hợp lệ'));
+        emit(ForgotPasswordFailure(error: invalidEmailText));
         return;
       }
 
@@ -29,7 +36,9 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
       // For now, we'll just simulate a successful password reset request
       emit(ForgotPasswordSuccess(email: event.email));
     } catch (e) {
-      emit(ForgotPasswordFailure(error: 'Gửi yêu cầu thất bại: $e'));
+      final l10n = AppLocalizations.of(context);
+      final resetPasswordErrorText = l10n.resetPasswordError;
+      emit(ForgotPasswordFailure(error: '$resetPasswordErrorText: $e'));
     }
   }
 
