@@ -5,6 +5,7 @@ import 'blocs/language/language_bloc.dart';
 import 'blocs/language/language_event.dart';
 import 'blocs/language/language_state.dart';
 import 'blocs/language/language_repository.dart';
+import 'blocs/auth/auth_bloc.dart';
 import 'repositories/user_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
@@ -24,10 +25,17 @@ void main() {
           create: (context) => UserRepository(),
         ),
       ],
-      child: BlocProvider(
-        create: (context) => LanguageBloc(
-          repository: context.read<LanguageRepository>(),
-        )..add(const LoadLanguage()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => LanguageBloc(
+              repository: context.read<LanguageRepository>(),
+            )..add(const LoadLanguage()),
+          ),
+          BlocProvider(
+            create: (context) => AuthBloc(),
+          ),
+        ],
         child: const MyApp(),
       ),
     ),

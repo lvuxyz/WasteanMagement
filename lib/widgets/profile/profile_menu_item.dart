@@ -15,7 +15,7 @@ class ProfileMenuItem extends StatelessWidget {
     required this.title,
     this.onTap,
     this.iconColor = AppColors.primaryGreen,
-    this.textColor = AppColors.primaryText,
+    this.textColor = Colors.black87, // Changed from AppColors.primaryText
     this.showArrow = true,
   }) : super(key: key);
 
@@ -54,7 +54,7 @@ class ProfileMenuItem extends StatelessWidget {
             if (showArrow)
               Icon(
                 Icons.arrow_forward_ios,
-                color: AppColors.secondaryText.withOpacity(0.6),
+                color: Colors.grey[600], // Changed from AppColors.secondaryText
                 size: 16,
               ),
           ],
