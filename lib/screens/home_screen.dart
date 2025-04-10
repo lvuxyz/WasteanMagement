@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
-import '../repositories/user_repository.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
-import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,32 +9,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
-  // Placeholder pages for different tabs
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _buildHomePage(),
-      _buildCollectionPointsPage(),
-      const Center(child: Text('Placeholder')), // This is for the center button
-      _buildStatisticsPage(),
-      _buildProfilePage(),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    // Skip the center button index (2) for normal navigation
-    if (index != 2) {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
   void _onCenterButtonPressed() {
     // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
     showModalBottomSheet(
@@ -231,11 +199,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: _buildHomePage(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onCenterButtonPressed,
+        backgroundColor: AppColors.primaryGreen,
+        child: const Icon(Icons.camera_alt, color: Colors.white),
       ),
-      bottomNavigationBar: _buildCustomNavigationBar(),
     );
   }
 
@@ -766,60 +735,66 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Map<String, dynamic>> mockTransactions = [
       {
         'id': 1,
-        'waste_type': 'Nhựa tái chế',
+        'type': 'Nhựa tái chế',
         'quantity': 2.5,
+        'points': 12,
         'collection_point': 'Điểm thu gom Nguyễn Trãi',
-        'date': 'Hôm nay, 10:30',
+        'date': '22/05/2023',
         'status': 'completed',
-        'points': 125,
-        'color': Colors.blue,
       },
       {
         'id': 2,
-        'waste_type': 'Giấy, bìa carton',
-        'quantity': 3.2,
-        'collection_point': 'Điểm thu gom Lê Duẩn',
-        'date': 'Hôm qua, 15:45',
+        'type': 'Giấy, bìa carton',
+        'quantity': 3.7,
+        'points': 15,
+        'collection_point': 'Điểm thu gom Quận 1',
+        'date': '18/05/2023',
         'status': 'completed',
-        'points': 96,
-        'color': Colors.amber,
       },
       {
         'id': 3,
-        'waste_type': 'Kim loại',
-        'quantity': 1.8,
-        'collection_point': 'Điểm thu gom Nguyễn Trãi',
-        'date': '22/05/2023, 09:15',
-        'status': 'pending',
-        'points': 0,
-        'color': Colors.grey,
+        'type': 'Kim loại',
+        'quantity': 1.2,
+        'points': 8,
+        'collection_point': 'Điểm thu gom Quận 3',
+        'date': '15/05/2023',
+        'status': 'processing',
       },
     ];
 
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
+    return ListView.builder(
       shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: mockTransactions.length,
-      separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
         final transaction = mockTransactions[index];
-        
+        final IconData icon = transaction['type'] == 'Nhựa tái chế'
+            ? Icons.delete_outline
+            : transaction['type'] == 'Giấy, bìa carton'
+                ? Icons.description_outlined
+                : Icons.settings_outlined;
+        final Color iconColor = transaction['type'] == 'Nhựa tái chế'
+            ? Colors.blue
+            : transaction['type'] == 'Giấy, bìa carton'
+                ? Colors.amber
+                : Colors.grey;
+
         return ListTile(
-          contentPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
           leading: Container(
-            width: 48,
-            height: 48,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: transaction['color'].withOpacity(0.2),
+              color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.recycling,
-              color: transaction['color'],
+              icon,
+              color: iconColor,
+              size: 24,
             ),
           ),
           title: Text(
-            '${transaction['waste_type']} (${transaction['quantity']} kg)',
+            '${transaction['quantity']} kg ${transaction['type']}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -879,111 +854,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCollectionPointsPage() {
-    return const Center(
-      child: Text('Trang Điểm Thu Gom'),
-    );
-  }
-
-  Widget _buildStatisticsPage() {
-    return const Center(
-      child: Text('Trang Thống Kê'),
-    );
-  }
-
-  Widget _buildProfilePage() {
-    return BlocProvider(
-      create: (context) => ProfileBloc(
-        userRepository: RepositoryProvider.of<UserRepository>(context),
-      )..add(ProfileFetchEvent()),
-      child: const ProfileScreen(),
-    );
-  }
-
-  Widget _buildCustomNavigationBar() {
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryGreen,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Regular navigation items
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNavItem(Icons.home_outlined, 0),
-              _buildNavItem(Icons.location_on_outlined, 1),
-              // Empty space for the center button
-              const SizedBox(width: 65),
-              _buildNavItem(Icons.bar_chart_outlined, 3),
-              _buildNavItem(Icons.person_outline, 4),
-            ],
-          ),
-          // Center button
-          Positioned(
-            top: -15,
-            child: _buildCenterButton(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, int index) {
-    final isSelected = _selectedIndex == index;
-    
-    return IconButton(
-      onPressed: () => _onItemTapped(index),
-      icon: Icon(
-        icon,
-        color: Colors.white,
-        size: 24,
-      ),
-      padding: const EdgeInsets.all(8),
-      highlightColor: Colors.white24,
-      splashColor: Colors.white24,
-    );
-  }
-
-  Widget _buildCenterButton() {
-    return GestureDetector(
-      onTap: _onCenterButtonPressed,
-      child: Container(
-        height: 60,
-        width: 60,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              spreadRadius: 1,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.camera_alt,
-          color: AppColors.primaryGreen,
-          size: 30,
-        ),
-      ),
     );
   }
 } 

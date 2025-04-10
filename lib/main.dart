@@ -11,6 +11,7 @@ import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/simple_profile_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/main_navigation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,7 +74,7 @@ class MyApp extends StatelessWidget {
             locale: Locale(state.languageCode),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const HomeScreen(),
+            home: const MainNavigation(),
             routes: {
               '/profile': (context) => const ProfileScreen(),
               '/simple_profile': (context) => const SimpleProfileScreen(),
