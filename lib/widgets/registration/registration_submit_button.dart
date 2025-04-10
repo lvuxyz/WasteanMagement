@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../blocs/registration/registration_bloc.dart';
 import '../../blocs/registration/registration_event.dart';
 import '../../blocs/registration/registration_state.dart';
@@ -21,6 +22,9 @@ class RegistrationSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final registerText = l10n.register;
+
     return SizedBox(
       width: double.infinity,
       height: 50,
@@ -50,9 +54,9 @@ class RegistrationSubmitButton extends StatelessWidget {
             ),
             child: state is RegistrationLoading
                 ? const CircularProgressIndicator(color: AppColors.white)
-                : const Text(
-                    'Đăng ký',
-                    style: TextStyle(
+                : Text(
+                    registerText,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),

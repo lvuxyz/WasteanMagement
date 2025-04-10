@@ -11,7 +11,7 @@ class LanguageSearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final hintText = l10n != null ? l10n.searchLanguage : 'Search language';
+    final hintText = l10n.searchLanguage;
     
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {

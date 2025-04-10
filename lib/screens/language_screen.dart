@@ -11,10 +11,10 @@ class LanguageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final titleText = l10n != null ? l10n.languageScreenTitle : 'Select Language';
-    final languageChangedText = l10n != null ? l10n.languageChanged : 'Language changed successfully';
-    final cancelText = l10n != null ? l10n.cancel : 'Cancel';
-    final saveText = l10n != null ? l10n.save : 'Save';
+    final titleText = l10n.languageScreenTitle;
+    final languageChangedText = l10n.languageChanged;
+    final cancelText = l10n.cancel;
+    final saveText = l10n.save;
     
     return Scaffold(
       appBar: AppBar(

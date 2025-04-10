@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../screens/login_screen.dart';
 import '../../utils/app_colors.dart';
 
@@ -7,16 +8,12 @@ class LoginLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final alreadyHaveAccountText = l10n.alreadyHaveAccount;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Đã có tài khoản? ',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -26,9 +23,9 @@ class LoginLink extends StatelessWidget {
               ),
             );
           },
-          child: const Text(
-            'Đăng nhập',
-            style: TextStyle(
+          child: Text(
+            alreadyHaveAccountText,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryGreen,

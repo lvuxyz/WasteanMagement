@@ -1,5 +1,6 @@
 {
   "appTitle": "Ứng dụng của tôi",
+  "appDescription": "Ứng dụng Quản lý Chất thải và Tái chế",
   "languageScreenTitle": "Chọn ngôn ngữ",
   "english": "Tiếng Anh",
   "vietnamese": "Tiếng Việt",
@@ -8,6 +9,11 @@
   "languageChanged": "Đã thay đổi ngôn ngữ thành công",
   "searchLanguage": "Tìm kiếm ngôn ngữ",
   "continueButton": "Tiếp tục",
+  "confirm": "Xác nhận",
+  "changeLanguageTitle": "Thay đổi ngôn ngữ",
+  "changeLanguageContent": "Bạn có muốn thay đổi ngôn ngữ không?",
+  "languageChangeSuccess": "Đã thay đổi ngôn ngữ thành công",
+  "languageChangeError": "Không thể thay đổi ngôn ngữ",
   
   "welcomeTitle": "LVuRác",
   "welcomeSubtitle": "Khám phá ứng dụng",
@@ -32,5 +38,32 @@
   "enterUsername": "Nhập tên đăng nhập",
   "enterPassword": "Nhập mật khẩu",
   "usernameRequired": "Tên đăng nhập là bắt buộc",
-  "passwordRequired": "Mật khẩu là bắt buộc"
+  "passwordRequired": "Mật khẩu là bắt buộc",
+
+  "forgotPasswordTitle": "Quên Mật Khẩu",
+  "forgotPasswordDescription": "Nhập địa chỉ email của bạn và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu",
+  "email": "Email",
+  "enterEmail": "Nhập địa chỉ email của bạn",
+  "emailRequired": "Email là bắt buộc",
+  "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ",
+  "resetPassword": "Đặt Lại Mật Khẩu",
+  "resetPasswordSuccess": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn",
+  "resetPasswordError": "Không thể gửi liên kết đặt lại mật khẩu",
+  "backToLogin": "Quay Lại Đăng Nhập",
+
+  "registrationTitle": "Tạo Tài Khoản",
+  "registrationDescription": "Điền thông tin của bạn để tạo tài khoản mới",
+  "fullName": "Họ và Tên",
+  "enterFullName": "Nhập họ và tên của bạn",
+  "fullNameRequired": "Họ và tên là bắt buộc",
+  "confirmPassword": "Xác Nhận Mật Khẩu",
+  "enterConfirmPassword": "Nhập lại mật khẩu của bạn",
+  "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
+  "passwordsDoNotMatch": "Mật khẩu không khớp",
+  "register": "Đăng Ký",
+  "registrationSuccess": "Tạo tài khoản thành công",
+  "registrationError": "Không thể tạo tài khoản",
+  "alreadyHaveAccount": "Đã có tài khoản?",
+  "dontHaveAccount": "Bạn chưa có tài khoản?",
+  "signUp": "Đăng ký"
 } 
