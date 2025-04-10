@@ -4,13 +4,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../utils/app_colors.dart';
-import '../widgets/common/custom_app_bar.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import 'registration_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -18,7 +17,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     return BlocProvider(
       create: (context) => LoginBloc(),
       child: Scaffold(
@@ -44,7 +43,7 @@ class LoginScreen extends StatelessWidget {
               );
             } else if (state is LoginSuccess) {
               final successMessage = l10n.loginSuccess(state.username);
-                  
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
@@ -52,14 +51,13 @@ class LoginScreen extends StatelessWidget {
                   duration: const Duration(seconds: 3),
                 ),
               );
-              // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
-              Future.delayed(const Duration(seconds: 1), () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const HomeScreen(),
-                  ),
-                );
-              });
+              // Chuyển đến MainNavigation thay vì DashboardScreen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MainNavigation(),
+                ),
+              );
             }
           },
           child: Column(
@@ -100,7 +98,7 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildLanguageSelector(BuildContext context) {
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
@@ -110,22 +108,22 @@ class LoginScreen extends StatelessWidget {
             children: [
               // English language option
               _buildLanguageOption(
-                context: context, 
+                context: context,
                 languageCode: 'en',
                 flagAsset: 'assets/flags/gb.png',
                 isSelected: state.languageCode == 'en',
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // Vietnamese language option
               _buildLanguageOption(
-                context: context, 
+                context: context,
                 languageCode: 'vi',
                 flagAsset: 'assets/flags/vn.png',
                 isSelected: state.languageCode == 'vi',
               ),
-              
+
               const SizedBox(width: 8),
             ],
           );
@@ -134,7 +132,7 @@ class LoginScreen extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildLanguageOption({
     required BuildContext context,
     required String languageCode,
