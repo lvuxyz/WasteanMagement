@@ -7,7 +7,7 @@ import '../utils/app_colors.dart';
 import '../widgets/profile/profile_header.dart';
 import '../widgets/profile/profile_menu_item.dart';
 import '../screens/login_screen.dart';
-import '../widgets/profile_menu_item.dart';
+import '../widgets/profile/profile_menu_item.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);

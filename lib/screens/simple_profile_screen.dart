@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/profile_menu_item.dart';
+import '../widgets/profile/profile_menu_item.dart';
 
 class SimpleProfileScreen extends StatelessWidget {
   const SimpleProfileScreen({Key? key}) : super(key: key);
