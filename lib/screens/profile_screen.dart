@@ -3,11 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
-import '../utils/app_colors.dart';
-import '../widgets/profile/profile_header.dart';
-import '../widgets/profile/profile_menu_item.dart';
-import '../screens/login_screen.dart';
-import '../widgets/profile/profile_menu_item.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -25,21 +21,66 @@ class ProfileScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.scaffoldBackground,
+        backgroundColor: Colors.grey[100],
         appBar: AppBar(
           title: const Text('Thông tin cá nhân'),
-          backgroundColor: AppColors.primaryGreen,
+          backgroundColor: Colors.green,
           elevation: 0,
         ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              const ProfileHeader(
-                avatarUrl: 'assets/images/avatar.png',
-                fullName: 'Minh Nguyễn',
-                email: 'minh@demo.com',
+              // Profile Header
+              Container(
+                color: Colors.green,
+                padding: const EdgeInsets.only(
+                  left: 24.0,
+                  right: 24.0,
+                  bottom: 24.0,
+                ),
+                child: Column(
+                  children: [
+                    // Avatar
+                    Container(
+                      width: 100,
+                      height: 100,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 3,
+                        ),
+                      ),
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.person, size: 60, color: Colors.green),
+                      ),
+                    ),
+
+                    // User info
+                    const Text(
+                      'Minh Nguyễn',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'minh@demo.com',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
+
+              // Account settings
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
@@ -47,7 +88,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    ProfileMenuItem(
+                    _buildMenuItem(
                       icon: Icons.person,
                       title: 'Thông tin tài khoản',
                       onTap: () {
@@ -55,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
                       },
                     ),
                     const Divider(height: 1),
-                    ProfileMenuItem(
+                    _buildMenuItem(
                       icon: Icons.settings,
                       title: 'Cài đặt',
                       onTap: () {
@@ -63,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
                       },
                     ),
                     const Divider(height: 1),
-                    ProfileMenuItem(
+                    _buildMenuItem(
                       icon: Icons.notifications,
                       title: 'Thông báo',
                       onTap: () {
@@ -74,6 +115,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Support and about
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
@@ -81,7 +124,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    ProfileMenuItem(
+                    _buildMenuItem(
                       icon: Icons.help,
                       title: 'Trợ giúp & Hỗ trợ',
                       onTap: () {
@@ -89,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
                       },
                     ),
                     const Divider(height: 1),
-                    ProfileMenuItem(
+                    _buildMenuItem(
                       icon: Icons.info,
                       title: 'Về chúng tôi',
                       onTap: () {
@@ -100,16 +143,18 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Logout
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: ProfileMenuItem(
+                child: _buildMenuItem(
                   icon: Icons.logout,
                   title: 'Đăng xuất',
-                  textColor: AppColors.errorRed,
-                  iconColor: AppColors.errorRed,
+                  textColor: Colors.red,
+                  iconColor: Colors.red,
                   onTap: () {
                     // Hiển thị hộp thoại xác nhận đăng xuất
                     showDialog(
@@ -129,7 +174,7 @@ class ProfileScreen extends StatelessWidget {
                               context.read<AuthBloc>().add(LogoutEvent());
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.errorRed,
+                              backgroundColor: Colors.red,
                             ),
                             child: const Text('Đăng xuất'),
                           ),
@@ -142,6 +187,57 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 40),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build menu items
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color iconColor = Colors.green,
+    Color textColor = Colors.black87,
+    bool showArrow = true,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: textColor,
+                ),
+              ),
+            ),
+            if (showArrow)
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey.withOpacity(0.6),
+                size: 16,
+              ),
+          ],
         ),
       ),
     );
