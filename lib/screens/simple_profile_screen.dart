@@ -13,7 +13,7 @@ class SimpleProfileScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
-          'User Profile',
+          'Hồ sơ người dùng',
           style: TextStyle(
             color: Color(0xFF8BC34A),
             fontWeight: FontWeight.bold,
