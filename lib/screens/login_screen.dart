@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
-import '../utils/app_colors.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
@@ -37,7 +36,7 @@ class LoginScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.error),
-                  backgroundColor: AppColors.errorRed,
+                  backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),
               );
@@ -47,7 +46,7 @@ class LoginScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
-                  backgroundColor: AppColors.primaryGreen,
+                  backgroundColor: Colors.green,
                   duration: const Duration(seconds: 3),
                 ),
               );
@@ -84,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                       child: Text(
                         l10n.signUp,
                         style: const TextStyle(
-                          color: AppColors.primaryGreen,
+                          color: Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -149,7 +148,7 @@ class LoginScreen extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+            color: isSelected ? Colors.green : Colors.transparent,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(4),
