@@ -26,11 +26,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Các thống kê người dùng
-  final double _totalWaste = 32.5; // kg
-  final int _totalPoints = 450;
-  final int _activeDays = 14;
-  final int _completedGoals = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -38,27 +33,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
-      appBar: CustomAppBar(
-        title: l10n.profile,
+      appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
-        titleColor: Colors.white,
-        iconColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              _showSettingsBottomSheet(context);
-            },
-          ),
-        ],
+        automaticallyImplyLeading: false,
+        title: Text(
+          l10n.profile,
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildProfileHeader(),
-            const SizedBox(height: 16),
-            _buildStatisticsSection(),
             const SizedBox(height: 16),
             _buildOptionsSection(context),
           ],
@@ -137,104 +125,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget thống kê hoạt động người dùng
-  Widget _buildStatisticsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'Thống kê của bạn',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryText,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildStatItem(
-                icon: Icons.delete_outline,
-                value: '${_totalWaste.toStringAsFixed(1)} kg',
-                label: 'Rác đã phân loại',
-              ),
-              _buildStatItem(
-                icon: Icons.stars,
-                value: '$_totalPoints',
-                label: 'Điểm tích lũy',
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildStatItem(
-                icon: Icons.calendar_today,
-                value: '$_activeDays ngày',
-                label: 'Hoạt động liên tục',
-              ),
-              _buildStatItem(
-                icon: Icons.flag,
-                value: '$_completedGoals',
-                label: 'Mục tiêu đã hoàn thành',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget item thống kê
-  Widget _buildStatItem({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Expanded(
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: AppColors.primaryGreen,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryText,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.secondaryText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   // Widget phần tùy chọn
   Widget _buildOptionsSection(BuildContext context) {
@@ -304,17 +194,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _showAboutDialog(context);
             },
           ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: CustomButton(
-              text: l10n.logout,
-              backgroundColor: Colors.red,
-              onPressed: () {
+          _buildOptionItem(icon: Icons.logout,
+              title: 'Đăng xuất',
+              onTap: (){
                 _confirmLogout(context);
-              },
-            ),
-          ),
+              }
+          )
         ],
       ),
     );
@@ -389,65 +274,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Bottom sheet cài đặt
-  void _showSettingsBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Cài đặt hiển thị',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('Chế độ tối'),
-              trailing: Switch(
-                value: false, // TODO: Lấy giá trị từ theme provider
-                onChanged: (value) {
-                  // TODO: Cập nhật theme
-                  Navigator.pop(context);
-                },
-                activeColor: AppColors.primaryGreen,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.translate),
-              title: const Text('Thay đổi ngôn ngữ'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LanguageSelectionScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.font_download),
-              title: const Text('Kích thước chữ'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // TODO: Mở dialog chọn cỡ chữ
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // Dialog về ứng dụng
   void _showAboutDialog(BuildContext context) {
