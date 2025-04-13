@@ -68,5 +68,42 @@
   "registrationError": "Không thể tạo tài khoản",
   "alreadyHaveAccount": "Đã có tài khoản?",
   "dontHaveAccount": "Bạn chưa có tài khoản?",
-  "signUp": "Đăng ký"
+  "signUp": "Đăng ký",
+
+  "greeting": "Xin chào, {username}!",
+  "quickActions": "Hành động nhanh",
+  "scanWaste": "Quét rác",
+  "schedulePickup": "Đặt lịch",
+  "earnPoints": "Tích điểm",
+  "recentActivities": "Hoạt động gần đây",
+  "totalWasteSorted": "Tổng rác đã phân loại",
+  "monthlyGoal": "Mục tiêu tháng: {amount}kg",
+  "remaining": "{amount}kg còn lại",
+
+  "initializingCamera": "Đang khởi tạo camera...",
+  "analyzingWaste": "Đang phân tích rác...",
+  "saveSuccessful": "Lưu kết quả thành công!",
+  "error": "Đã xảy ra lỗi",
+  "cannotDetect": "Không thể nhận diện",
+  "aiWasteScanner": "AI Quét Rác",
+  "detectionResults": "Kết quả nhận diện",
+  "wasteType": "Loại rác:",
+  "description": "Mô tả:",
+  "recyclable": "Có thể tái chế:",
+  "yes": "Có",
+  "no": "Không",
+  "handlingInstructions": "Hướng dẫn xử lý:",
+  "retry": "Thử lại",
+  "saveResult": "Lưu kết quả",
+
+  "enterQuantity": "Nhập khối lượng",
+  "quantity": "Khối lượng",
+  "unit": "Đơn vị",
+  "cancel": "Hủy",
+  "save": "Lưu",
+
+  "home": "Trang chủ",
+  "management": "Quản lý",
+  "map": "Bản đồ",
+  "community": "Cộng đồng"
 } 
