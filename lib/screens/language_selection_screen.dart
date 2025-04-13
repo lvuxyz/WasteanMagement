@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/blocs/language/language_repository.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
@@ -12,7 +13,7 @@ class LanguageSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LanguageBloc()..add(LanguageInitialized()),
+      create: (context) => LanguageBloc(repository: LanguageRepository())..add(LanguageInitialized()),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(
