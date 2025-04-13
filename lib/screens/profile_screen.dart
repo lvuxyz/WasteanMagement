@@ -217,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   size: 16,
                   color: Colors.red,
                 ),
-                onTap: () => _confirmLogout(context),
+                onTap: () => confirmLogout(),
               ),
             ),
           ),
@@ -259,39 +259,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Dialog xác nhận đăng xuất
-  Future<void> _confirmLogout(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-
+  void confirmLogout() async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.logoutTitle),
-        content: Text(l10n.logoutConfirmation),
+        title: const Text('Xác nhận đăng xuất'),
+        content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.logout),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Đăng xuất'),
           ),
         ],
       ),
     );
 
-    if (result == true && context.mounted) {
-      context.read<AuthBloc>().add(LogoutEvent());
+    if (result == true && mounted) {
+      // Sử dụng BlocProvider.of thay vì context.read
+      BlocProvider.of<AuthBloc>(context, listen: false).add(LogoutEvent());
 
-      // Điều hướng về màn hình đăng nhập
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (route) => false,
-      );
+      // Hoặc cách khác, kiểm tra xem Provider có tồn tại không
+      try {
+        context.read<AuthBloc>().add(LogoutEvent());
+
+        // Điều hướng sau khi đăng xuất
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+        );
+      } catch (e) {
+        // Xử lý trường hợp không tìm thấy Provider
+        print('Không thể tìm thấy AuthBloc: $e');
+
+        // Vẫn điều hướng về màn hình đăng nhập trong trường hợp lỗi
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+        );
+      }
     }
   }
 

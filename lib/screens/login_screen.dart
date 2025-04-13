@@ -4,7 +4,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../utils/app_colors.dart';
-import '../widgets/common/custom_app_bar.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
@@ -16,9 +15,16 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
+    // Kiểm tra xem AppLocalizations đã sẵn sàng chưa
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+
+    // Nếu chưa sẵn sàng, sử dụng các giá trị mặc định
+    final loginTitle = l10n?.loginTitle ?? 'Đăng nhập';
+    final dontHaveAccount = l10n?.dontHaveAccount ?? 'Bạn chưa có tài khoản?';
+    final signUp = l10n?.signUp ?? 'Đăng ký';
+
     return BlocProvider(
       create: (context) => LoginBloc(),
       child: Scaffold(
@@ -26,7 +32,7 @@ class LoginScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text(l10n.loginTitle),
+          title: Text(loginTitle),
           actions: [
             // Language selector in app bar
             _buildLanguageSelector(context),
@@ -43,8 +49,9 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
-              final successMessage = l10n.loginSuccess(state.username);
-                  
+              final successMessage = l10n?.loginSuccess(state.username) ??
+                  'Đăng nhập thành công! Xin chào, ${state.username}';
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
@@ -52,14 +59,13 @@ class LoginScreen extends StatelessWidget {
                   duration: const Duration(seconds: 3),
                 ),
               );
-              // Chuyển hướng tới màn hình chính nếu đăng nhập thành công
-              Future.delayed(const Duration(seconds: 1), () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const HomeScreen(),
-                  ),
-                );
-              });
+              // Navigate to dashboard screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                ),
+              );
             }
           },
           child: Column(
@@ -73,7 +79,7 @@ class LoginScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l10n.dontHaveAccount),
+                    Text(dontHaveAccount),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -84,7 +90,7 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                       child: Text(
-                        l10n.signUp,
+                        signUp,
                         style: const TextStyle(
                           color: AppColors.primaryGreen,
                           fontWeight: FontWeight.bold,
@@ -100,7 +106,7 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildLanguageSelector(BuildContext context) {
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
@@ -110,26 +116,27 @@ class LoginScreen extends StatelessWidget {
             children: [
               // English language option
               _buildLanguageOption(
-                context: context, 
+                context: context,
                 languageCode: 'en',
                 flagAsset: 'assets/flags/gb.png',
                 isSelected: state.languageCode == 'en',
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // Vietnamese language option
               _buildLanguageOption(
-                context: context, 
+                context: context,
                 languageCode: 'vi',
                 flagAsset: 'assets/flags/vn.png',
                 isSelected: state.languageCode == 'vi',
               ),
-              
+
               const SizedBox(width: 8),
             ],
           );
         }
+        // Hiển thị một widget rỗng khi LanguageBloc chưa sẵn sàng
         return const SizedBox.shrink();
       },
     );
