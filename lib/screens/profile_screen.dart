@@ -8,8 +8,6 @@ import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import '../utils/app_colors.dart';
-import '../widgets/common/custom_app_bar.dart';
-import '../widgets/common/custom_button.dart';
 import '../screens/language_selection_screen.dart';
 import '../screens/login_screen.dart';
 
@@ -194,12 +192,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _showAboutDialog(context);
             },
           ),
-          _buildOptionItem(icon: Icons.logout,
-              title: 'Đăng xuất',
-              onTap: (){
-                _confirmLogout(context);
-              }
-          )
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: Text(
+                  l10n.logout,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.red,
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.red,
+                ),
+                onTap: () => _confirmLogout(context),
+              ),
+            ),
+          ),
         ],
       ),
     );
