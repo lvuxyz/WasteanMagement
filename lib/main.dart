@@ -7,7 +7,6 @@ import 'blocs/language/language_state.dart';
 import 'blocs/language/language_repository.dart';
 import 'repositories/user_repository.dart';
 import 'screens/profile_screen.dart';
-import 'screens/simple_profile_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -66,8 +65,7 @@ class MyApp extends StatelessWidget {
             supportedLocales: AppLocalizations.supportedLocales,
             home: const HomeScreen(),
             routes: {
-              '/profile': (context) => const ProfileScreen(),
-              '/simple_profile': (context) => const SimpleProfileScreen(),
+              '/profile': (context) => const ProfileScreen(username: '',),
             },
           );
         }

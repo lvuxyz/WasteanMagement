@@ -14,13 +14,16 @@
   "changeLanguageContent": "Bạn có muốn thay đổi ngôn ngữ không?",
   "languageChangeSuccess": "Đã thay đổi ngôn ngữ thành công",
   "languageChangeError": "Không thể thay đổi ngôn ngữ",
-  
+  "profile": "Hồ sơ",
   "welcomeTitle": "LVuRác",
   "welcomeSubtitle": "Khám phá ứng dụng",
   "welcomeDescription": "Bây giờ tài khoản của bạn ở cùng một nơi và luôn được kiểm soát",
   "login": "Đăng Nhập",
+  "logout": "Đăng Xuất",
   "createAccount": "Tạo Tài Khoản",
-  
+  "profile": "Hồ sơ",
+  "logoutTitle": "Đăng xuất",
+  "logoutConfirmation": "Bạn có chắc chắn muốn đăng xuất không?",
   "noLanguagesFound": "Không tìm thấy ngôn ngữ nào",
   
   "loginTitle": "Đăng nhập",
