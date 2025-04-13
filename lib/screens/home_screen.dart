@@ -898,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> {
       create: (context) => ProfileBloc(
         userRepository: RepositoryProvider.of<UserRepository>(context),
       )..add(ProfileFetchEvent()),
-      child: const ProfileScreen(),
+      child: const ProfileScreen(username: '',),
     );
   }
 

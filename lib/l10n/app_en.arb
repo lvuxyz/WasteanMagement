@@ -14,8 +14,11 @@
   "changeLanguageContent": "Do you want to change the language?",
   "languageChangeSuccess": "Language changed successfully",
   "languageChangeError": "Failed to change language",
-  
   "welcomeTitle": "LVuRác",
+  "logout": "Logout",
+  "logoutTitle": "Logout",
+  "logoutConfirmation": "Are you sure you want to logout?",
+  "profile": "Profile",
   "welcomeSubtitle": "Explore the application",
   "welcomeDescription": "Now your account is in one place and always under control",
   "login": "Login",
