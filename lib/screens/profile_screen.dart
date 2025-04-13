@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
 import '../blocs/profile/profile_state.dart';
 import '../widgets/profile_menu_item.dart';
-import '../repositories/user_repository.dart';
 import 'account_details_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
