@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/auth/auth_bloc.dart';
 import '../widgets/common/custom_bottom_navigation.dart';
 import 'profile_screen.dart';
 import 'home_screen.dart';
