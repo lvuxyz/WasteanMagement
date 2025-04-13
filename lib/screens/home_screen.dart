@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 import '../repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';

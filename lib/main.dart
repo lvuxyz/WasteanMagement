@@ -6,7 +6,6 @@ import 'blocs/language/language_event.dart';
 import 'blocs/language/language_state.dart';
 import 'blocs/language/language_repository.dart';
 import 'repositories/user_repository.dart';
-import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/simple_profile_screen.dart';
 import 'screens/home_screen.dart';

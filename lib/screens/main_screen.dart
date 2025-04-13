@@ -4,7 +4,6 @@ import '../repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
 import 'profile_screen.dart';
-import 'simple_profile_screen.dart';
 import 'home_screen.dart';
 
 class MainScreen extends StatefulWidget {
