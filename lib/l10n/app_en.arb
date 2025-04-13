@@ -66,7 +66,8 @@
   "alreadyHaveAccount": "Already have an account? Login",
   "dontHaveAccount": "Don't have an account?",
   "signUp": "Sign Up",
-
+  "profile": "Profile",
+  "logout": "Logout",
   "chooseLanguageSubtitle": "Choose your preferred language for the application",
   "hello": "Hello, {username}!",
   "quickActions": "Quick Actions",

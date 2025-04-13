@@ -50,7 +50,8 @@
   "resetPasswordSuccess": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn",
   "resetPasswordError": "Không thể gửi liên kết đặt lại mật khẩu",
   "backToLogin": "Quay Lại Đăng Nhập",
-
+  "profile": "Hồ Sơ",
+  "logout": "Đăng Xuất",
   "registrationTitle": "Tạo Tài Khoản",
   "registrationDescription": "Điền thông tin của bạn để tạo tài khoản mới",
   "fullName": "Họ và Tên",
