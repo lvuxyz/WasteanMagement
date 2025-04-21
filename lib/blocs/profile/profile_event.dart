@@ -15,3 +15,4 @@ class ProfileUpdateEvent extends ProfileEvent {
     this.address,
   });
 } 
+
