@@ -1,5 +1,4 @@
-// File: screens/main_screen.dart
-
+// Cập nhật file main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repositories/user_repository.dart';
@@ -39,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _onCenterButtonPressed() {
+  void _onCameraButtonPressed() {
     // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
     showModalBottomSheet(
       context: context,
@@ -133,7 +132,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showImageCaptureSuccess(BuildContext context) {
-    // Demo hiển thị kết quả nhận diện
+    // Hiển thị kết quả nhận diện
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -313,8 +312,9 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+      // Giữ lại FloatingActionButton camera và loại bỏ camera ở bottom navigation bar
       floatingActionButton: FloatingActionButton(
-        onPressed: _onCenterButtonPressed,
+        onPressed: _onCameraButtonPressed,
         backgroundColor: AppColors.primaryGreen,
         child: const Icon(Icons.camera_alt, color: Colors.white),
       ),
@@ -325,11 +325,19 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildBottomNavigationBar() {
     return Container(
+      height: 60, // Giảm chiều cao của thanh điều hướng
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
@@ -343,33 +351,27 @@ class _MainScreenState extends State<MainScreen> {
           backgroundColor: AppColors.primaryGreen,
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white.withOpacity(0.7),
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: [
-            const BottomNavigationBarItem(
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
+          items: const [
+            BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: 'Trang chủ',
             ),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Icon(Icons.location_on),
               label: 'Địa điểm',
             ),
+            // Tạo khoảng trống cho FloatingActionButton
             BottomNavigationBarItem(
-              icon: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primaryGreen, width: 3),
-                ),
-                child: const Icon(Icons.bar_chart, color: AppColors.primaryGreen),
-              ),
+              icon: Icon(Icons.bar_chart),
               label: 'Thống kê',
             ),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: 'Hồ sơ',
+              label: 'Cá nhân',
             ),
           ],
         ),
