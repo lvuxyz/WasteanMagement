@@ -212,11 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildHomePage(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onCenterButtonPressed,
-        backgroundColor: AppColors.primaryGreen,
-        child: const Icon(Icons.camera_alt, color: Colors.white),
-      ),
     );
   }
 
