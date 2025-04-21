@@ -75,14 +75,15 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   onPressed: () {
                     if (_isEditing) {
                       if (_formKey.currentState!.validate()) {
+                        // Cập nhật tên sự kiện trong account_details_screen.dart
                         context.read<ProfileBloc>().add(
-                              ProfileUpdateEvent(
-                                fullName: _fullNameController.text,
-                                email: _emailController.text,
-                                phone: _phoneController.text,
-                                address: _addressController.text,
-                              ),
-                            );
+                          UpdateProfile( // Thay vì ProfileUpdateEvent
+                            fullName: _fullNameController.text,
+                            email: _emailController.text,
+                            phone: _phoneController.text,
+                            address: _addressController.text,
+                          ),
+                        );
                         setState(() {
                           _isEditing = false;
                         });

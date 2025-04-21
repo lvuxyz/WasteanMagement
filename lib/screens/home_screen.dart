@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/data/repositories/user_repository.dart'; // Import đúng
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_event.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
 
@@ -879,8 +879,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProfilePage() {
     return BlocProvider(
       create: (context) => ProfileBloc(
-        userRepository: RepositoryProvider.of<UserRepository>(context),
-      )..add(ProfileFetchEvent()),
+        userRepository: context.read<UserRepository>(),
+      )..add(FetchProfile()), // Sử dụng đúng tên event
       child: const ProfileScreen(username: '',),
     );
   }
