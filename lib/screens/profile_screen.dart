@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
+import 'package:wasteanmagement/screens/edit_profile_screen.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
 import '../generated/l10n.dart';
@@ -153,7 +154,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.person_outline,
             title: 'Chỉnh sửa thông tin cá nhân',
             onTap: () {
-              // TODO: Điều hướng đến màn hình chỉnh sửa thông tin
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
+              );
             },
           ),
           _buildOptionItem(
