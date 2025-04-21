@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
-import '../utils/app_colors.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
+import '../generated/l10n.dart';
 import 'registration_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -17,13 +17,14 @@ class LoginScreen extends StatelessWidget {
   @override
   @override
   Widget build(BuildContext context) {
-    // Kiểm tra xem AppLocalizations đã sẵn sàng chưa
-    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
-    // Nếu chưa sẵn sàng, sử dụng các giá trị mặc định
-    final loginTitle = l10n?.loginTitle ?? 'Đăng nhập';
-    final dontHaveAccount = l10n?.dontHaveAccount ?? 'Bạn chưa có tài khoản?';
-    final signUp = l10n?.signUp ?? 'Đăng ký';
+    // Lấy localization
+    final l10n = S.of(context);
+
+    // Lấy các chuỗi từ localization
+    final loginTitle = l10n.loginTitle;
+    final dontHaveAccount = l10n.dontHaveAccount;
+    final signUp = l10n.signUp;
 
     return BlocProvider(
       create: (context) => LoginBloc(),
@@ -44,26 +45,28 @@ class LoginScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.error),
-                  backgroundColor: AppColors.errorRed,
+                  backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),
               );
             } else if (state is LoginSuccess) {
-              final successMessage = l10n?.loginSuccess(state.username) ??
-                  'Đăng nhập thành công! Xin chào, ${state.username}';
-
+              final successMessage = l10n.loginSuccess(state.username);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
-                  backgroundColor: AppColors.primaryGreen,
+                  backgroundColor: Colors.green,
                   duration: const Duration(seconds: 3),
                 ),
               );
+
               // Navigate to dashboard screen
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HomeScreen(),
+                  builder: (context) => RepositoryProvider(
+                    create: (context) => UserRepository(),
+                    child: MainScreen(username: state.username),
+                  ),
                 ),
               );
             }
@@ -92,7 +95,7 @@ class LoginScreen extends StatelessWidget {
                       child: Text(
                         signUp,
                         style: const TextStyle(
-                          color: AppColors.primaryGreen,
+                          color: Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -141,7 +144,7 @@ class LoginScreen extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildLanguageOption({
     required BuildContext context,
     required String languageCode,
@@ -158,7 +161,7 @@ class LoginScreen extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+            color: isSelected ? Colors.green : Colors.transparent,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(4),
@@ -172,3 +175,4 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+

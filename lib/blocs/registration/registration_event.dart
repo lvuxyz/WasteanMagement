@@ -13,3 +13,4 @@ class RegistrationSubmitted extends RegistrationEvent {
 }
 
 class RegistrationReset extends RegistrationEvent {} 
+

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
-import '../repositories/user_repository.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
-import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,30 +16,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // Placeholder pages for different tabs
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _buildHomePage(),
-      _buildCollectionPointsPage(),
-      const Center(child: Text('Placeholder')), // This is for the center button
-      _buildStatisticsPage(),
-      _buildProfilePage(),
-    ];
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
   }
-
-  void _onItemTapped(int index) {
-    // Skip the center button index (2) for normal navigation
-    if (index != 2) {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
   void _onCenterButtonPressed() {
     // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
     showModalBottomSheet(
@@ -230,11 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: _buildCustomNavigationBar(),
+      body: _buildHomePage(),
     );
   }
 
@@ -765,60 +742,66 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Map<String, dynamic>> mockTransactions = [
       {
         'id': 1,
-        'waste_type': 'Nhựa tái chế',
+        'type': 'Nhựa tái chế',
         'quantity': 2.5,
+        'points': 12,
         'collection_point': 'Điểm thu gom Nguyễn Trãi',
-        'date': 'Hôm nay, 10:30',
+        'date': '22/05/2023',
         'status': 'completed',
-        'points': 125,
-        'color': Colors.blue,
       },
       {
         'id': 2,
-        'waste_type': 'Giấy, bìa carton',
-        'quantity': 3.2,
-        'collection_point': 'Điểm thu gom Lê Duẩn',
-        'date': 'Hôm qua, 15:45',
+        'type': 'Giấy, bìa carton',
+        'quantity': 3.7,
+        'points': 15,
+        'collection_point': 'Điểm thu gom Quận 1',
+        'date': '18/05/2023',
         'status': 'completed',
-        'points': 96,
-        'color': Colors.amber,
       },
       {
         'id': 3,
-        'waste_type': 'Kim loại',
-        'quantity': 1.8,
-        'collection_point': 'Điểm thu gom Nguyễn Trãi',
-        'date': '22/05/2023, 09:15',
-        'status': 'pending',
-        'points': 0,
-        'color': Colors.grey,
+        'type': 'Kim loại',
+        'quantity': 1.2,
+        'points': 8,
+        'collection_point': 'Điểm thu gom Quận 3',
+        'date': '15/05/2023',
+        'status': 'processing',
       },
     ];
 
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
+    return ListView.builder(
       shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: mockTransactions.length,
-      separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
         final transaction = mockTransactions[index];
-        
+        final IconData icon = transaction['type'] == 'Nhựa tái chế'
+            ? Icons.delete_outline
+            : transaction['type'] == 'Giấy, bìa carton'
+                ? Icons.description_outlined
+                : Icons.settings_outlined;
+        final Color iconColor = transaction['type'] == 'Nhựa tái chế'
+            ? Colors.blue
+            : transaction['type'] == 'Giấy, bìa carton'
+                ? Colors.amber
+                : Colors.grey;
+
         return ListTile(
-          contentPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
           leading: Container(
-            width: 48,
-            height: 48,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: transaction['color'].withOpacity(0.2),
+              color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.recycling,
-              color: transaction['color'],
+              icon,
+              color: iconColor,
+              size: 24,
             ),
           ),
           title: Text(
-            '${transaction['waste_type']} (${transaction['quantity']} kg)',
+            '${transaction['quantity']} kg ${transaction['type']}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -986,3 +969,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 } 
+

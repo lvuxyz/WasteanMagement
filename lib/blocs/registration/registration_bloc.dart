@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import 'registration_event.dart';
 import 'registration_state.dart';
 
@@ -19,7 +19,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     emit(RegistrationLoading());
 
     try {
-      final l10n = AppLocalizations.of(context);
+      final l10n = S.of(context);
       final passwordsDoNotMatchText = l10n.passwordsDoNotMatch;
 
       // Validate passwords match
@@ -36,7 +36,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       final username = event.email.split('@')[0];
       emit(RegistrationSuccess(username: username));
     } catch (e) {
-      final l10n = AppLocalizations.of(context);
+      final l10n = S.of(context);
       final registrationErrorText = l10n.registrationError;
       emit(RegistrationFailure(error: '$registrationErrorText: $e'));
     }
@@ -49,3 +49,4 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     emit(RegistrationInitial());
   }
 } 
+

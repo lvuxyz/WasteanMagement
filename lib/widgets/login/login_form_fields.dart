@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../utils/app_colors.dart';
 import '../common/custom_text_field.dart';
 
@@ -22,7 +22,7 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final usernameLabel = l10n.username;
     final usernameHint = l10n.enterUsername;
     final usernameRequired = l10n.usernameRequired;
@@ -76,3 +76,4 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
     );
   }
 } 
+

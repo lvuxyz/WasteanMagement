@@ -15,3 +15,4 @@ class RegistrationFailure extends RegistrationState {
 
   RegistrationFailure({required this.error});
 } 
+
