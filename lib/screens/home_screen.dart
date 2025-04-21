@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-=======
 import 'package:flutter_bloc/flutter_bloc.dart';
->>>>>>> bugfix/languageSelection
+import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,6 +14,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   void _onCenterButtonPressed() {
     // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
     showModalBottomSheet(
@@ -860,8 +868,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-<<<<<<< HEAD
-=======
 
   Widget _buildCollectionPointsPage() {
     return const Center(
@@ -967,5 +973,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
->>>>>>> bugfix/languageSelection
 } 
