@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
+import 'package:wasteanmagement/screens/notification_screen.dart';
 import '../generated/l10n.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
@@ -177,7 +178,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.notifications_outlined,
             title: 'Cài đặt thông báo',
             onTap: () {
-              // TODO: Điều hướng đến màn hình cài đặt thông báo
+              MaterialPageRoute(
+                builder: (context) => const NotificationSettingsScreen(),
+              );
             },
           ),
           _buildOptionItem(
