@@ -1,13 +1,18 @@
+// File: screens/main_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
-import 'profile_screen.dart';
+import '../utils/app_colors.dart';
 import 'home_screen.dart';
+import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  final String username;
+
+  const MainScreen({Key? key, this.username = ''}) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -15,129 +20,307 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _onCenterButtonPressed() {
+    // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Nhận diện rác bằng ảnh',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImageSourceOption(
+                  icon: Icons.camera_alt,
+                  title: 'Chụp ảnh',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Xử lý logic chụp ảnh ở đây
+                    _showImageCaptureSuccess(context);
+                  },
+                ),
+                _buildImageSourceOption(
+                  icon: Icons.photo_library,
+                  title: 'Chọn từ thư viện',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Xử lý logic chọn ảnh từ thư viện ở đây
+                    _showImageCaptureSuccess(context);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.primaryGreen,
+                size: 30,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImageCaptureSuccess(BuildContext context) {
+    // Demo hiển thị kết quả nhận diện
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nhận diện thành công'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Loại rác được nhận diện:'),
+            const SizedBox(height: 10),
+            _buildWasteTypeItem(
+              icon: Icons.delete_outline,
+              color: Colors.blue,
+              name: 'Nhựa tái chế',
+              confidence: '95%',
+            ),
+            const SizedBox(height: 8),
+            _buildWasteTypeItem(
+              icon: Icons.description_outlined,
+              color: Colors.amber,
+              name: 'Giấy, bìa carton',
+              confidence: '5%',
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Bạn có thể gửi rác tại các điểm thu gom gần nhất.',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Chuyển đến trang gửi rác
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Gửi rác ngay'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWasteTypeItem({
+    required IconData icon,
+    required Color color,
+    required String name,
+    required String confidence,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        Text(
+          confidence,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildBody(),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        children: [
+          const HomeScreen(), // Trang chủ
+          // Trang Địa điểm
+          Container(
+            color: Colors.white,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_on, size: 80, color: AppColors.primaryGreen),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Địa Điểm Thu Gom',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'Tìm các điểm thu gom rác gần bạn',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Trang Thống kê
+          Container(
+            color: Colors.white,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.bar_chart, size: 80, color: AppColors.primaryGreen),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Thống Kê',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'Xem thống kê rác thải và tái chế của bạn',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Trang Cá nhân
+          BlocProvider(
+            create: (context) => ProfileBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+            )..add(ProfileFetchEvent()),
+            child: ProfileScreen(username: widget.username),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onCenterButtonPressed,
+        backgroundColor: AppColors.primaryGreen,
+        child: const Icon(Icons.camera_alt, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
-  }
-
-  Widget _buildBody() {
-    switch (_currentIndex) {
-      case 0:
-        return const HomeScreen();
-      case 1:
-        return Container(
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.location_on, size: 80, color: Color(0xFF8BC34A)),
-                SizedBox(height: 20),
-                Text(
-                  'Địa Điểm',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8BC34A),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    'Tìm các điểm thu gom rác gần bạn',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      case 2:
-        return Container(
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.recycling, size: 80, color: Color(0xFF8BC34A)),
-                SizedBox(height: 20),
-                Text(
-                  'Tái Chế',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8BC34A),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    'Quản lý hoạt động tái chế của bạn',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      case 3:
-        return Container(
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.bar_chart, size: 80, color: Color(0xFF8BC34A)),
-                SizedBox(height: 20),
-                Text(
-                  'Thống Kê',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8BC34A),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Text(
-                    'Xem thống kê rác thải và tái chế của bạn',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      case 4:
-        // Sử dụng profile_screen với BLoC
-        return BlocProvider(
-          create: (context) => ProfileBloc(
-            userRepository: RepositoryProvider.of<UserRepository>(context),
-          )..add(ProfileFetchEvent()),
-          child: const ProfileScreen(username: '',),
-        );
-      default:
-        return const HomeScreen();
-    }
   }
 
   Widget _buildBottomNavigationBar() {
@@ -155,13 +338,9 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
+          onTap: _onItemTapped,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: const Color(0xFF8BC34A),
+          backgroundColor: AppColors.primaryGreen,
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white.withOpacity(0.7),
           showSelectedLabels: false,
@@ -182,14 +361,10 @@ class _MainScreenState extends State<MainScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF8BC34A), width: 3),
+                  border: Border.all(color: AppColors.primaryGreen, width: 3),
                 ),
-                child: const Icon(Icons.recycling, color: Color(0xFF8BC34A)),
+                child: const Icon(Icons.bar_chart, color: AppColors.primaryGreen),
               ),
-              label: 'Tái chế',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
               label: 'Thống kê',
             ),
             const BottomNavigationBarItem(
@@ -201,4 +376,4 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-} 
+}

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/screens/home_screen.dart';
+import 'package:wasteanmagement/screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
-<<<<<<< HEAD
-=======
 import '../utils/app_colors.dart';
->>>>>>> bugfix/languageSelection
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import 'registration_screen.dart';
-import 'main_navigation.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -20,9 +19,7 @@ class LoginScreen extends StatelessWidget {
   @override
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    final l10n = AppLocalizations.of(context);
-=======
+
     // Kiểm tra xem AppLocalizations đã sẵn sàng chưa
     final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
@@ -30,7 +27,6 @@ class LoginScreen extends StatelessWidget {
     final loginTitle = l10n?.loginTitle ?? 'Đăng nhập';
     final dontHaveAccount = l10n?.dontHaveAccount ?? 'Bạn chưa có tài khoản?';
     final signUp = l10n?.signUp ?? 'Đăng ký';
->>>>>>> bugfix/languageSelection
 
     return BlocProvider(
       create: (context) => LoginBloc(),
@@ -56,13 +52,8 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
-<<<<<<< HEAD
-              final successMessage = l10n.loginSuccess(state.username);
-=======
               final successMessage = l10n?.loginSuccess(state.username) ??
                   'Đăng nhập thành công! Xin chào, ${state.username}';
->>>>>>> bugfix/languageSelection
-
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
@@ -70,19 +61,15 @@ class LoginScreen extends StatelessWidget {
                   duration: const Duration(seconds: 3),
                 ),
               );
-<<<<<<< HEAD
-              // Chuyển đến MainNavigation thay vì DashboardScreen
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MainNavigation(),
-=======
+
               // Navigate to dashboard screen
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HomeScreen(),
->>>>>>> bugfix/languageSelection
+                  builder: (context) => RepositoryProvider(
+                    create: (context) => UserRepository(),
+                    child: MainScreen(username: state.username),
+                  ),
                 ),
               );
             }
