@@ -4,7 +4,6 @@ import '../../generated/l10n.dart';
 import '../../blocs/language/language_bloc.dart';
 import '../../blocs/language/language_state.dart';
 import '../../blocs/language/language_event.dart';
-import '../../models/language_model.dart';
 import 'language_list.dart';
 import 'language_search_field.dart';
 import 'language_continue_button.dart';

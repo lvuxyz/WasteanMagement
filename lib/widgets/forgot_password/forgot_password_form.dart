@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
-import '../../blocs/forgot_password/forgot_password_bloc.dart';
-import '../../blocs/forgot_password/forgot_password_state.dart';
 import 'forgot_password_form_field.dart';
 import 'forgot_password_submit_button.dart';
 import 'login_link.dart';

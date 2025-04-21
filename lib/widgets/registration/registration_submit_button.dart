@@ -4,7 +4,6 @@ import '../../generated/l10n.dart';
 import '../../blocs/registration/registration_bloc.dart';
 import '../../blocs/registration/registration_event.dart';
 import '../../blocs/registration/registration_state.dart';
-import '../common/custom_button.dart';
 import '../../utils/app_colors.dart';
 
 class RegistrationSubmitButton extends StatelessWidget {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
-import '../../screens/login_screen.dart';
 import '../../utils/app_colors.dart';
 
 class LoginLink extends StatelessWidget {
