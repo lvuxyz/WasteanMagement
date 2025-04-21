@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import '../generated/l10n.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
+import '../screens/help_and_guidance_screen.dart';
 // import '../blocs/auth/auth_state.dart';
 // import '../blocs/language/language_bloc.dart';
 // import '../blocs/language/language_event.dart';
@@ -179,10 +181,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           _buildOptionItem(
-            icon: Icons.help_outline,
+            icon: Icons.help,
             title: 'Trợ giúp & Hướng dẫn',
             onTap: () {
-              // TODO: Điều hướng đến màn hình trợ giúp
+              MaterialPageRoute(
+                builder: (context) => const HelpAndGuidanceScreen(),
+              );
             },
           ),
           _buildOptionItem(
