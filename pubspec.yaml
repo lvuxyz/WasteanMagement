@@ -70,10 +70,10 @@ flutter:
           weight: 700
   generate: true
 
-  # Cấu hình đa ngôn ngữ
-flutter_intl:
-  enabled: true
-  class_name: AppLocalizations
-  main_locale: en
-  arb_dir: lib/l10n
-  output_dir: lib/generated
+# Đã vô hiệu hóa flutter_intl vì đang sử dụng cấu hình l10n.yaml
+# flutter_intl:
+#   enabled: false
+#   class_name: AppLocalizations
+#   main_locale: en
+#   arb_dir: lib/l10n
+#   output_dir: lib/generated
