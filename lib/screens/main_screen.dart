@@ -133,7 +133,7 @@ class _MainScreenState extends State<MainScreen> {
           create: (context) => ProfileBloc(
             userRepository: RepositoryProvider.of<UserRepository>(context),
           )..add(ProfileFetchEvent()),
-          child: const ProfileScreen(),
+          child: const ProfileScreen(username: '',),
         );
       default:
         return const HomeScreen();

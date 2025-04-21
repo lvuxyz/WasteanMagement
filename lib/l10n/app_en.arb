@@ -14,15 +14,15 @@
   "changeLanguageContent": "Do you want to change the language?",
   "languageChangeSuccess": "Language changed successfully",
   "languageChangeError": "Failed to change language",
-  
+
   "welcomeTitle": "LVuRác",
   "welcomeSubtitle": "Explore the application",
   "welcomeDescription": "Now your account is in one place and always under control",
   "login": "Login",
   "createAccount": "Create Account",
-  
+
   "noLanguagesFound": "No languages found",
-  
+
   "loginTitle": "Login",
   "forgotPassword": "Forgot password?",
   "loginSuccess": "Login successful! Welcome, {username}",
@@ -65,5 +65,40 @@
   "registrationError": "Failed to create account",
   "alreadyHaveAccount": "Already have an account? Login",
   "dontHaveAccount": "Don't have an account?",
-  "signUp": "Sign Up"
-} 
+  "signUp": "Sign Up",
+  "profile": "Profile",
+  "logout": "Logout",
+  "chooseLanguageSubtitle": "Choose your preferred language for the application",
+  "hello": "Hello, {username}!",
+  "quickActions": "Quick Actions",
+  "scanWaste": "Scan Waste",
+  "schedule": "Schedule",
+  "earnPoints": "Earn Points",
+  "recentActivities": "Recent Activities",
+  "initializingCamera": "Initializing camera...",
+  "analyzingWaste": "Analyzing waste...",
+  "initializing": "Initializing...",
+  "aiWasteScanner": "AI Waste Scanner",
+  "errorOccurred": "An error occurred",
+  "goBack": "Go Back",
+  "tryAgain": "Try Again",
+  "detectionResults": "Detection Results",
+  "saveResults": "Save Results",
+  "enterWeight": "Enter Weight",
+  "wasteType": "Waste Type:",
+  "weight": "Weight",
+  "unit": "Unit",
+  "save": "Save",
+  "detectionSuccess": "Detection successful!",
+  "totalWasteSorted": "Total Waste Sorted",
+  "monthlyGoal": "Monthly Goal: {amount}{unit}",
+  "remainingAmount": "{amount}kg remaining",
+  "rememberMe": "Remember me",
+  "pleaseTryAgain": "Please try again",
+  "enterValidNumber": "Please enter a valid number",
+  "pleaseEnterWeight": "Please enter weight",
+  "cannotDetectWaste": "Cannot detect waste",
+  "placeWasteInCenter": "Place waste in the center of the frame",
+  "enoughLight": "Ensure enough light to see the object clearly",
+  "objectNotObscured": "Object should not be obscured"
+}

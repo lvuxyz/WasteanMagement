@@ -3,6 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
+<<<<<<< HEAD
+=======
+import '../utils/app_colors.dart';
+>>>>>>> bugfix/languageSelection
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
@@ -14,8 +18,19 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
+  @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     final l10n = AppLocalizations.of(context);
+=======
+    // Kiểm tra xem AppLocalizations đã sẵn sàng chưa
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+
+    // Nếu chưa sẵn sàng, sử dụng các giá trị mặc định
+    final loginTitle = l10n?.loginTitle ?? 'Đăng nhập';
+    final dontHaveAccount = l10n?.dontHaveAccount ?? 'Bạn chưa có tài khoản?';
+    final signUp = l10n?.signUp ?? 'Đăng ký';
+>>>>>>> bugfix/languageSelection
 
     return BlocProvider(
       create: (context) => LoginBloc(),
@@ -24,7 +39,7 @@ class LoginScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text(l10n.loginTitle),
+          title: Text(loginTitle),
           actions: [
             // Language selector in app bar
             _buildLanguageSelector(context),
@@ -41,7 +56,12 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
+<<<<<<< HEAD
               final successMessage = l10n.loginSuccess(state.username);
+=======
+              final successMessage = l10n?.loginSuccess(state.username) ??
+                  'Đăng nhập thành công! Xin chào, ${state.username}';
+>>>>>>> bugfix/languageSelection
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -50,11 +70,19 @@ class LoginScreen extends StatelessWidget {
                   duration: const Duration(seconds: 3),
                 ),
               );
+<<<<<<< HEAD
               // Chuyển đến MainNavigation thay vì DashboardScreen
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const MainNavigation(),
+=======
+              // Navigate to dashboard screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+>>>>>>> bugfix/languageSelection
                 ),
               );
             }
@@ -70,7 +98,7 @@ class LoginScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l10n.dontHaveAccount),
+                    Text(dontHaveAccount),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -81,7 +109,7 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                       child: Text(
-                        l10n.signUp,
+                        signUp,
                         style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -127,6 +155,7 @@ class LoginScreen extends StatelessWidget {
             ],
           );
         }
+        // Hiển thị một widget rỗng khi LanguageBloc chưa sẵn sàng
         return const SizedBox.shrink();
       },
     );
