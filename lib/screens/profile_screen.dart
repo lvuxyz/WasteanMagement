@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
 import '../generated/l10n.dart';
@@ -159,7 +160,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.lock_outline,
             title: 'Thay đổi mật khẩu',
             onTap: () {
-              // TODO: Điều hướng đến màn hình đổi mật khẩu
+              Navigator.push(
+              context,
+                MaterialPageRoute(
+                builder: (context) => const ChangePasswordScreen(),
+              ),
+              );
             },
           ),
           _buildOptionItem(
