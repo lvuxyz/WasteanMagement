@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../generated/l10n.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_state.dart';
 import '../widgets/language_selector.dart';
@@ -10,7 +10,7 @@ class LanguageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final titleText = l10n.languageScreenTitle;
     final languageChangedText = l10n.languageChanged;
     final cancelText = l10n.cancel;
@@ -63,3 +63,4 @@ class LanguageScreen extends StatelessWidget {
     );
   }
 } 
+

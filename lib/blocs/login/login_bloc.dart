@@ -49,3 +49,4 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInitial());
   }
 }
+

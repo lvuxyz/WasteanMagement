@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../generated/l10n.dart';
 import '../blocs/language/language_bloc.dart';
 import '../utils/app_colors.dart';
 import 'login_screen.dart';
@@ -11,7 +11,7 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final welcomeTitle = l10n.welcomeTitle;
     final welcomeSubtitle = l10n.welcomeSubtitle;
     final welcomeDescription = l10n.welcomeDescription;
@@ -125,3 +125,4 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+

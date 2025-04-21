@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../common/custom_text_field.dart';
 
 class ForgotPasswordFormField extends StatelessWidget {
@@ -12,7 +12,7 @@ class ForgotPasswordFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final emailLabel = l10n.email;
     final emailHint = l10n.enterEmail;
     final emailRequired = l10n.emailRequired;
@@ -35,3 +35,4 @@ class ForgotPasswordFormField extends StatelessWidget {
     );
   }
 } 
+

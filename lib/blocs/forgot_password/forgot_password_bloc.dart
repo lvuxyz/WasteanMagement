@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import 'forgot_password_event.dart';
 import 'forgot_password_state.dart';
 
@@ -19,7 +19,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     emit(ForgotPasswordLoading());
 
     try {
-      final l10n = AppLocalizations.of(context);
+      final l10n = S.of(context);
       final invalidEmailText = l10n.invalidEmail;
 
       // Validate email format
@@ -36,7 +36,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
       // For now, we'll just simulate a successful password reset request
       emit(ForgotPasswordSuccess(email: event.email));
     } catch (e) {
-      final l10n = AppLocalizations.of(context);
+      final l10n = S.of(context);
       final resetPasswordErrorText = l10n.resetPasswordError;
       emit(ForgotPasswordFailure(error: '$resetPasswordErrorText: $e'));
     }
@@ -49,3 +49,4 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     emit(ForgotPasswordInitial());
   }
 } 
+
