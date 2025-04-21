@@ -46,3 +46,4 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 } 
+

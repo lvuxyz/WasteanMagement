@@ -27,3 +27,4 @@ class ForgotPasswordCredentials {
     required this.email,
   });
 } 
+

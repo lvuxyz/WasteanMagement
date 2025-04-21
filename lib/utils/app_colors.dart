@@ -11,3 +11,4 @@ class AppColors {
   static const textGrey = Color(0xFF757575);
   static const errorRed = Color(0xFFD32F2F);
 }
+

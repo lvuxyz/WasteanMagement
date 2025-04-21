@@ -24,3 +24,4 @@ class RememberMeChanged extends AuthFormEvent {
 class FormSubmitted extends AuthFormEvent {
   const FormSubmitted();
 }
+

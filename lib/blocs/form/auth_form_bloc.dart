@@ -68,3 +68,4 @@ class AuthFormBloc extends Bloc<AuthFormEvent, AuthFormState> {
     }
   }
 }
+

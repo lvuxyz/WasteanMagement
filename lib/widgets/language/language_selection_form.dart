@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../blocs/language/language_bloc.dart';
-import '../../blocs/language/language_event.dart';
 import '../../blocs/language/language_state.dart';
+import '../../blocs/language/language_event.dart';
+import '../../models/language_model.dart';
 import 'language_list.dart';
 import 'language_search_field.dart';
 import 'language_continue_button.dart';
@@ -20,7 +21,7 @@ class LanguageSelectionForm extends StatelessWidget {
         }
         
         if (state is LanguageLoaded) {
-          final l10n = AppLocalizations.of(context);
+          final l10n = S.of(context);
           final title = l10n.languageScreenTitle;
           final subtitle = 'Choose your preferred language for the application';
           
@@ -78,3 +79,4 @@ class LanguageSelectionForm extends StatelessWidget {
     );
   }
 } 
+

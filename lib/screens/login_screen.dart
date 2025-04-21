@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/home_screen.dart';
 import 'package:wasteanmagement/screens/main_screen.dart';
@@ -11,6 +10,7 @@ import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
+import '../generated/l10n.dart';
 import 'registration_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -20,13 +20,13 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Kiểm tra xem AppLocalizations đã sẵn sàng chưa
-    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    // Lấy localization
+    final l10n = S.of(context);
 
-    // Nếu chưa sẵn sàng, sử dụng các giá trị mặc định
-    final loginTitle = l10n?.loginTitle ?? 'Đăng nhập';
-    final dontHaveAccount = l10n?.dontHaveAccount ?? 'Bạn chưa có tài khoản?';
-    final signUp = l10n?.signUp ?? 'Đăng ký';
+    // Lấy các chuỗi từ localization
+    final loginTitle = l10n.loginTitle;
+    final dontHaveAccount = l10n.dontHaveAccount;
+    final signUp = l10n.signUp;
 
     return BlocProvider(
       create: (context) => LoginBloc(),
@@ -52,8 +52,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
             } else if (state is LoginSuccess) {
-              final successMessage = l10n?.loginSuccess(state.username) ??
-                  'Đăng nhập thành công! Xin chào, ${state.username}';
+              final successMessage = l10n.loginSuccess(state.username);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
@@ -178,3 +177,4 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
