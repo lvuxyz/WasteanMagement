@@ -4,7 +4,6 @@ import '../../generated/l10n.dart';
 import '../../blocs/forgot_password/forgot_password_bloc.dart';
 import '../../blocs/forgot_password/forgot_password_event.dart';
 import '../../blocs/forgot_password/forgot_password_state.dart';
-import '../../utils/app_colors.dart';
 import '../common/custom_button.dart';
 
 class ForgotPasswordSubmitButton extends StatelessWidget {

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
-import 'package:wasteanmagement/screens/home_screen.dart';
 import 'package:wasteanmagement/screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
-import '../utils/app_colors.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
