@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -9,6 +14,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   void _onCenterButtonPressed() {
     // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
     showModalBottomSheet(
@@ -200,11 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildHomePage(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onCenterButtonPressed,
-        backgroundColor: AppColors.primaryGreen,
-        child: const Icon(Icons.camera_alt, color: Colors.white),
-      ),
     );
   }
 
@@ -854,6 +861,111 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCollectionPointsPage() {
+    return const Center(
+      child: Text('Trang Điểm Thu Gom'),
+    );
+  }
+
+  Widget _buildStatisticsPage() {
+    return const Center(
+      child: Text('Trang Thống Kê'),
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return BlocProvider(
+      create: (context) => ProfileBloc(
+        userRepository: RepositoryProvider.of<UserRepository>(context),
+      )..add(ProfileFetchEvent()),
+      child: const ProfileScreen(username: '',),
+    );
+  }
+
+  Widget _buildCustomNavigationBar() {
+    return Container(
+      height: 60,
+      decoration: const BoxDecoration(
+        color: AppColors.primaryGreen,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Regular navigation items
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(Icons.home_outlined, 0),
+              _buildNavItem(Icons.location_on_outlined, 1),
+              // Empty space for the center button
+              const SizedBox(width: 65),
+              _buildNavItem(Icons.bar_chart_outlined, 3),
+              _buildNavItem(Icons.person_outline, 4),
+            ],
+          ),
+          // Center button
+          Positioned(
+            top: -15,
+            child: _buildCenterButton(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, int index) {
+    final isSelected = _selectedIndex == index;
+    
+    return IconButton(
+      onPressed: () => _onItemTapped(index),
+      icon: Icon(
+        icon,
+        color: Colors.white,
+        size: 24,
+      ),
+      padding: const EdgeInsets.all(8),
+      highlightColor: Colors.white24,
+      splashColor: Colors.white24,
+    );
+  }
+
+  Widget _buildCenterButton() {
+    return GestureDetector(
+      onTap: _onCenterButtonPressed,
+      child: Container(
+        height: 60,
+        width: 60,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              spreadRadius: 1,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.camera_alt,
+          color: AppColors.primaryGreen,
+          size: 30,
+        ),
+      ),
     );
   }
 } 
