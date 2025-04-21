@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/edit_profile_screen.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
@@ -208,7 +209,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.info_outline,
             title: 'Về ứng dụng',
             onTap: () {
-              _showAboutDialog(context);
+              MaterialPageRoute(
+                builder: (context) => const AboutAppScreen(),
+              );
             },
           ),
           const SizedBox(height: 16),
@@ -324,41 +327,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
 
-  // Dialog về ứng dụng
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Về ứng dụng'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'LVuRác - Ứng dụng Quản lý Chất thải và Tái chế',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Phiên bản: 1.0.0'),
-            const SizedBox(height: 8),
-            const Text(
-              'Ứng dụng giúp bạn phân loại, quản lý rác thải và đóng góp vào hoạt động bảo vệ môi trường.',
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '© 2023 LVuRác - All Rights Reserved',
-              style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
