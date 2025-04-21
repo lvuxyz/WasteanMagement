@@ -220,8 +220,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       isLoading: _isLoading,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
+                          // Cập nhật tên sự kiện trong edit_profile_screen.dart
                           context.read<ProfileBloc>().add(
-                            ProfileUpdateEvent(
+                            UpdateProfile( // Thay vì ProfileUpdateEvent
                               fullName: _fullNameController.text,
                               email: _emailController.text,
                               phone: _phoneController.text,

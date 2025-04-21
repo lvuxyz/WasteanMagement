@@ -1,9 +1,9 @@
-// Cập nhật file main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../repositories/user_repository.dart';
+import '../data/repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
+import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
@@ -306,8 +306,8 @@ class _MainScreenState extends State<MainScreen> {
           // Trang Cá nhân
           BlocProvider(
             create: (context) => ProfileBloc(
-              userRepository: RepositoryProvider.of<UserRepository>(context),
-            )..add(ProfileFetchEvent()),
+              userRepository: context.read<UserRepository>(),
+            )..add(FetchProfile()), // Thay thế ProfileFetchEvent bằng FetchProfile
             child: ProfileScreen(username: widget.username),
           ),
         ],
@@ -379,4 +379,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-

@@ -1,27 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:wasteanmagement/screens/login_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:wasteanmagement/blocs/language/language_state.dart';
+import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
+import '../data/repositories/user_repository.dart';
+import 'data/datasources/local_data_source.dart';
+import 'data/repositories/language_repository.dart';
+import 'blocs/auth/auth_bloc.dart';
+import 'blocs/auth/auth_event.dart';
 import 'blocs/language/language_bloc.dart';
 import 'blocs/language/language_event.dart';
-import 'blocs/language/language_state.dart';
-import 'blocs/language/language_repository.dart';
+import 'core/network/network_info.dart';
+import 'routes.dart';
 import 'generated/l10n.dart';
+import 'utils/app_colors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Tạo các repository
+  final localDataSource = LocalDataSource();
+  final languageRepository = LanguageRepository(localDataSource: localDataSource);
+  final userRepository = UserRepository(
+    remoteDataSource: RemoteDataSource(client: http.Client()),
+    localDataSource: localDataSource,
+    networkInfo: NetworkInfoImpl(),
+  );
+
   runApp(
-    MultiBlocProvider(
+    MultiRepositoryProvider(
       providers: [
-        BlocProvider(
-          create: (context) => LanguageBloc(
-            repository: LanguageRepository(),
-          )..add(const LoadLanguage()),
-        ),
-        // Thêm các BlocProvider khác nếu cần
+        RepositoryProvider<UserRepository>.value(value: userRepository),
+        RepositoryProvider<LanguageRepository>.value(value: languageRepository),
       ],
-      child: const MyApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => LanguageBloc(
+              repository: languageRepository, // Sử dụng đối tượng đã khởi tạo trước đó
+            )..add(const LoadLanguage()),
+          ),
+          BlocProvider(
+            create: (context) => AuthBloc(
+              userRepository: userRepository,
+            )..add(CheckAuthenticationStatus()),
+          ),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -44,7 +71,7 @@ class MyApp extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        // Mặc định sử dụng tiếng Anh nếu chưa tải được ngôn ngữ
+        // Mặc định là tiếng Anh nếu chưa tải ngôn ngữ
         String languageCode = 'en';
 
         if (state is LanguageLoaded) {
@@ -52,11 +79,13 @@ class MyApp extends StatelessWidget {
         }
 
         return MaterialApp(
-          title: 'Waste Management App',
+          title: 'LVuRác - Ứng dụng Quản lý Chất thải',
           theme: ThemeData(
             primarySwatch: Colors.green,
             visualDensity: VisualDensity.adaptivePlatformDensity,
             fontFamily: 'Poppins',
+            primaryColor: AppColors.primaryGreen,
+            scaffoldBackgroundColor: AppColors.scaffoldBackground,
           ),
           debugShowCheckedModeBanner: false,
           locale: Locale(languageCode),
@@ -67,10 +96,10 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
-          home: const LoginScreen(),
+          initialRoute: AppRoutes.login,
+          onGenerateRoute: AppRoutes.generateRoute,
         );
       },
     );
   }
 }
-

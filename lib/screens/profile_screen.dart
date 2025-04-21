@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
-import 'package:wasteanmagement/screens/edit_profile_screen.dart';
-import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
 import '../generated/l10n.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
-import '../screens/help_and_guidance_screen.dart';
-// import '../blocs/auth/auth_state.dart';
-// import '../blocs/language/language_bloc.dart';
-// import '../blocs/language/language_event.dart';
-// import '../blocs/language/language_state.dart';
+import '../blocs/profile/profile_bloc.dart';
+import '../blocs/profile/profile_event.dart';
+import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import '../screens/language_selection_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/edit_profile_screen.dart';
+import '../screens/help_and_guidance_screen.dart';
+import '../screens/about_app_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -46,14 +44,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
 
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildProfileHeader(),
-            const SizedBox(height: 16),
-            _buildOptionsSection(context),
-          ],
+      body: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state is ProfileUpdateSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cập nhật thông tin thành công'),
+                backgroundColor: AppColors.primaryGreen,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildProfileHeader(),
+              const SizedBox(height: 16),
+              _buildOptionsSection(context),
+            ],
+          ),
         ),
       ),
     );
@@ -61,74 +78,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Widget thông tin người dùng
   Widget _buildProfileHeader() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.primaryGreen,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.white,
-            child: Text(
-              widget.username.isNotEmpty ? widget.username[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryGreen,
-              ),
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        String userName = widget.username;
+        String userEmail = '';
+        String memberSince = 'Thành viên kể từ Tháng 3, 2023';
+
+        if (state is ProfileLoaded) {
+          userName = state.user.fullName;
+          userEmail = state.user.email;
+          // Format the date if needed
+          // memberSince = 'Thành viên kể từ ${formatDate(state.user.createdAt)}';
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            widget.username,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Thành viên kể từ Tháng 3, 2023',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.eco, color: Colors.white, size: 16),
-                SizedBox(width: 4),
-                Text(
-                  'Người bảo vệ môi trường',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.white,
+                child: Text(
+                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGreen,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                userName,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                userEmail.isNotEmpty ? userEmail : memberSince,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.eco, color: Colors.white, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Người bảo vệ môi trường',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
-
 
   // Widget phần tùy chọn
   Widget _buildOptionsSection(BuildContext context) {
@@ -158,7 +189,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const EditProfileScreen(),
+                  builder: (context) => BlocProvider.value(
+                    value: BlocProvider.of<ProfileBloc>(context),
+                    child: const EditProfileScreen(),
+                  ),
                 ),
               );
             },
@@ -168,10 +202,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Thay đổi mật khẩu',
             onTap: () {
               Navigator.push(
-              context,
+                context,
                 MaterialPageRoute(
-                builder: (context) => const ChangePasswordScreen(),
-              ),
+                  builder: (context) => const ChangePasswordScreen(),
+                ),
               );
             },
           ),
@@ -191,17 +225,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.notifications_outlined,
             title: 'Cài đặt thông báo',
             onTap: () {
-              MaterialPageRoute(
-                builder: (context) => const NotificationSettingsScreen(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationSettingsScreen(),
+                ),
               );
             },
           ),
           _buildOptionItem(
-            icon: Icons.help,
+            icon: Icons.help_outline,
             title: 'Trợ giúp & Hướng dẫn',
             onTap: () {
-              MaterialPageRoute(
-                builder: (context) => const HelpAndGuidanceScreen(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HelpAndGuidanceScreen(),
+                ),
               );
             },
           ),
@@ -209,8 +249,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.info_outline,
             title: 'Về ứng dụng',
             onTap: () {
-              MaterialPageRoute(
-                builder: (context) => const AboutAppScreen(),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutAppScreen(),
+                ),
               );
             },
           ),
@@ -281,6 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Dialog xác nhận đăng xuất
+  // Cập nhật hàm confirmLogout trong profile_screen.dart
   void confirmLogout() async {
     final result = await showDialog<bool>(
       context: context,
@@ -301,12 +345,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result == true && mounted) {
-      // Sử dụng BlocProvider.of thay vì context.read
-      BlocProvider.of<AuthBloc>(context, listen: false).add(LogoutEvent());
-
-      // Hoặc cách khác, kiểm tra xem Provider có tồn tại không
       try {
-        context.read<AuthBloc>().add(LogoutEvent());
+        context.read<AuthBloc>().add(LogoutRequested()); // Dùng LogoutRequested thay vì LogoutEvent
 
         // Điều hướng sau khi đăng xuất
         Navigator.of(context).pushAndRemoveUntil(
@@ -325,7 +365,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
-
-
 }
-

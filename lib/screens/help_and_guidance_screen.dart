@@ -375,7 +375,7 @@ class _HelpAndGuidanceScreenState extends State<HelpAndGuidanceScreen> {
           _buildContactMethod(
             icon: Icons.email_outlined,
             title: 'Email',
-            value: 'hotro@lvurac.com',
+            value: 'lvu.byte@gmail.com',
             color: Colors.red,
             onTap: () {
               // Launch email client
@@ -385,7 +385,7 @@ class _HelpAndGuidanceScreenState extends State<HelpAndGuidanceScreen> {
           _buildContactMethod(
             icon: Icons.phone_outlined,
             title: 'Điện thoại',
-            value: '1900 0000',
+            value: '0332265689',
             color: Colors.green,
             onTap: () {
               // Launch phone dialer
