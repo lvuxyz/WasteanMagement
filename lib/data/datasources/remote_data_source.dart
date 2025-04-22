@@ -1,58 +1,49 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../models/user_model.dart';
+import '../../core/api/api_client.dart';
+import '../../core/api/api_constants.dart';
 import '../../core/error/exceptions.dart';
-import '../../utils/constants.dart';
+import '../../models/user_model.dart';
+import '../../utils/secure_storage.dart';
 
 class RemoteDataSource {
-  final http.Client client;
-  final String baseUrl = ApiConstants.baseUrl;
+  final ApiClient apiClient;
 
-  RemoteDataSource({required this.client});
+  RemoteDataSource({
+    required this.apiClient,
+  });
 
-  // Flag để sử dụng dữ liệu mẫu trong giai đoạn phát triển
-  final bool useMockData = true;
+  // Tạo factory constructor để dễ khởi tạo
+  factory RemoteDataSource.create() {
+    return RemoteDataSource(
+      apiClient: ApiClient(
+        client: http.Client(),
+        secureStorage: SecureStorage(),
+      ),
+    );
+  }
 
-  // Authentication endpoints
+  // Đăng nhập
   Future<Map<String, dynamic>> login(String username, String password) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 1));
-
-      if ((username == 'admin' && password == 'password') ||
-          (username == 'user1' && password == '123456')) {
-
-        return {
-          'token': 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
-          'user': {
-            'id': '1',
-            'email': username.contains('@') ? username : '$username@example.com',
-            'username': username,
-            'full_name': username == 'admin' ? 'Admin User' : 'Regular User',
-            'status': 'active',
-            'created_at': DateTime.now().subtract(const Duration(days: 90)).toIso8601String(),
-          }
-        };
-      } else {
-        throw UnauthorizedException('Tên đăng nhập hoặc mật khẩu không đúng');
-      }
-    }
-
     try {
-      final response = await client.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+      final response = await apiClient.post(
+        ApiConstants.login,
+        body: {
           'username': username,
           'password': password,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Thông tin đăng nhập không chính xác');
+      if (response.isSuccess) {
+        // Cấu trúc dữ liệu trả về đã thay đổi
+        final responseData = response.body;
+
+        if (responseData['status'] == 'success') {
+          return responseData['data'];
+        } else {
+          throw ServerException(responseData['message'] ?? 'Đăng nhập thất bại');
+        }
       } else {
-        throw ServerException('Đã xảy ra lỗi: ${response.statusCode}');
+        throw ServerException(response.message);
       }
     } catch (e) {
       if (e is UnauthorizedException) rethrow;
@@ -60,22 +51,12 @@ class RemoteDataSource {
     }
   }
 
+  // Đăng xuất
   Future<void> logout(String token) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return;
-    }
-
     try {
-      final response = await client.post(
-        Uri.parse('$baseUrl/auth/logout'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await apiClient.post(ApiConstants.logout);
 
-      if (response.statusCode != 200) {
+      if (!response.isSuccess) {
         throw ServerException('Đăng xuất thất bại: ${response.statusCode}');
       }
     } catch (e) {
@@ -83,36 +64,13 @@ class RemoteDataSource {
     }
   }
 
-  // User profile endpoints
-  Future<Map<String, dynamic>> getUserProfile(String token) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 1));
-
-      return {
-        'id': '1',
-        'email': 'user@example.com',
-        'username': 'user123',
-        'full_name': 'Nguyễn Văn A',
-        'phone': '+84 123 456 789',
-        'address': '123 Đường Lê Lợi, Quận 1, TP.HCM',
-        'status': 'active',
-        'created_at': DateTime.now().subtract(const Duration(days: 120)).toIso8601String(),
-      };
-    }
-
+  // Lấy thông tin người dùng
+  Future<Map<String, dynamic>> getUserProfile() async {
     try {
-      final response = await client.get(
-        Uri.parse('$baseUrl/users/profile'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await apiClient.get(ApiConstants.profile);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Token hết hạn hoặc không hợp lệ');
+      if (response.isSuccess) {
+        return response.body;
       } else {
         throw ServerException('Lấy thông tin người dùng thất bại: ${response.statusCode}');
       }
@@ -122,29 +80,13 @@ class RemoteDataSource {
     }
   }
 
+  // Cập nhật thông tin người dùng
   Future<Map<String, dynamic>> updateUserProfile({
-    required String token,
     String? fullName,
     String? email,
     String? phone,
     String? address,
   }) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 1));
-
-      return {
-        'id': '1',
-        'email': email ?? 'user@example.com',
-        'username': 'user123',
-        'full_name': fullName ?? 'Nguyễn Văn A',
-        'phone': phone ?? '+84 123 456 789',
-        'address': address ?? '123 Đường Lê Lợi, Quận 1, TP.HCM',
-        'status': 'active',
-        'created_at': DateTime.now().subtract(const Duration(days: 120)).toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
-      };
-    }
-
     final Map<String, dynamic> requestBody = {};
 
     if (fullName != null) requestBody['full_name'] = fullName;
@@ -153,19 +95,13 @@ class RemoteDataSource {
     if (address != null) requestBody['address'] = address;
 
     try {
-      final response = await client.put(
-        Uri.parse('$baseUrl/users/profile'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(requestBody),
+      final response = await apiClient.put(
+        ApiConstants.updateProfile,
+        body: requestBody,
       );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Token hết hạn hoặc không hợp lệ');
+      if (response.isSuccess) {
+        return response.body;
       } else {
         throw ServerException('Cập nhật thông tin người dùng thất bại: ${response.statusCode}');
       }
@@ -175,41 +111,25 @@ class RemoteDataSource {
     }
   }
 
+  // Đổi mật khẩu
   Future<void> changePassword({
-    required String token,
     required String currentPassword,
     required String newPassword,
   }) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (currentPassword != 'password') {
-        throw UnauthorizedException('Mật khẩu hiện tại không đúng');
-      }
-
-      return;
-    }
-
     try {
-      final response = await client.post(
-        Uri.parse('$baseUrl/users/change-password'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
+      final response = await apiClient.post(
+        ApiConstants.changePassword,
+        body: {
           'current_password': currentPassword,
           'new_password': newPassword,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        return;
-      } else if (response.statusCode == 401) {
-        final responseBody = jsonDecode(response.body);
-        throw UnauthorizedException(responseBody['message'] ?? 'Mật khẩu hiện tại không đúng');
-      } else {
-        throw ServerException('Thay đổi mật khẩu thất bại: ${response.statusCode}');
+      if (!response.isSuccess) {
+        final errorMessage = response.message.isNotEmpty
+            ? response.message
+            : 'Thay đổi mật khẩu thất bại: ${response.statusCode}';
+        throw ServerException(errorMessage);
       }
     } catch (e) {
       if (e is UnauthorizedException) rethrow;
@@ -217,21 +137,42 @@ class RemoteDataSource {
     }
   }
 
+  // Quên mật khẩu
   Future<void> forgotPassword(String email) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 1));
-      return;
-    }
-
     try {
-      final response = await client.post(
-        Uri.parse('$baseUrl/auth/forgot-password'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
+      final response = await apiClient.post(
+        ApiConstants.forgotPassword,
+        body: {'email': email},
       );
 
-      if (response.statusCode != 200) {
+      if (!response.isSuccess) {
         throw ServerException('Yêu cầu đặt lại mật khẩu thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  // Đăng ký tài khoản
+  Future<Map<String, dynamic>> register({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async {
+    try {
+      final response = await apiClient.post(
+        ApiConstants.register,
+        body: {
+          'email': email,
+          'password': password,
+          'full_name': fullName,
+        },
+      );
+
+      if (response.isSuccess) {
+        return response.body;
+      } else {
+        throw ServerException('Đăng ký tài khoản thất bại: ${response.statusCode}');
       }
     } catch (e) {
       throw ServerException(e.toString());
