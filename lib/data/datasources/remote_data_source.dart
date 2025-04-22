@@ -14,10 +14,11 @@ class RemoteDataSource {
 
   // Tạo factory constructor để dễ khởi tạo
   factory RemoteDataSource.create() {
+    final secureStorage = SecureStorage();
     return RemoteDataSource(
       apiClient: ApiClient(
         client: http.Client(),
-        secureStorage: SecureStorage(),
+        secureStorage: secureStorage,
       ),
     );
   }

@@ -11,8 +11,14 @@ class ApiResponse {
 
   dynamic get body => data;
 
-  String get message => data['message'] ?? '';
+  String get message =>
+      data['message'] ??
+          (data['data'] is Map && data['data']['message'] != null
+              ? data['data']['message']
+              : '');
 
   Map<String, dynamic> get errors =>
       data['errors'] is Map ? data['errors'] : {};
+
+  String get status => data['status'] ?? '';
 }

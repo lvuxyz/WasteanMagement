@@ -107,9 +107,16 @@ class ApiClient {
   ApiResponse _processResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       // Thành công
+      Map<String, dynamic> responseData;
+      try {
+        responseData = json.decode(response.body);
+      } catch (e) {
+        responseData = {'message': 'Lỗi phân tích dữ liệu phản hồi'};
+      }
+
       return ApiResponse(
         statusCode: response.statusCode,
-        data: json.decode(response.body),
+        data: responseData,
       );
     } else if (response.statusCode == 401) {
       // Không được phép
@@ -122,7 +129,13 @@ class ApiClient {
       throw ServerException('Không tìm thấy tài nguyên yêu cầu');
     } else {
       // Lỗi khác
-      throw ServerException('Đã xảy ra lỗi: ${response.statusCode} - ${response.body}');
+      try {
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Đã xảy ra lỗi';
+        throw ServerException(errorMessage);
+      } catch (e) {
+        throw ServerException('Đã xảy ra lỗi: ${response.statusCode} - ${response.body}');
+      }
     }
   }
 }

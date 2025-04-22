@@ -15,18 +15,27 @@ class UserRepository {
     required this.networkInfo,
   });
 
-// Các phương thức hiện tại của repository (đăng nhập, lấy profile, v.v.) giữ nguyên
-// nhưng sử dụng remoteDataSource đã cập nhật để gọi API thực tế
+  Future<User> login(String username, String password) async {
+    try {
+      final response = await remoteDataSource.login(username, password);
 
+      // Lưu token xác thực
+      if (response['token'] != null) {
+        await localDataSource.saveToken(response['token']);
+      }
 
-  // Factory constructor để tạo dễ dàng
-  factory UserRepository.create() {
-    return UserRepository(
-      remoteDataSource: RemoteDataSource(client: http.Client()),
-      localDataSource: LocalDataSource(),
-      networkInfo: NetworkInfoImpl(),
-    );
+      // Phân tích và lưu cache dữ liệu người dùng
+      final user = User.fromJson(response['user']);
+      await localDataSource.cacheUserProfile(user);
+
+      return user;
+    } on UnauthorizedException {
+      rethrow;
+    } catch (e) {
+      throw Exception('Đăng nhập thất bại: ${e.toString()}');
+    }
   }
+
 
   // Phương thức xác thực
   Future<User> login(String username, String password) async {
