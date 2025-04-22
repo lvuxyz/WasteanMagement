@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/error/exceptions.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 
@@ -17,26 +18,22 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onLoginSubmitted(
-    LoginSubmitted event,
-    Emitter<LoginState> emit,
-  ) async {
+      LoginSubmitted event,
+      Emitter<LoginState> emit,
+      ) async {
     emit(LoginLoading());
 
     try {
-      // Simulating API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Check if the user exists in our sample data
-      final user = _sampleUsers.firstWhere(
-        (user) => (user['username'] == event.username && user['password'] == event.password),
-        orElse: () => {},
+      // Sử dụng repository để đăng nhập
+      final user = await userRepository.login(
+        event.username,
+        event.password,
       );
 
-      if (user.isNotEmpty) {
-        emit(LoginSuccess(username: user['fullName'] ?? event.username));
-      } else {
-        emit(LoginFailure(error: 'Thông tin đăng nhập không chính xác'));
-      }
+      // Sử dụng fullName thay vì username để hiển thị
+      emit(LoginSuccess(username: user.fullName));
+    } on UnauthorizedException catch (e) {
+      emit(LoginFailure(error: 'Thông tin đăng nhập không chính xác'));
     } catch (e) {
       emit(LoginFailure(error: 'Đã xảy ra lỗi: $e'));
     }

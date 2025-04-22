@@ -9,6 +9,7 @@ class User extends Equatable {
   final String? address;
   final String status;
   final DateTime createdAt;
+  final List<String> roles;
 
   const User({
     required this.id,
@@ -19,6 +20,7 @@ class User extends Equatable {
     this.address,
     required this.status,
     required this.createdAt,
+    this.roles = const [],
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,9 @@ class User extends Equatable {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
+      roles: json['roles'] != null
+          ? List<String>.from(json['roles'])
+          : [],
     );
   }
 
