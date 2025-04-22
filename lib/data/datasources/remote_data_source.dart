@@ -59,6 +59,7 @@ class RemoteDataSource {
       if (!response.isSuccess) {
         throw ServerException('Đăng xuất thất bại: ${response.statusCode}');
       }
+      //tra ve thanh cong neu khong co loi
     } catch (e) {
       throw ServerException(e.toString());
     }
