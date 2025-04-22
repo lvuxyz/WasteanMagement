@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
-import 'package:wasteanmagement/screens/main_screen.dart';
+import '../data/repositories/user_repository.dart';
+import '../screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../widgets/login/login_form.dart';
@@ -16,7 +16,6 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     // Lấy localization
     final l10n = S.of(context);
 
@@ -26,7 +25,9 @@ class LoginScreen extends StatelessWidget {
     final signUp = l10n.signUp;
 
     return BlocProvider(
-      create: (context) => LoginBloc(),
+      create: (context) => LoginBloc(
+          userRepository: context.read<UserRepository>()
+      ),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -63,8 +64,8 @@ class LoginScreen extends StatelessWidget {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RepositoryProvider(
-                    create: (context) => UserRepository(),
+                  builder: (context) => RepositoryProvider.value(
+                    value: context.read<UserRepository>(),
                     child: MainScreen(username: state.username),
                   ),
                 ),
@@ -175,4 +176,3 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-

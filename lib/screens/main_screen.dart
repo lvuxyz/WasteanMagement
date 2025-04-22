@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
-import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';

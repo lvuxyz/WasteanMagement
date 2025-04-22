@@ -2,7 +2,6 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_client.dart';
 import '../../core/api/api_constants.dart';
 import '../../core/error/exceptions.dart';
-import '../../models/user_model.dart';
 import '../../utils/secure_storage.dart';
 
 class RemoteDataSource {

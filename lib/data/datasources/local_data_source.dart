@@ -3,7 +3,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wasteanmagement/utils/storage_keys.dart';
 import '../../models/user_model.dart';
-import '../../utils/constants.dart';
 
 class LocalDataSource {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
