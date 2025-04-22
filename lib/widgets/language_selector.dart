@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../generated/l10n.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_state.dart';
 import '../utils/language_utils.dart';
@@ -10,7 +10,7 @@ class LanguageSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final englishText = l10n.english;
     final vietnameseText = l10n.vietnamese;
     final changeLanguageTitle = l10n.changeLanguageTitle;
@@ -170,3 +170,4 @@ class LanguageSelector extends StatelessWidget {
     );
   }
 } 
+

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import 'forgot_password_form_field.dart';
 import 'forgot_password_submit_button.dart';
 import 'login_link.dart';
@@ -23,7 +23,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final forgotPasswordTitle = l10n.forgotPasswordTitle;
     final forgotPasswordDescription = l10n.forgotPasswordDescription;
 
@@ -77,3 +77,4 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     );
   }
 } 
+

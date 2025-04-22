@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../models/language_model.dart';
 import '../../blocs/language/language_bloc.dart';
 import '../../blocs/language/language_state.dart';
@@ -20,7 +20,7 @@ class LanguageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final noLanguagesFoundText = l10n.noLanguagesFound;
     
     return BlocConsumer<LanguageBloc, LanguageState>(
@@ -72,3 +72,4 @@ class LanguageList extends StatelessWidget {
     );
   }
 } 
+

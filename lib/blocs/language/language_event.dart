@@ -46,3 +46,4 @@ class SearchLanguage extends LanguageEvent {
   @override
   List<Object> get props => [query];
 } 
+

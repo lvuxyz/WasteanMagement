@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:wasteanmagement/screens/change_password.dart';
+import 'package:wasteanmagement/screens/notification_screen.dart';
+import '../generated/l10n.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
-// import '../blocs/auth/auth_state.dart';
-// import '../blocs/language/language_bloc.dart';
-// import '../blocs/language/language_event.dart';
-// import '../blocs/language/language_state.dart';
+import '../blocs/profile/profile_bloc.dart';
+import '../blocs/profile/profile_event.dart';
+import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import '../screens/language_selection_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/edit_profile_screen.dart';
+import '../screens/help_and_guidance_screen.dart';
+import '../screens/about_app_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -27,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
@@ -40,14 +44,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
 
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildProfileHeader(),
-            const SizedBox(height: 16),
-            _buildOptionsSection(context),
-          ],
+      body: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state is ProfileUpdateSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cập nhật thông tin thành công'),
+                backgroundColor: AppColors.primaryGreen,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildProfileHeader(),
+              const SizedBox(height: 16),
+              _buildOptionsSection(context),
+            ],
+          ),
         ),
       ),
     );
@@ -55,78 +78,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Widget thông tin người dùng
   Widget _buildProfileHeader() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.primaryGreen,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.white,
-            child: Text(
-              widget.username.isNotEmpty ? widget.username[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryGreen,
-              ),
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        String userName = widget.username;
+        String userEmail = '';
+        String memberSince = 'Thành viên kể từ Tháng 3, 2023';
+
+        if (state is ProfileLoaded) {
+          userName = state.user.fullName;
+          userEmail = state.user.email;
+          // Format the date if needed
+          // memberSince = 'Thành viên kể từ ${formatDate(state.user.createdAt)}';
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            widget.username,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Thành viên kể từ Tháng 3, 2023',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.eco, color: Colors.white, size: 16),
-                SizedBox(width: 4),
-                Text(
-                  'Người bảo vệ môi trường',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.white,
+                child: Text(
+                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGreen,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                userName,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                userEmail.isNotEmpty ? userEmail : memberSince,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.eco, color: Colors.white, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Người bảo vệ môi trường',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-
   // Widget phần tùy chọn
   Widget _buildOptionsSection(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -149,14 +186,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.person_outline,
             title: 'Chỉnh sửa thông tin cá nhân',
             onTap: () {
-              // TODO: Điều hướng đến màn hình chỉnh sửa thông tin
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider.value(
+                    value: BlocProvider.of<ProfileBloc>(context),
+                    child: const EditProfileScreen(),
+                  ),
+                ),
+              );
             },
           ),
           _buildOptionItem(
             icon: Icons.lock_outline,
             title: 'Thay đổi mật khẩu',
             onTap: () {
-              // TODO: Điều hướng đến màn hình đổi mật khẩu
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChangePasswordScreen(),
+                ),
+              );
             },
           ),
           _buildOptionItem(
@@ -175,21 +225,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.notifications_outlined,
             title: 'Cài đặt thông báo',
             onTap: () {
-              // TODO: Điều hướng đến màn hình cài đặt thông báo
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationSettingsScreen(),
+                ),
+              );
             },
           ),
           _buildOptionItem(
             icon: Icons.help_outline,
             title: 'Trợ giúp & Hướng dẫn',
             onTap: () {
-              // TODO: Điều hướng đến màn hình trợ giúp
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HelpAndGuidanceScreen(),
+                ),
+              );
             },
           ),
           _buildOptionItem(
             icon: Icons.info_outline,
             title: 'Về ứng dụng',
             onTap: () {
-              _showAboutDialog(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutAppScreen(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 16),
@@ -259,6 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Dialog xác nhận đăng xuất
+  // Cập nhật hàm confirmLogout trong profile_screen.dart
   void confirmLogout() async {
     final result = await showDialog<bool>(
       context: context,
@@ -279,12 +345,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result == true && mounted) {
-      // Sử dụng BlocProvider.of thay vì context.read
-      BlocProvider.of<AuthBloc>(context, listen: false).add(LogoutEvent());
-
-      // Hoặc cách khác, kiểm tra xem Provider có tồn tại không
       try {
-        context.read<AuthBloc>().add(LogoutEvent());
+        context.read<AuthBloc>().add(LogoutRequested()); // Dùng LogoutRequested thay vì LogoutEvent
 
         // Điều hướng sau khi đăng xuất
         Navigator.of(context).pushAndRemoveUntil(
@@ -302,43 +364,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
-  }
-
-
-  // Dialog về ứng dụng
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Về ứng dụng'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'LVuRác - Ứng dụng Quản lý Chất thải và Tái chế',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Phiên bản: 1.0.0'),
-            const SizedBox(height: 8),
-            const Text(
-              'Ứng dụng giúp bạn phân loại, quản lý rác thải và đóng góp vào hoạt động bảo vệ môi trường.',
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              '© 2023 LVuRác - All Rights Reserved',
-              style: TextStyle(fontSize: 12, color: AppColors.secondaryText),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
   }
 }

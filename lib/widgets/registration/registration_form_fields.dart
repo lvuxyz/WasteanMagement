@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../utils/app_colors.dart';
 import '../common/custom_text_field.dart';
 
@@ -25,7 +25,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final emailLabel = l10n.email;
     final emailHint = l10n.enterEmail;
     final emailRequired = l10n.emailRequired;
@@ -118,3 +118,4 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
     );
   }
 } 
+
