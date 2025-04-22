@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL cho toàn bộ hệ thống
-  static const String baseUrl = 'http://192.168.215.92:5000/api/v1/';
+  static const String baseUrl = 'http://192.168.173.105:5000/api/v1';
 
   // Các endpoint cụ thể
   static const String login = '$baseUrl/auth/login';
