@@ -15,7 +15,6 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
-  @override
   Widget build(BuildContext context) {
 
     // Lấy localization
@@ -33,6 +32,7 @@ class LoginScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
+          automaticallyImplyLeading: false,
           title: Text(loginTitle),
           actions: [
             // Language selector in app bar
