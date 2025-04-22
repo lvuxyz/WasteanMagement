@@ -1,7 +1,6 @@
-import 'package:http/http.dart' as http;
-import '../../models/user_model.dart';
 import '../../core/error/exceptions.dart';
 import '../../core/network/network_info.dart';
+import '../../models/user_model.dart';
 import '../datasources/local_data_source.dart';
 import '../datasources/remote_data_source.dart';
 
@@ -15,6 +14,10 @@ class UserRepository {
     required this.localDataSource,
     required this.networkInfo,
   });
+
+// Các phương thức hiện tại của repository (đăng nhập, lấy profile, v.v.) giữ nguyên
+// nhưng sử dụng remoteDataSource đã cập nhật để gọi API thực tế
+
 
   // Factory constructor để tạo dễ dàng
   factory UserRepository.create() {
