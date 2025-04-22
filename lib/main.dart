@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:wasteanmagement/blocs/language/language_state.dart';
+import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
+import 'package:wasteanmagement/utils/secure_storage.dart';
 import '../data/repositories/user_repository.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
@@ -21,9 +23,13 @@ void main() {
 
   // Tạo các repository
   final localDataSource = LocalDataSource();
+  final secureStorage = SecureStorage();
   final languageRepository = LanguageRepository(localDataSource: localDataSource);
   final userRepository = UserRepository(
-    remoteDataSource: RemoteDataSource(client: http.Client()),
+    remoteDataSource: RemoteDataSource(apiClient: ApiClient(
+      client: http.Client(),
+      secureStorage: secureStorage,
+    )),
     localDataSource: localDataSource,
     networkInfo: NetworkInfoImpl(),
   );

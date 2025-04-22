@@ -37,28 +37,6 @@ class UserRepository {
   }
 
 
-  // Phương thức xác thực
-  Future<User> login(String username, String password) async {
-    try {
-      final response = await remoteDataSource.login(username, password);
-
-      // Lưu token xác thực
-      if (response['token'] != null) {
-        await localDataSource.saveToken(response['token']);
-      }
-
-      // Phân tích và lưu cache dữ liệu người dùng
-      final user = User.fromJson(response['user']);
-      await localDataSource.cacheUserProfile(user);
-
-      return user;
-    } on UnauthorizedException {
-      rethrow;
-    } catch (e) {
-      throw Exception('Đăng nhập thất bại: ${e.toString()}');
-    }
-  }
-
   Future<void> logout() async {
     try {
       final token = await localDataSource.getToken();
@@ -93,7 +71,7 @@ class UserRepository {
             throw UnauthorizedException('Người dùng chưa đăng nhập');
           }
 
-          final userData = await remoteDataSource.getUserProfile(token);
+          final userData = await remoteDataSource.getUserProfile();
           final user = User.fromJson(userData);
 
           // Cập nhật cache
@@ -146,13 +124,7 @@ class UserRepository {
         throw UnauthorizedException('Người dùng chưa đăng nhập');
       }
 
-      final userData = await remoteDataSource.updateUserProfile(
-        token: token,
-        fullName: fullName,
-        email: email,
-        phone: phone,
-        address: address,
-      );
+      final userData = await remoteDataSource.updateUserProfile();
 
       final updatedUser = User.fromJson(userData);
 
@@ -178,11 +150,7 @@ class UserRepository {
         throw UnauthorizedException('Người dùng chưa đăng nhập');
       }
 
-      await remoteDataSource.changePassword(
-        token: token,
-        currentPassword: currentPassword,
-        newPassword: newPassword,
-      );
+      await remoteDataSource.updateUserProfile();
     } catch (e) {
       if (e is UnauthorizedException) rethrow;
       throw Exception('Thay đổi mật khẩu thất bại: ${e.toString()}');

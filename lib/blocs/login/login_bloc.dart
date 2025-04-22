@@ -1,18 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/error/exceptions.dart';
+import '../../data/repositories/user_repository.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  // Sample user data for login
-  final List<Map<String, String>> _sampleUsers = [
-    {'username': 'admin', 'password': 'password', 'fullName': 'Admin User'},
-    {'username': 'user1', 'password': '123456', 'fullName': 'Regular User'},
-    {'username': 'test@example.com', 'password': 'test123', 'fullName': 'Test User'},
-    {'username': 'admin@example.com', 'password': 'Admin123', 'fullName': 'Admin Example'},
-  ];
+  final UserRepository userRepository;
 
-  LoginBloc() : super(LoginInitial()) {
+  LoginBloc({required this.userRepository}) : super(LoginInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<LoginReset>(_onLoginReset);
   }
@@ -32,7 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       // Sử dụng fullName thay vì username để hiển thị
       emit(LoginSuccess(username: user.fullName));
-    } on UnauthorizedException catch (e) {
+    } on UnauthorizedException {
       emit(LoginFailure(error: 'Thông tin đăng nhập không chính xác'));
     } catch (e) {
       emit(LoginFailure(error: 'Đã xảy ra lỗi: $e'));
@@ -40,10 +35,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void _onLoginReset(
-    LoginReset event,
-    Emitter<LoginState> emit,
-  ) {
+      LoginReset event,
+      Emitter<LoginState> emit,
+      ) {
     emit(LoginInitial());
   }
 }
-

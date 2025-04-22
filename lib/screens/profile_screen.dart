@@ -6,7 +6,6 @@ import '../generated/l10n.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
 import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import '../screens/language_selection_screen.dart';
