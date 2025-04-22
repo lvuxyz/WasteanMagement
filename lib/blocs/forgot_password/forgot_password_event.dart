@@ -7,3 +7,4 @@ class ForgotPasswordSubmitted extends ForgotPasswordEvent {
 }
 
 class ForgotPasswordReset extends ForgotPasswordEvent {} 
+

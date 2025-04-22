@@ -15,3 +15,4 @@ class ForgotPasswordFailure extends ForgotPasswordState {
 
   ForgotPasswordFailure({required this.error});
 } 
+

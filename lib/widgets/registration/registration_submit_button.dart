@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../blocs/registration/registration_bloc.dart';
 import '../../blocs/registration/registration_event.dart';
 import '../../blocs/registration/registration_state.dart';
@@ -22,7 +22,7 @@ class RegistrationSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final registerText = l10n.register;
 
     return SizedBox(
@@ -67,3 +67,4 @@ class RegistrationSubmitButton extends StatelessWidget {
     );
   }
 } 
+

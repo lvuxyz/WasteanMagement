@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../generated/l10n.dart';
 import '../../blocs/login/login_bloc.dart';
 import '../../blocs/login/login_event.dart';
 import '../../blocs/login/login_state.dart';
@@ -20,7 +20,7 @@ class LoginSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = S.of(context);
     final loginButtonText = l10n.login;
     
     return BlocBuilder<LoginBloc, LoginState>(
@@ -43,3 +43,4 @@ class LoginSubmitButton extends StatelessWidget {
     );
   }
 }
+
