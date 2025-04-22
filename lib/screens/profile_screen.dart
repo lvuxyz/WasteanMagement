@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_event.dart';
+import 'package:wasteanmagement/blocs/auth/auth_state.dart';
+import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
+import 'package:wasteanmagement/screens/edit_profile_screen.dart';
+import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
+import 'package:wasteanmagement/screens/about_app_screen.dart';
+import 'package:wasteanmagement/screens/language_selection_screen.dart';
+import 'package:wasteanmagement/screens/login_screen.dart';
 import '../generated/l10n.dart';
-import '../blocs/auth/auth_bloc.dart';
-import '../blocs/auth/auth_event.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
-import '../screens/language_selection_screen.dart';
-import '../screens/login_screen.dart';
-import '../screens/edit_profile_screen.dart';
-import '../screens/help_and_guidance_screen.dart';
-import '../screens/about_app_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -27,55 +28,69 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   @override
   Widget build(BuildContext context) {
     final l10n = S.of(context);
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        automaticallyImplyLeading: false,
-        title: Text(
-          l10n.profile,
-          style: const TextStyle(color: Colors.white),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+          );
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.scaffoldBackground,
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          automaticallyImplyLeading: false,
+          title: Text(
+            l10n.profile,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
-      ),
-
-      body: BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          } else if (state is ProfileUpdateSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật thông tin thành công'),
-                backgroundColor: AppColors.primaryGreen,
-              ),
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildProfileHeader(),
-              const SizedBox(height: 16),
-              _buildOptionsSection(context),
-            ],
+        body: BlocListener<ProfileBloc, ProfileState>(
+          listener: (context, state) {
+            if (state is ProfileError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            } else if (state is ProfileUpdateSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Cập nhật thông tin thành công'),
+                  backgroundColor: AppColors.primaryGreen,
+                ),
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildProfileHeader(),
+                const SizedBox(height: 16),
+                _buildOptionsSection(context),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Widget thông tin người dùng
   Widget _buildProfileHeader() {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
@@ -86,8 +101,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (state is ProfileLoaded) {
           userName = state.user.fullName;
           userEmail = state.user.email;
-          // Format the date if needed
-          // memberSince = 'Thành viên kể từ ${formatDate(state.user.createdAt)}';
         }
 
         return Container(
@@ -160,7 +173,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget phần tùy chọn
   Widget _buildOptionsSection(BuildContext context) {
     final l10n = S.of(context);
 
@@ -290,7 +302,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget item tùy chọn
   Widget _buildOptionItem({
     required IconData icon,
     required String title,
@@ -322,8 +333,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Dialog xác nhận đăng xuất
-  // Cập nhật hàm confirmLogout trong profile_screen.dart
   void confirmLogout() async {
     final result = await showDialog<bool>(
       context: context,
@@ -344,24 +353,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result == true && mounted) {
-      try {
-        context.read<AuthBloc>().add(LogoutRequested()); // Dùng LogoutRequested thay vì LogoutEvent
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
 
-        // Điều hướng sau khi đăng xuất
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-        );
-      } catch (e) {
-        // Xử lý trường hợp không tìm thấy Provider
-        print('Không thể tìm thấy AuthBloc: $e');
+      context.read<AuthBloc>().add(LogoutRequested());
 
-        // Vẫn điều hướng về màn hình đăng nhập trong trường hợp lỗi
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-        );
-      }
+      // Closing the loading manually is now handled by AuthBloc listener
     }
   }
 }

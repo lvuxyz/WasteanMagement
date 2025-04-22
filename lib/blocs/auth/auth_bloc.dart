@@ -55,6 +55,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  // Trong AuthBloc class, phương thức _onLogoutRequested
   Future<void> _onLogoutRequested(
       LogoutRequested event,
       Emitter<AuthState> emit,
@@ -87,4 +88,5 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Unauthenticated());
     }
   }
+
 }
