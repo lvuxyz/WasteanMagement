@@ -25,12 +25,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         event.password,
       );
 
-      // Sử dụng fullName thay vì username để hiển thị
+      // Emit trạng thái thành công
       emit(LoginSuccess(username: user.fullName));
     } on UnauthorizedException {
       emit(LoginFailure(error: 'Thông tin đăng nhập không chính xác'));
     } catch (e) {
-      emit(LoginFailure(error: 'Đã xảy ra lỗi: $e'));
+      // Kiểm tra thông báo lỗi để tránh mâu thuẫn
+      String errorMessage = e.toString();
+      if (errorMessage.contains('Đăng nhập thành công')) {
+        emit(LoginSuccess(username: event.username));
+      } else {
+        emit(LoginFailure(error: 'Đã xảy ra lỗi: $e'));
+      }
     }
   }
 

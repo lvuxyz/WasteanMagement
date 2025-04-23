@@ -60,12 +60,19 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
 
-              // Navigate to dashboard screen
+              // Navigate to main screen after successful login
+              // Make sure to properly provide the necessary repositories and blocs
+              print("Login successful, navigating to MainScreen with username: ${state.username}");
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RepositoryProvider.value(
-                    value: context.read<UserRepository>(),
+                  builder: (context) => MultiBlocProvider(
+                    providers: [
+                      RepositoryProvider.value(
+                        value: context.read<UserRepository>(),
+                      ),
+                      // Thêm các BlocProvider khác nếu cần
+                    ],
                     child: MainScreen(username: state.username),
                   ),
                 ),
