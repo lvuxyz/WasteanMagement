@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../../core/error/exceptions.dart';
-import '../../data/repositories/user_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -77,13 +77,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final isLoggedIn = await userRepository.isLoggedIn();
       if (isLoggedIn) {
-        final user = await userRepository.getUserProfile();
-        emit(Authenticated(user));
+        try {
+          final user = await userRepository.getUserProfile();
+          emit(Authenticated(user));
+        } catch (e) {
+          // Nếu lỗi khi lấy thông tin người dùng, vẫn coi là đã đăng xuất
+          if (e is UnauthorizedException) {
+            emit(Unauthenticated());
+          } else {
+            // Thử lấy user từ cache
+            try {
+              final cachedUser = await userRepository.localDataSource.getCachedUserProfile();
+              if (cachedUser != null) {
+                emit(Authenticated(cachedUser));
+                return;
+              }
+            } catch (_) {}
+            emit(Unauthenticated());
+          }
+        }
       } else {
         emit(Unauthenticated());
       }
-    } on UnauthorizedException {
-      emit(Unauthenticated());
     } catch (e) {
       emit(Unauthenticated());
     }

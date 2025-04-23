@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:wasteanmagement/blocs/language/language_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
-import '../data/repositories/user_repository.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
 import 'blocs/auth/auth_bloc.dart';
@@ -102,7 +102,7 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
-          initialRoute: AppRoutes.login,
+          initialRoute: AppRoutes.welcome,
           onGenerateRoute: AppRoutes.generateRoute,
         );
       },

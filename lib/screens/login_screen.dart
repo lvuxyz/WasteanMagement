@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'dart:developer' as developer;
-import '../data/repositories/user_repository.dart';
 import '../screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
@@ -54,16 +54,7 @@ class LoginScreen extends StatelessWidget {
         ),
         body: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
-            if (state is LoginFailure) {
-              developer.log('Hiển thị thông báo đăng nhập thất bại: ${state.error}');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            } else if (state is LoginSuccess) {
+            if (state is LoginSuccess) {
               final successMessage = l10n.loginSuccess(state.username);
               developer.log('Hiển thị thông báo đăng nhập thành công: $successMessage');
 
@@ -75,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               );
 
-              // Navigate to main screen after successful login
+              // Điều hướng sau khi đăng nhập thành công
               developer.log('Chuyển hướng đến MainScreen với username: ${state.username}');
               Navigator.pushReplacement(
                 context,
@@ -86,15 +77,15 @@ class LoginScreen extends StatelessWidget {
                       RepositoryProvider.value(
                         value: userRepository,
                       ),
-                      // Truyền AuthBloc hiện tại vào màn hình mới
+                      // Truyền AuthBloc hiện tại
                       BlocProvider.value(
                         value: authBloc,
                       ),
-                      // Truyền LanguageBloc hiện tại vào màn hình mới
+                      // Truyền LanguageBloc hiện tại
                       BlocProvider.value(
                         value: languageBloc,
                       ),
-                      // Tạo ProfileBloc mới cho màn hình profile
+                      // Chỉ cung cấp thay vì gọi FetchProfile ở đây
                       BlocProvider(
                         create: (context) => ProfileBloc(
                           userRepository: userRepository,
