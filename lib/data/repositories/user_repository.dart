@@ -32,6 +32,7 @@ class UserRepository {
     } on UnauthorizedException {
       rethrow;
     } catch (e) {
+      // Sửa thông báo lỗi để tránh mâu thuẫn
       throw Exception('Đăng nhập thất bại: ${e.toString()}');
     }
   }
