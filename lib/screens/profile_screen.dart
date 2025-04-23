@@ -12,6 +12,8 @@ import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/language_selection_screen.dart';
 import 'package:wasteanmagement/screens/login_screen.dart';
+import 'package:wasteanmagement/utils/secure_storage.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../generated/l10n.dart';
 import '../utils/app_colors.dart';
 
@@ -62,17 +64,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           listener: (context, state) {
             if (state is ProfileError) {
               // Kiểm tra xem lỗi có phải do xác thực không
-              if (!state.message.contains("Nguoi dung chua dang nhap") &&
-                  !state.message.contains("không hợp lệ")) {
-                ScaffoldMessenger.of(context).showSnackBar(
+              if (state.message.contains("Nguoi dung chua dang nhap") ||
+                  state.message.contains("token")||
+                  state.message.contains("xac thuc")||
+                  state.message.contains("không hợp lệ")) {
+                context.read<AuthBloc>().add(CheckAuthenticationStatus());
+              }else{
+                  // Hiển thị thông báo cho các lỗi khác
+                  ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.red,
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
                   ),
-                );
+                  );
+                  }
               }
-            }
-          },
+            },
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -265,6 +272,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
           ),
+          
+          // DEBUG ONLY - XÓA KHI RELEASE
+          _buildOptionItem(
+            icon: Icons.developer_mode,
+            title: 'Thông tin token (Debug)',
+            onTap: () => _showTokenInfo(context),
+          ),
+          
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -362,5 +377,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Closing the loading manually is now handled by AuthBloc listener
     }
+  }
+
+  // FUNCTION NÀY CHỈ DÙNG ĐỂ DEBUG - XÓA KHI RELEASE
+  Future<void> _showTokenInfo(BuildContext context) async {
+    final secureStorage = SecureStorage();
+    final userRepository = context.read<UserRepository>();
+    
+    // Lấy token
+    String? token = await secureStorage.getToken();
+    
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thông tin token (Debug)'),
+        content: token != null 
+          ? SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Token hiện tại:'),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SelectableText(
+                      token,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const Text('Không có token'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+          if (token != null)
+            TextButton(
+              onPressed: () async {
+                await userRepository.logout();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Đã xóa token'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  // Chuyển về màn hình đăng nhập
+                  context.read<AuthBloc>().add(LogoutRequested());
+                }
+              },
+              child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
+            ),
+        ],
+      ),
+    );
   }
 }

@@ -1,9 +1,10 @@
 import 'dart:developer' as developer;
-import '../../core/error/exceptions.dart';
-import '../../core/network/network_info.dart';
-import '../../models/user_model.dart';
-import 'package:wasteanmagement/data/datasources/local_data_source.dart';
-import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
+import '../core/error/exceptions.dart';
+import '../core/network/network_info.dart';
+import '../models/user_model.dart';
+import '../data/datasources/local_data_source.dart';
+import '../data/datasources/remote_data_source.dart';
+import '../core/api/api_constants.dart';
 
 class UserRepository {
   final RemoteDataSource remoteDataSource;
@@ -46,6 +47,37 @@ class UserRepository {
       developer.log('Lỗi xác thực: ${e.toString()}', error: e);
       throw UnauthorizedException('Thông tin đăng nhập không chính xác: ${e.toString()}');
     } catch (e) {
+      // Kiểm tra nếu lỗi là về "Đăng nhập thành công"
+      if (e.toString().contains('Đăng nhập thành công')) {
+        developer.log('Đăng nhập thành công nhưng bị bắt là lỗi', error: e);
+        
+        // Tạo một User giả định để trả về trong trường hợp này
+        // Phải đảm bảo rằng đã có token được lưu trước đó
+        // Hoặc truy vấn thông tin người dùng hiện tại
+        try {
+          final cachedUser = await localDataSource.getCachedUserProfile();
+          if (cachedUser != null) {
+            developer.log('Sử dụng thông tin người dùng từ cache: ${cachedUser.fullName}');
+            return cachedUser;
+          }
+          
+          // Nếu không có dữ liệu cache, tạo một user tạm thời
+          final tempUser = User(
+            id: 0,
+            username: username,
+            fullName: username, // Sử dụng username làm fullName tạm thời
+            email: '',
+          );
+          
+          await localDataSource.cacheUserProfile(tempUser);
+          developer.log('Tạo và lưu thông tin người dùng tạm thời: ${tempUser.fullName}');
+          return tempUser;
+        } catch (cacheError) {
+          developer.log('Lỗi khi lấy dữ liệu cache: ${cacheError.toString()}', error: cacheError);
+          throw Exception('Đăng nhập thất bại: Không thể lấy thông tin người dùng sau khi đăng nhập thành công');
+        }
+      }
+      
       developer.log('Lỗi đăng nhập: ${e.toString()}', error: e);
       throw Exception('Đăng nhập thất bại: ${e.toString()}');
     }
@@ -86,10 +118,10 @@ class UserRepository {
     }
   }
 
-  // Phương thức hồ sơ người dùng
   Future<User> getUserProfile() async {
     try {
       developer.log('Bắt đầu lấy thông tin hồ sơ người dùng');
+
       // Kiểm tra kết nối
       if (await networkInfo.isConnected) {
         try {
@@ -106,25 +138,47 @@ class UserRepository {
             throw UnauthorizedException('Người dùng chưa đăng nhập');
           }
 
-          developer.log('Gọi API lấy thông tin người dùng');
-          final userData = await remoteDataSource.getUserProfile();
-          final user = User.fromJson(userData);
+          developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');
+          try {
+            final userData = await remoteDataSource.getUserProfile();
+            developer.log('Dữ liệu người dùng nhận được: $userData');
+            
+            final user = User.fromJson(userData);
+            developer.log('Đã chuyển đổi dữ liệu thành đối tượng User: ${user.fullName}');
 
-          // Cập nhật cache
-          await localDataSource.cacheUserProfile(user);
-          developer.log('Đã lấy và cập nhật thông tin người dùng: ${user.fullName}');
+            // Cập nhật cache
+            await localDataSource.cacheUserProfile(user);
+            developer.log('Đã lấy và cập nhật thông tin người dùng: ${user.fullName}');
 
-          return user;
+            return user;
+          } catch (apiError) {
+            developer.log('Lỗi khi gọi API lấy thông tin người dùng: ${apiError.toString()}', error: apiError);
+            
+            // Nếu lỗi API là 404 hoặc endpoint không tồn tại, có thể là do API URL không đúng
+            if (apiError.toString().contains('Không tìm thấy tài nguyên')) {
+              developer.log('API endpoint không tồn tại, kiểm tra API URL: ${ApiConstants.profile}', error: 'API URL Error');
+              
+              // Thử lấy dữ liệu từ cache
+              final cachedUser = await localDataSource.getCachedUserProfile();
+              if (cachedUser != null) {
+                developer.log('Sử dụng dữ liệu người dùng từ cache: ${cachedUser.fullName}');
+                return cachedUser;
+              }
+            }
+            
+            throw apiError;
+          }
         } on UnauthorizedException catch (e) {
-          developer.log('Lỗi xác thực khi lấy thông tin, thử dùng cache: ${e.toString()}', error: e);
-          // Nếu token không hợp lệ, thử dùng dữ liệu đã lưu trong cache
+          developer.log('Lỗi xác thực khi lấy thông tin, thử dùng cache: ${e.toString()}');
+
+          // Thử dùng dữ liệu cache nếu token không hợp lệ
           final cachedUser = await localDataSource.getCachedUserProfile();
           if (cachedUser != null) {
             developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
             return cachedUser;
           }
 
-          // Nếu không có dữ liệu cache, xóa token không hợp lệ để tránh lỗi tiếp theo
+          // Xóa token không hợp lệ
           await localDataSource.deleteToken();
           developer.log('Đã xóa token không hợp lệ');
 
