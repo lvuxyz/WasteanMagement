@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
+import '../../core/api/api_constants.dart';
 import '../../generated/l10n.dart';
 import 'registration_event.dart';
 import 'registration_state.dart';
@@ -8,45 +12,51 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final BuildContext context;
 
   RegistrationBloc({required this.context}) : super(RegistrationInitial()) {
-    on<RegistrationSubmitted>(_onRegistrationSubmitted);
-    on<RegistrationReset>(_onRegistrationReset);
+    on<RegistrationSubmitted>(_onSubmitted);
   }
 
-  Future<void> _onRegistrationSubmitted(
+  Future<void> _onSubmitted(
     RegistrationSubmitted event,
     Emitter<RegistrationState> emit,
   ) async {
-    emit(RegistrationLoading());
-
     try {
-      final l10n = S.of(context);
-      final passwordsDoNotMatchText = l10n.passwordsDoNotMatch;
+      emit(RegistrationLoading());
+      
+      developer.log('Attempting to register user: ${event.username}');
+      
+      // API call
+      final response = await http.post(
+        Uri.parse('${ApiConstants.register}'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'full_name': event.fullName,
+          'username': event.username,
+          'email': event.email,
+          'password': event.password,
+          'phone': event.phone,
+          'address': event.address,
+        }),
+      );
+      
+      developer.log('Registration response status: ${response.statusCode}');
+      developer.log('Registration response body: ${response.body}');
 
-      // Validate passwords match
-      if (event.password != event.confirmPassword) {
-        emit(RegistrationFailure(error: passwordsDoNotMatchText));
-        return;
+      final responseData = json.decode(response.body);
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Registration successful
+        emit(RegistrationSuccess());
+      } else {
+        // Error handling
+        final errorMessage = responseData['message'] ?? 'Registration failed';
+        emit(RegistrationFailure(error: errorMessage));
       }
-
-      // Simulate API call for registration
-      await Future.delayed(const Duration(seconds: 1));
-
-      // In a real app, this would be an API call to register the user
-      // For now, we'll just simulate a successful registration
-      final username = event.email.split('@')[0];
-      emit(RegistrationSuccess(username: username));
     } catch (e) {
-      final l10n = S.of(context);
-      final registrationErrorText = l10n.registrationError;
-      emit(RegistrationFailure(error: '$registrationErrorText: $e'));
+      developer.log('Registration error: $e');
+      emit(RegistrationFailure(error: e.toString()));
     }
-  }
-
-  void _onRegistrationReset(
-    RegistrationReset event,
-    Emitter<RegistrationState> emit,
-  ) {
-    emit(RegistrationInitial());
   }
 } 
 
