@@ -61,19 +61,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: BlocListener<ProfileBloc, ProfileState>(
           listener: (context, state) {
             if (state is ProfileError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            } else if (state is ProfileUpdateSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cập nhật thông tin thành công'),
-                  backgroundColor: AppColors.primaryGreen,
-                ),
-              );
+              // Kiểm tra xem lỗi có phải do xác thực không
+              if (!state.message.contains("Nguoi dung chua dang nhap") &&
+                  !state.message.contains("không hợp lệ")) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             }
           },
           child: SingleChildScrollView(
