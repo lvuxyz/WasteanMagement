@@ -18,10 +18,10 @@
 @import location;
 #endif
 
-#if __has_include(<mapbox_gl/MapboxMapsPlugin.h>)
-#import <mapbox_gl/MapboxMapsPlugin.h>
+#if __has_include(<mapbox_maps_flutter/MapboxMapsPlugin.h>)
+#import <mapbox_maps_flutter/MapboxMapsPlugin.h>
 #else
-@import mapbox_gl;
+@import mapbox_maps_flutter;
 #endif
 
 #if __has_include(<path_provider_foundation/PathProviderPlugin.h>)

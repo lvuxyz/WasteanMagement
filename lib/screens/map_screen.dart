@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../blocs/map/map_bloc.dart';
 import '../blocs/map/map_event.dart';
 import '../blocs/map/map_state.dart';
 import '../services/mapbox_service.dart';
 import '../utils/app_colors.dart';
-import '../generated/l10n.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -17,25 +16,23 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  MapboxMapController? _mapController;
+  MapboxMap? _mapController;
   final String _mapboxAccessToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
-
     return BlocProvider(
       create: (context) => MapBloc(mapboxService: MapboxService()),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
-          title: Text(
+          title: const Text(
             'Điểm Thu Gom Rác',
             style: TextStyle(color: Colors.white),
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh, color: Colors.white),
+              icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: () {
                 if (_mapController != null) {
                   context.read<MapBloc>().add(LoadCollectionPoints());
@@ -43,7 +40,7 @@ class _MapScreenState extends State<MapScreen> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.my_location, color: Colors.white),
+              icon: const Icon(Icons.my_location, color: Colors.white),
               onPressed: () {
                 if (_mapController != null) {
                   context.read<MapBloc>().add(LoadUserLocation());
@@ -64,22 +61,23 @@ class _MapScreenState extends State<MapScreen> {
             return Stack(
               children: [
                 // Mapbox Map
-                MapboxMap(
-                  accessToken: _mapboxAccessToken,
-                  onMapCreated: (controller) {
+                MapWidget(
+                  key: const ValueKey('mapWidget'),
+                  // Remove resourceOptions: ResourceOptions(accessToken: _mapboxAccessToken),
+                  styleUri: MapboxStyles.MAPBOX_STREETS,
+                  cameraOptions: CameraOptions(
+                    center: Point(
+                      coordinates: Position(106.6880, 10.7731), // TP.HCM
+                    ),
+                    zoom: 13.0,
+                  ),
+                  textureView: true,  // Thêm thuộc tính này
+                  onMapCreated: (MapboxMap controller) {
                     setState(() {
                       _mapController = controller;
                     });
                     context.read<MapBloc>().add(MapInitialized(controller));
                   },
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(10.7731, 106.6880), // TP.HCM
-                    zoom: 13.0,
-                  ),
-                  styleString: MapboxStyles.MAPBOX_STREETS,
-                  myLocationEnabled: true,
-                  myLocationTrackingMode: MyLocationTrackingMode.Tracking,
-                  compassEnabled: true,
                 ),
 
                 // Loading indicator
@@ -261,17 +259,10 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _showDirectionsNotImplemented(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Thông báo'),
-        content: const Text('Tính năng chỉ đường đang được phát triển và sẽ có trong bản cập nhật tiếp theo.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Tính năng chỉ đường sẽ được triển khai trong phiên bản sau.'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
