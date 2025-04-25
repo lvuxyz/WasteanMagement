@@ -5,6 +5,7 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
+import '../routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -399,6 +400,107 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Thêm Quick Actions ở đây
+  Widget _buildQuickActions() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Hành động nhanh',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildQuickAction(
+                icon: Icons.camera_alt_outlined,
+                title: 'Quét rác',
+                onTap: () {
+                  _onCenterButtonPressed();
+                },
+              ),
+              _buildQuickAction(
+                icon: Icons.calendar_today_outlined,
+                title: 'Đặt lịch',
+                onTap: () {
+                  // Xử lý đặt lịch
+                },
+              ),
+              _buildQuickAction(
+                icon: Icons.emoji_events_outlined,
+                title: 'Điểm thưởng',
+                onTap: () {
+                  // Xử lý xem điểm thưởng
+                },
+              ),
+              // Thêm mục Loại Rác mới
+              _buildQuickAction(
+                icon: Icons.category_outlined,
+                title: 'Loại Rác',
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.wasteTypeManagement);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAction({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primaryGreen,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCollectionPointsList() {
     // Hiển thị từ bảng CollectionPoints
     List<Map<String, dynamic>> mockCollectionPoints = [
@@ -442,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) {
           final point = mockCollectionPoints[index];
           final capacityPercentage = (point['current_load'] / point['capacity'] * 100).toInt();
-          
+
           return Container(
             width: 280,
             margin: const EdgeInsets.only(right: 16),
@@ -464,11 +566,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   height: 6,
                   decoration: BoxDecoration(
-                    color: capacityPercentage > 80 
-                        ? Colors.red 
-                        : capacityPercentage > 50 
-                            ? Colors.orange 
-                            : Colors.green,
+                    color: capacityPercentage > 80
+                        ? Colors.red
+                        : capacityPercentage > 50
+                        ? Colors.orange
+                        : Colors.green,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
@@ -515,8 +617,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   '$capacityPercentage%',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: capacityPercentage > 80 
-                                        ? Colors.red 
+                                    color: capacityPercentage > 80
+                                        ? Colors.red
                                         : AppColors.primaryGreen,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -594,8 +696,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: capacityPercentage > 80
                               ? Colors.red
                               : capacityPercentage > 50
-                                  ? Colors.orange
-                                  : AppColors.primaryGreen,
+                              ? Colors.orange
+                              : AppColors.primaryGreen,
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -678,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: mockWasteTypes.length,
         itemBuilder: (context, index) {
           final wasteType = mockWasteTypes[index];
-          
+
           return Container(
             width: 150,
             margin: const EdgeInsets.only(right: 16),
@@ -778,13 +880,13 @@ class _HomeScreenState extends State<HomeScreen> {
         final IconData icon = transaction['type'] == 'Nhựa tái chế'
             ? Icons.delete_outline
             : transaction['type'] == 'Giấy, bìa carton'
-                ? Icons.description_outlined
-                : Icons.settings_outlined;
+            ? Icons.description_outlined
+            : Icons.settings_outlined;
         final Color iconColor = transaction['type'] == 'Nhựa tái chế'
             ? Colors.blue
             : transaction['type'] == 'Giấy, bìa carton'
-                ? Colors.amber
-                : Colors.grey;
+            ? Colors.amber
+            : Colors.grey;
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -835,29 +937,29 @@ class _HomeScreenState extends State<HomeScreen> {
           trailing: Container(
             constraints: const BoxConstraints(maxWidth: 80),
             child: transaction['status'] == 'completed'
-              ? Text(
-                  '+${transaction['points']}',
-                  style: const TextStyle(
-                    color: AppColors.primaryGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                )
-              : Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'Đang xử lý',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                ? Text(
+              '+${transaction['points']}',
+              style: const TextStyle(
+                color: AppColors.primaryGreen,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            )
+                : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'Đang xử lý',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+            ),
           ),
         );
       },
@@ -928,7 +1030,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNavItem(IconData icon, int index) {
     final isSelected = _selectedIndex == index;
-    
+
     return IconButton(
       onPressed: () => _onItemTapped(index),
       icon: Icon(
@@ -968,5 +1070,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
-
+}
