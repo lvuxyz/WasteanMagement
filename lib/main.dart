@@ -17,9 +17,13 @@ import 'core/network/network_info.dart';
 import 'routes.dart';
 import 'generated/l10n.dart';
 import 'utils/app_colors.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 
-void main() {
+Future<void> main() async {
+
+  await dotenv.dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+
 
   // Tạo các repository
   final localDataSource = LocalDataSource();

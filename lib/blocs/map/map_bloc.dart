@@ -4,6 +4,7 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 import '../../services/mapbox_service.dart';
 import 'map_event.dart';
 import 'map_state.dart';
+import 'dart:ui' as ui;
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final MapboxService mapboxService;
@@ -107,12 +108,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       if (state.controller != null) {
         for (final point in mockCollectionPoints) {
           await state.controller!.addSymbol(SymbolOptions(
-            geometry: LatLng(point['latitude'], point['longitude']),
+            geometry: LatLng(point['latitude'] as double, point['longitude'] as double),
             iconImage: 'marker-15',
             iconColor: '#7AB547',
             iconSize: 1.5,
-            textField: point['name'],
-            textOffset: const Offset(0, 1.5),
+            textField: point['name'] as String,
+            textOffset: const ui.Offset(0, 1.5),  // Sử dụng ui.Offset
             textColor: '#000000',
             textSize: 12.0,
           ));

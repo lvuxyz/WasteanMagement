@@ -4,6 +4,7 @@ import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/forgot_password_screen.dart';
+import 'screens/map_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -11,6 +12,8 @@ class AppRoutes {
   static const String register = '/register';
   static const String main = '/main';
   static const String forgotPassword = '/forgot-password';
+  static const String map = '/map';
+
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -24,6 +27,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case main:
         return MaterialPageRoute(builder: (_) => const MainScreen());
+      case map:
+        return MaterialPageRoute(builder: (_) => const MapScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
