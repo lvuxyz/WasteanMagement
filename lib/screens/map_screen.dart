@@ -81,6 +81,19 @@ class _MapScreenState extends State<MapScreen> {
                       setState(() {
                         _mapController = controller;
                       });
+                      
+                      // Enable map gestures for dragging and zooming
+                      controller.gestures.updateSettings(GesturesSettings(
+                        rotateEnabled: true,
+                        scrollEnabled: true,
+                        pinchToZoomEnabled: true,
+                        doubleTapToZoomInEnabled: true,
+                        doubleTouchToZoomOutEnabled: true,
+                        quickZoomEnabled: true,
+                        simultaneousRotateAndPinchToZoomEnabled: true,
+                        pitchEnabled: true,
+                      ));
+                      
                       context.read<MapBloc>().add(MapInitialized(controller));
                     },
                   ),
