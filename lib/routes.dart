@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wasteanmagement/screens/waste_type_management_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -13,10 +14,13 @@ class AppRoutes {
   static const String main = '/main';
   static const String forgotPassword = '/forgot-password';
   static const String map = '/map';
+  static const String wasteTypeManagement = '/waste-type';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case wasteTypeManagement:
+        return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:
