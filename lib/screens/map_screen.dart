@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -19,6 +20,15 @@ class _MapScreenState extends State<MapScreen> {
   MapboxMap? _mapController;
   double _currentZoom = 13.0;
   final String _mapboxAccessToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Đặt orientation để trải nghiệm được tốt hơn
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,55 +74,67 @@ class _MapScreenState extends State<MapScreen> {
           builder: (context, state) {
             return Stack(
               children: [
-                // Mapbox Map - Make sure it fills the entire available space
-                Positioned.fill(
-                  child: MapWidget(
-                    key: const ValueKey('mapWidget'),
-                    styleUri: MapboxStyles.MAPBOX_STREETS,
-                    cameraOptions: CameraOptions(
-                      center: Point(
-                        coordinates: Position(106.6880, 10.7731), // TP.HCM
+                // Đảm bảo map có thể nhận các sự kiện cảm ứng
+                Stack(
+                  children: [
+                    // Mapbox Map
+                    SizedBox(
+                      width: screenSize.width,
+                      height: screenSize.height,
+                      child: MapWidget(
+                        key: const ValueKey('mapWidget'),
+                        styleUri: MapboxStyles.MAPBOX_STREETS,
+                        cameraOptions: CameraOptions(
+                          center: Point(
+                            coordinates: Position(106.6880, 10.7731), // TP.HCM
+                          ),
+                          zoom: 13.0,
+                        ),
+                        onMapCreated: (MapboxMap controller) {
+                          setState(() {
+                            _mapController = controller;
+                            _currentZoom = 13.0;
+                          });
+                          
+                          // Cấu hình nâng cao cho gesture
+                          controller.gestures.updateSettings(GesturesSettings(
+                            rotateEnabled: true,
+                            scrollEnabled: true,
+                            scrollMode: ScrollMode.HORIZONTAL_AND_VERTICAL,
+                            pinchToZoomEnabled: true,
+                            doubleTapToZoomInEnabled: true,
+                            doubleTouchToZoomOutEnabled: true,
+                            quickZoomEnabled: true,
+                            simultaneousRotateAndPinchToZoomEnabled: true,
+                            pitchEnabled: true,
+                            scrollDecelerationEnabled: true,
+                            increaseRotateThresholdWhenPinchingToZoom: true,
+                            increasePinchToZoomThresholdWhenRotating: true,
+                          ));
+                          
+                          context.read<MapBloc>().add(MapInitialized(controller));
+                        },
                       ),
-                      zoom: 13.0,
                     ),
-                    onMapCreated: (MapboxMap controller) {
-                      setState(() {
-                        _mapController = controller;
-                        _currentZoom = 13.0;
-                      });
-                      
-                      // Configure gesture settings with improved responsiveness
-                      controller.gestures.updateSettings(GesturesSettings(
-                        rotateEnabled: true,
-                        scrollEnabled: true,
-                        scrollMode: ScrollMode.HORIZONTAL_AND_VERTICAL,
-                        pinchToZoomEnabled: true,
-                        doubleTapToZoomInEnabled: true,
-                        doubleTouchToZoomOutEnabled: true,
-                        quickZoomEnabled: true,
-                        simultaneousRotateAndPinchToZoomEnabled: true,
-                        pitchEnabled: true,
-                      ));
-                      
-                      context.read<MapBloc>().add(MapInitialized(controller));
-                    },
-                  ),
+                  ],
                 ),
 
-                // Loading indicator - Ensure it's positioned correctly to not block gestures
+                // Loading indicator - Đảm bảo không chặn gestures
                 if (state.isLoading)
                   Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.3),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryGreen,
+                    child: IgnorePointer(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.3),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryGreen,
+                          ),
                         ),
                       ),
                     ),
                   ),
 
-                // Danh sách điểm thu gom - adjusted to not interfere with map gestures
+                // Danh sách điểm thu gom
                 if (state.collectionPoints.isNotEmpty)
                   Positioned(
                     bottom: 16,
