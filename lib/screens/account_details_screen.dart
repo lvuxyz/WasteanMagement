@@ -187,11 +187,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     const SizedBox(height: 16),
                     _buildInfoRow('Username', state.user.username),
                     const SizedBox(height: 12),
-                    _buildInfoRow('Account Status', state.user.status),
+                    _buildInfoRow('Account Status', state.user.status ?? 'Active'),
                     const SizedBox(height: 12),
                     _buildInfoRow(
                       'Member Since',
-                      '${state.user.createdAt.day}/${state.user.createdAt.month}/${state.user.createdAt.year}',
+                      state.user.createdAt != null 
+                          ? '${state.user.createdAt!.day}/${state.user.createdAt!.month}/${state.user.createdAt!.year}'
+                          : 'Not available',
                     ),
                   ],
                 ),
@@ -296,7 +298,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -314,7 +316,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
           Expanded(
             child: Text(
-              value,
+              value ?? 'Not available',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,

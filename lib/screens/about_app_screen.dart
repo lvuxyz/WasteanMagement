@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import '../generated/l10n.dart';
 import '../utils/app_colors.dart';
 import '../utils/constants.dart';
 

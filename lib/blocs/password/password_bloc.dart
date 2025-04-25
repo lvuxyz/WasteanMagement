@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../../core/error/exceptions.dart';
-import '../../data/repositories/user_repository.dart';
 import 'password_event.dart';
 import 'password_state.dart';
 

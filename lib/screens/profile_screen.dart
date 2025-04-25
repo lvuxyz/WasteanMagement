@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_event.dart';
+import 'package:wasteanmagement/blocs/auth/auth_state.dart';
+import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
+import 'package:wasteanmagement/screens/edit_profile_screen.dart';
+import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
+import 'package:wasteanmagement/screens/about_app_screen.dart';
+import 'package:wasteanmagement/screens/language_selection_screen.dart';
+import 'package:wasteanmagement/screens/login_screen.dart';
+import 'package:wasteanmagement/utils/secure_storage.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../generated/l10n.dart';
-import '../blocs/auth/auth_bloc.dart';
-import '../blocs/auth/auth_event.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
-import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
-import '../screens/language_selection_screen.dart';
-import '../screens/login_screen.dart';
-import '../screens/edit_profile_screen.dart';
-import '../screens/help_and_guidance_screen.dart';
-import '../screens/about_app_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -28,55 +30,71 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   @override
   Widget build(BuildContext context) {
     final l10n = S.of(context);
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        automaticallyImplyLeading: false,
-        title: Text(
-          l10n.profile,
-          style: const TextStyle(color: Colors.white),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+          );
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.scaffoldBackground,
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          automaticallyImplyLeading: false,
+          title: Text(
+            l10n.profile,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
-      ),
-
-      body: BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          } else if (state is ProfileUpdateSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật thông tin thành công'),
-                backgroundColor: AppColors.primaryGreen,
-              ),
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildProfileHeader(),
-              const SizedBox(height: 16),
-              _buildOptionsSection(context),
-            ],
+        body: BlocListener<ProfileBloc, ProfileState>(
+          listener: (context, state) {
+            if (state is ProfileError) {
+              // Kiểm tra xem lỗi có phải do xác thực không
+              if (state.message.contains("Nguoi dung chua dang nhap") ||
+                  state.message.contains("token")||
+                  state.message.contains("xac thuc")||
+                  state.message.contains("không hợp lệ")) {
+                context.read<AuthBloc>().add(CheckAuthenticationStatus());
+              }else{
+                  // Hiển thị thông báo cho các lỗi khác
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  ),
+                  );
+                  }
+              }
+            },
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildProfileHeader(),
+                const SizedBox(height: 16),
+                _buildOptionsSection(context),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Widget thông tin người dùng
   Widget _buildProfileHeader() {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
@@ -87,8 +105,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (state is ProfileLoaded) {
           userName = state.user.fullName;
           userEmail = state.user.email;
-          // Format the date if needed
-          // memberSince = 'Thành viên kể từ ${formatDate(state.user.createdAt)}';
         }
 
         return Container(
@@ -161,7 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget phần tùy chọn
   Widget _buildOptionsSection(BuildContext context) {
     final l10n = S.of(context);
 
@@ -257,6 +272,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
           ),
+          
+          // DEBUG ONLY - XÓA KHI RELEASE
+          _buildOptionItem(
+            icon: Icons.developer_mode,
+            title: 'Thông tin token (Debug)',
+            onTap: () => _showTokenInfo(context),
+          ),
+          
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -291,7 +314,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget item tùy chọn
   Widget _buildOptionItem({
     required IconData icon,
     required String title,
@@ -323,8 +345,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Dialog xác nhận đăng xuất
-  // Cập nhật hàm confirmLogout trong profile_screen.dart
   void confirmLogout() async {
     final result = await showDialog<bool>(
       context: context,
@@ -345,24 +365,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result == true && mounted) {
-      try {
-        context.read<AuthBloc>().add(LogoutRequested()); // Dùng LogoutRequested thay vì LogoutEvent
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
 
-        // Điều hướng sau khi đăng xuất
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-        );
-      } catch (e) {
-        // Xử lý trường hợp không tìm thấy Provider
-        print('Không thể tìm thấy AuthBloc: $e');
+      context.read<AuthBloc>().add(LogoutRequested());
 
-        // Vẫn điều hướng về màn hình đăng nhập trong trường hợp lỗi
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-        );
-      }
+      // Closing the loading manually is now handled by AuthBloc listener
     }
+  }
+
+  // FUNCTION NÀY CHỈ DÙNG ĐỂ DEBUG - XÓA KHI RELEASE
+  Future<void> _showTokenInfo(BuildContext context) async {
+    final secureStorage = SecureStorage();
+    final userRepository = context.read<UserRepository>();
+    
+    // Lấy token
+    String? token = await secureStorage.getToken();
+    
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thông tin token (Debug)'),
+        content: token != null 
+          ? SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Token hiện tại:'),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SelectableText(
+                      token,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const Text('Không có token'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+          if (token != null)
+            TextButton(
+              onPressed: () async {
+                await userRepository.logout();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Đã xóa token'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  // Chuyển về màn hình đăng nhập
+                  context.read<AuthBloc>().add(LogoutRequested());
+                }
+              },
+              child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
+            ),
+        ],
+      ),
+    );
   }
 }

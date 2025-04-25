@@ -1,18 +1,24 @@
-abstract class RegistrationState {}
+import 'package:equatable/equatable.dart';
+
+abstract class RegistrationState extends Equatable {
+  const RegistrationState();
+  
+  @override
+  List<Object> get props => [];
+}
 
 class RegistrationInitial extends RegistrationState {}
 
 class RegistrationLoading extends RegistrationState {}
 
-class RegistrationSuccess extends RegistrationState {
-  final String username;
-
-  RegistrationSuccess({required this.username});
-}
+class RegistrationSuccess extends RegistrationState {}
 
 class RegistrationFailure extends RegistrationState {
   final String error;
 
-  RegistrationFailure({required this.error});
+  const RegistrationFailure({required this.error});
+  
+  @override
+  List<Object> get props => [error];
 } 
 

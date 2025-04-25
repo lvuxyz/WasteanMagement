@@ -8,16 +8,24 @@ import '../../utils/app_colors.dart';
 
 class RegistrationSubmitButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
+  final TextEditingController fullNameController;
+  final TextEditingController usernameController;
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
+  final TextEditingController phoneController;
+  final TextEditingController addressController;
 
   const RegistrationSubmitButton({
     super.key,
     required this.formKey,
+    required this.fullNameController,
+    required this.usernameController,
     required this.emailController,
     required this.passwordController,
     required this.confirmPasswordController,
+    required this.phoneController,
+    required this.addressController,
   });
 
   @override
@@ -37,9 +45,12 @@ class RegistrationSubmitButton extends StatelessWidget {
                     if (formKey.currentState!.validate()) {
                       context.read<RegistrationBloc>().add(
                             RegistrationSubmitted(
+                              fullName: fullNameController.text,
+                              username: usernameController.text,
                               email: emailController.text,
                               password: passwordController.text,
-                              confirmPassword: confirmPasswordController.text,
+                              phone: phoneController.text,
+                              address: addressController.text,
                             ),
                           );
                     }

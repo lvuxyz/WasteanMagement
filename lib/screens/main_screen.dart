@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../data/repositories/user_repository.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
-import '../blocs/profile/profile_state.dart';
 import '../utils/app_colors.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
+import 'map_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String username;
@@ -230,6 +230,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           setState(() {
             _currentIndex = index;
@@ -238,38 +239,7 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           const HomeScreen(), // Trang chủ
           // Trang Địa điểm
-          Container(
-            color: Colors.white,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, size: 80, color: AppColors.primaryGreen),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Địa Điểm Thu Gom',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(
-                      'Tìm các điểm thu gom rác gần bạn',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const MapScreen(),
           // Trang Thống kê
           Container(
             color: Colors.white,
