@@ -17,6 +17,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   MapboxMap? _mapController;
+  double _currentZoom = 13.0;
   final String _mapboxAccessToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
 
   @override
@@ -64,9 +65,7 @@ class _MapScreenState extends State<MapScreen> {
             return Stack(
               children: [
                 // Mapbox Map - Make sure it fills the entire available space
-                SizedBox(
-                  width: screenSize.width,
-                  height: screenSize.height,
+                Positioned.fill(
                   child: MapWidget(
                     key: const ValueKey('mapWidget'),
                     styleUri: MapboxStyles.MAPBOX_STREETS,
@@ -76,16 +75,17 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       zoom: 13.0,
                     ),
-                    textureView: true,
                     onMapCreated: (MapboxMap controller) {
                       setState(() {
                         _mapController = controller;
+                        _currentZoom = 13.0;
                       });
                       
-                      // Enable map gestures for dragging and zooming
+                      // Configure gesture settings with improved responsiveness
                       controller.gestures.updateSettings(GesturesSettings(
                         rotateEnabled: true,
                         scrollEnabled: true,
+                        scrollMode: ScrollMode.HORIZONTAL_AND_VERTICAL,
                         pinchToZoomEnabled: true,
                         doubleTapToZoomInEnabled: true,
                         doubleTouchToZoomOutEnabled: true,
@@ -99,7 +99,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
 
-                // Loading indicator - Ensure it covers the entire screen
+                // Loading indicator - Ensure it's positioned correctly to not block gestures
                 if (state.isLoading)
                   Positioned.fill(
                     child: Container(
@@ -112,7 +112,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
 
-                // Danh sách điểm thu gom - responsive height using MediaQuery
+                // Danh sách điểm thu gom - adjusted to not interfere with map gestures
                 if (state.collectionPoints.isNotEmpty)
                   Positioned(
                     bottom: 16,
@@ -123,6 +123,7 @@ class _MapScreenState extends State<MapScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       scrollDirection: Axis.horizontal,
                       itemCount: state.collectionPoints.length,
+                      physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         final point = state.collectionPoints[index];
                         return _buildCollectionPointCard(
@@ -134,6 +135,49 @@ class _MapScreenState extends State<MapScreen> {
                       },
                     ),
                   ),
+                  
+                // Map controls for additional zoom control
+                Positioned(
+                  right: 16,
+                  bottom: state.collectionPoints.isNotEmpty 
+                      ? cardHeight + 32 
+                      : 16,
+                  child: Column(
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: "zoomIn",
+                        backgroundColor: Colors.white,
+                        child: const Icon(Icons.add, color: AppColors.primaryGreen),
+                        onPressed: () {
+                          if (_mapController != null) {
+                            _currentZoom += 1;
+                            _mapController!.setCamera(
+                              CameraOptions(
+                                zoom: _currentZoom,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      FloatingActionButton.small(
+                        heroTag: "zoomOut",
+                        backgroundColor: Colors.white,
+                        child: const Icon(Icons.remove, color: AppColors.primaryGreen),
+                        onPressed: () {
+                          if (_mapController != null) {
+                            _currentZoom -= 1;
+                            _mapController!.setCamera(
+                              CameraOptions(
+                                zoom: _currentZoom,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ],
             );
           },
