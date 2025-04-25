@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/data/repositories/user_repository.dart'; // Import đúng
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
 

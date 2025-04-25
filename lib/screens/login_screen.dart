@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
-import 'package:wasteanmagement/screens/main_screen.dart';
+import 'dart:developer' as developer;
+import '../screens/main_screen.dart';
 import '../blocs/login/login_bloc.dart';
 import '../blocs/login/login_state.dart';
 import '../widgets/login/login_form.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/profile/profile_bloc.dart';
 import '../generated/l10n.dart';
 import 'registration_screen.dart';
+import '../utils/app_colors.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     // Lấy localization
     final l10n = S.of(context);
 
@@ -25,8 +28,18 @@ class LoginScreen extends StatelessWidget {
     final dontHaveAccount = l10n.dontHaveAccount;
     final signUp = l10n.signUp;
 
+    // Lấy AuthBloc từ context
+    final authBloc = context.read<AuthBloc>();
+    final userRepository = context.read<UserRepository>();
+    final languageBloc = context.read<LanguageBloc>();
+
+    developer.log('Khởi tạo LoginScreen');
+
     return BlocProvider(
-      create: (context) => LoginBloc(),
+      create: (context) => LoginBloc(
+        userRepository: userRepository,
+        authBloc: authBloc, // Truyền AuthBloc vào LoginBloc
+      ),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -41,30 +54,44 @@ class LoginScreen extends StatelessWidget {
         ),
         body: BlocListener<LoginBloc, LoginState>(
           listener: (context, state) {
-            if (state is LoginFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            } else if (state is LoginSuccess) {
+            if (state is LoginSuccess) {
               final successMessage = l10n.loginSuccess(state.username);
+              developer.log('Hiển thị thông báo đăng nhập thành công: $successMessage');
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(successMessage),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.primaryGreen,
                   duration: const Duration(seconds: 3),
                 ),
               );
 
-              // Navigate to dashboard screen
+              // Điều hướng sau khi đăng nhập thành công
+              developer.log('Chuyển hướng đến MainScreen với username: ${state.username}');
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RepositoryProvider(
-                    create: (context) => UserRepository(),
+                  builder: (context) => MultiBlocProvider(
+                    providers: [
+                      // Cung cấp Repository
+                      RepositoryProvider.value(
+                        value: userRepository,
+                      ),
+                      // Truyền AuthBloc hiện tại
+                      BlocProvider.value(
+                        value: authBloc,
+                      ),
+                      // Truyền LanguageBloc hiện tại
+                      BlocProvider.value(
+                        value: languageBloc,
+                      ),
+                      // Chỉ cung cấp thay vì gọi FetchProfile ở đây
+                      BlocProvider(
+                        create: (context) => ProfileBloc(
+                          userRepository: userRepository,
+                        ),
+                      ),
+                    ],
                     child: MainScreen(username: state.username),
                   ),
                 ),
@@ -85,17 +112,31 @@ class LoginScreen extends StatelessWidget {
                     Text(dontHaveAccount),
                     TextButton(
                       onPressed: () {
+                        developer.log('Chuyển hướng đến màn hình đăng ký');
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RegistrationScreen(),
+                            builder: (context) => MultiBlocProvider(
+                              providers: [
+                                RepositoryProvider.value(
+                                  value: userRepository,
+                                ),
+                                BlocProvider.value(
+                                  value: authBloc,
+                                ),
+                                BlocProvider.value(
+                                  value: languageBloc,
+                                ),
+                              ],
+                              child: const RegistrationScreen(),
+                            ),
                           ),
                         );
                       },
                       child: Text(
                         signUp,
                         style: const TextStyle(
-                          color: Colors.green,
+                          color: AppColors.primaryGreen,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -154,6 +195,7 @@ class LoginScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (!isSelected) {
+          developer.log('Thay đổi ngôn ngữ thành: $languageCode');
           context.read<LanguageBloc>().add(ChangeLanguage(languageCode));
         }
       },
@@ -161,7 +203,7 @@ class LoginScreen extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? Colors.green : Colors.transparent,
+            color: isSelected ? AppColors.primaryGreen : Colors.transparent,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(4),
@@ -170,9 +212,16 @@ class LoginScreen extends StatelessWidget {
           flagAsset,
           width: 24,
           height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            developer.log('Lỗi khi tải hình ảnh quốc kỳ: $flagAsset', error: error);
+            return Icon(
+              Icons.language,
+              color: isSelected ? AppColors.primaryGreen : Colors.grey,
+              size: 24,
+            );
+          },
         ),
       ),
     );
   }
 }
-

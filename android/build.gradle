@@ -1,16 +1,63 @@
+buildscript {
+    ext.kotlin_version = '1.8.22'
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = "mapbox"
+                password = project.hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? project.property('MAPBOX_DOWNLOADS_TOKEN') : System.getenv('MAPBOX_DOWNLOADS_TOKEN')
+            }
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = "mapbox"
+                password = project.hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? project.property('MAPBOX_DOWNLOADS_TOKEN') : System.getenv('MAPBOX_DOWNLOADS_TOKEN')
+            }
+        }
     }
 }
 
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
+
+    // Gộp tất cả các logic liên quan đến subprojects vào một khối duy nhất
     project.evaluationDependsOn(":app")
+
+    gradle.projectsEvaluated {
+        if (project.hasProperty('android')) {
+            project.android {
+                try {
+                    if (!project.android.hasProperty('namespace') || project.android.namespace == null) {
+                        namespace = project.group ?: "com.example.namespace"
+                    }
+                } catch (Exception e) {
+                    // Bỏ qua lỗi nếu có
+                    println "Note: Could not set namespace for ${project.name}: ${e.message}"
+                }
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {

@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:wasteanmagement/blocs/language/language_state.dart';
+import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
-import '../data/repositories/user_repository.dart';
+import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
 import 'blocs/auth/auth_bloc.dart';
@@ -15,15 +17,23 @@ import 'core/network/network_info.dart';
 import 'routes.dart';
 import 'generated/l10n.dart';
 import 'utils/app_colors.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 
-void main() {
+Future<void> main() async {
+
+  await dotenv.dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+
 
   // Tạo các repository
   final localDataSource = LocalDataSource();
+  final secureStorage = SecureStorage();
   final languageRepository = LanguageRepository(localDataSource: localDataSource);
   final userRepository = UserRepository(
-    remoteDataSource: RemoteDataSource(client: http.Client()),
+    remoteDataSource: RemoteDataSource(apiClient: ApiClient(
+      client: http.Client(),
+      secureStorage: secureStorage,
+    )),
     localDataSource: localDataSource,
     networkInfo: NetworkInfoImpl(),
   );
@@ -96,7 +106,7 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
-          initialRoute: AppRoutes.login,
+          initialRoute: AppRoutes.welcome,
           onGenerateRoute: AppRoutes.generateRoute,
         );
       },

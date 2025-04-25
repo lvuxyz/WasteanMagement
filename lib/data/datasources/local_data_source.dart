@@ -3,12 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wasteanmagement/utils/storage_keys.dart';
 import '../../models/user_model.dart';
-import '../../utils/constants.dart';
 
 class LocalDataSource {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   // Token management
+  // Đảm bảo các phương thức này được triển khai đúng
   Future<void> saveToken(String token) async {
     await _secureStorage.write(key: SecureStorageKeys.token, value: token);
   }
@@ -21,7 +21,6 @@ class LocalDataSource {
     await _secureStorage.delete(key: SecureStorageKeys.token);
   }
 
-  // User profile management
   Future<void> cacheUserProfile(User user) async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = jsonEncode(user.toJson());
@@ -35,7 +34,6 @@ class LocalDataSource {
     if (userJson != null) {
       return User.fromJson(jsonDecode(userJson));
     }
-
     return null;
   }
 
