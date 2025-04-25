@@ -21,6 +21,9 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final cardHeight = screenSize.height * 0.18;
+    
     return BlocProvider(
       create: (context) => MapBloc(mapboxService: MapboxService()),
       child: Scaffold(
@@ -60,44 +63,49 @@ class _MapScreenState extends State<MapScreen> {
           builder: (context, state) {
             return Stack(
               children: [
-                // Mapbox Map
-                MapWidget(
-                  key: const ValueKey('mapWidget'),
-                  // Remove resourceOptions: ResourceOptions(accessToken: _mapboxAccessToken),
-                  styleUri: MapboxStyles.MAPBOX_STREETS,
-                  cameraOptions: CameraOptions(
-                    center: Point(
-                      coordinates: Position(106.6880, 10.7731), // TP.HCM
+                // Mapbox Map - Make sure it fills the entire available space
+                SizedBox(
+                  width: screenSize.width,
+                  height: screenSize.height,
+                  child: MapWidget(
+                    key: const ValueKey('mapWidget'),
+                    styleUri: MapboxStyles.MAPBOX_STREETS,
+                    cameraOptions: CameraOptions(
+                      center: Point(
+                        coordinates: Position(106.6880, 10.7731), // TP.HCM
+                      ),
+                      zoom: 13.0,
                     ),
-                    zoom: 13.0,
+                    textureView: true,
+                    onMapCreated: (MapboxMap controller) {
+                      setState(() {
+                        _mapController = controller;
+                      });
+                      context.read<MapBloc>().add(MapInitialized(controller));
+                    },
                   ),
-                  textureView: true,  // Thêm thuộc tính này
-                  onMapCreated: (MapboxMap controller) {
-                    setState(() {
-                      _mapController = controller;
-                    });
-                    context.read<MapBloc>().add(MapInitialized(controller));
-                  },
                 ),
 
-                // Loading indicator
+                // Loading indicator - Ensure it covers the entire screen
                 if (state.isLoading)
-                  Container(
-                    color: Colors.black.withOpacity(0.3),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryGreen,
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryGreen,
+                        ),
                       ),
                     ),
                   ),
 
-                // Danh sách điểm thu gom
+                // Danh sách điểm thu gom - responsive height using MediaQuery
                 if (state.collectionPoints.isNotEmpty)
                   Positioned(
                     bottom: 16,
                     left: 0,
                     right: 0,
-                    height: 130,
+                    height: cardHeight,
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       scrollDirection: Axis.horizontal,
@@ -108,6 +116,7 @@ class _MapScreenState extends State<MapScreen> {
                           context,
                           point,
                           isSelected: state.selectedPointId == point['id'],
+                          cardWidth: screenSize.width * 0.85,
                         );
                       },
                     ),
@@ -120,7 +129,6 @@ class _MapScreenState extends State<MapScreen> {
           backgroundColor: AppColors.primaryGreen,
           child: const Icon(Icons.directions),
           onPressed: () {
-            // Mở tính năng chỉ đường (sẽ triển khai sau)
             _showDirectionsNotImplemented(context);
           },
         ),
@@ -131,16 +139,19 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildCollectionPointCard(
       BuildContext context,
       Map<String, dynamic> point,
-      {bool isSelected = false}
+      {bool isSelected = false, double cardWidth = 280}
       ) {
     final capacity = point['current_load'] / point['capacity'] * 100;
+    final screenSize = MediaQuery.of(context).size;
+    final fontSize = screenSize.width < 360 ? 10.0 : 12.0;
+    final titleSize = screenSize.width < 360 ? 14.0 : 16.0;
 
     return GestureDetector(
       onTap: () {
         context.read<MapBloc>().add(SelectCollectionPoint(point['id']));
       },
       child: Container(
-        width: 280,
+        width: cardWidth,
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -173,83 +184,85 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    point['name'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: AppColors.textGrey,
-                        size: 12,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      point['name'],
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          '${point['distance']} km - ${point['address']}',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: AppColors.textGrey,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${point['distance']} km - ${point['address']}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: fontSize,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Giờ mở cửa: ${point['operating_hours']}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textGrey,
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: point['current_load'] / point['capacity'],
-                    backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      capacity > 80
-                          ? Colors.red
-                          : capacity > 50
-                          ? Colors.orange
-                          : AppColors.primaryGreen,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Giờ mở cửa: ${point['operating_hours']}',
+                      style: TextStyle(
+                        fontSize: fontSize,
+                        color: AppColors.textGrey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Công suất:',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                    const Spacer(),
+                    LinearProgressIndicator(
+                      value: point['current_load'] / point['capacity'],
+                      backgroundColor: Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        capacity > 80
+                            ? Colors.red
+                            : capacity > 50
+                            ? Colors.orange
+                            : AppColors.primaryGreen,
                       ),
-                      Text(
-                        '${point['current_load']}/${point['capacity']} kg',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Công suất:',
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          '${point['current_load']}/${point['capacity']} kg',
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
