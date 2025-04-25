@@ -21,6 +21,13 @@ class WasteType extends Equatable {
   required this.description,
   required this.icon,
   required this.color,
+  required this.recyclingMethod,
+  required this.examples,
+  required this.buyingPrice,
+  required this.unit,
+  required this.recentPoints,
+});
+
 
   @override
   List<Object> get props => [id, name, category, description, icon, color, recyclingMethod, examples, buyingPrice, unit, recentPoints];
