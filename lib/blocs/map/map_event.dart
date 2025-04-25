@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 abstract class MapEvent extends Equatable {
   const MapEvent();
@@ -9,7 +9,7 @@ abstract class MapEvent extends Equatable {
 }
 
 class MapInitialized extends MapEvent {
-  final MapboxMapController controller;
+  final MapboxMap controller;
 
   const MapInitialized(this.controller);
 
