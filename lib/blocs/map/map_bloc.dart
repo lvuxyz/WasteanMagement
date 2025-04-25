@@ -9,7 +9,6 @@ import '../../utils/app_colors.dart';
 import '../../services/mapbox_service.dart';
 import 'map_event.dart';
 import 'map_state.dart';
-import 'dart:typed_data';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final MapboxService mapboxService;
