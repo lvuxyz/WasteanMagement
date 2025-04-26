@@ -117,10 +117,12 @@ class WasteTypeCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
 
-                          // Hiển thị tag phân loại
-                          Row(
+                          // Hiển thị tag phân loại sử dụng Wrap thay vì Row để tránh overflow
+                          Wrap(
+                            spacing: 8, // Khoảng cách giữa các phần tử theo chiều ngang
+                            runSpacing: 8, // Khoảng cách giữa các dòng khi xuống dòng
                             children: [
-                              // Tag loại rác
+                              // Tag loại rác (ưu tiên hiển thị)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -144,31 +146,7 @@ class WasteTypeCard extends StatelessWidget {
                                 ),
                               ),
 
-                              // Giá thu mua (nếu có)
-                              if (wasteType.buyingPrice > 0) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '${wasteType.buyingPrice} đ/${wasteType.unit}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange,
-                                    ),
-                                  ),
-                                ),
-                              ],
-
-                              // Hiển thị điểm thưởng
-                              const SizedBox(width: 8),
+                              // Hiển thị điểm thưởng (ưu tiên thứ hai)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -188,7 +166,7 @@ class WasteTypeCard extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 2),
                                     Text(
-                                      '${_extractPoints(wasteType.recentPoints)} điểm',
+                                      '${_extractPoints(wasteType.recentPoints)} đ',
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
@@ -198,6 +176,27 @@ class WasteTypeCard extends StatelessWidget {
                                   ],
                                 ),
                               ),
+
+                              // Giá thu mua (nếu có và nếu còn chỗ)
+                              if (wasteType.buyingPrice > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${wasteType.buyingPrice}đ/${wasteType.unit}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ],
