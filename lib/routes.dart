@@ -35,6 +35,9 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const MainScreen());
       case map:
         return MaterialPageRoute(builder: (_) => const MapScreen());
+    // Thêm case này
+      case wasteClassificationGuide:
+        return MaterialPageRoute(builder: (_) => const WasteClassificationGuideScreen());
 
       default:
         return MaterialPageRoute(
