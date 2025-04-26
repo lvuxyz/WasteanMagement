@@ -22,59 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = index;
     });
   }
-  void _onCenterButtonPressed() {
-    // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Nhận diện rác bằng ảnh',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildImageSourceOption(
-                  icon: Icons.camera_alt,
-                  title: 'Chụp ảnh',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Xử lý logic chụp ảnh ở đây
-                    _showImageCaptureSuccess(context);
-                  },
-                ),
-                _buildImageSourceOption(
-                  icon: Icons.photo_library,
-                  title: 'Chọn từ thư viện',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Xử lý logic chọn ảnh từ thư viện ở đây
-                    _showImageCaptureSuccess(context);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildImageSourceOption({
     required IconData icon,
@@ -239,6 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _buildRecentTransactionsList(),
             const SizedBox(height: 16),
+            _buildQuickActions(height: 16),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -401,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Thêm Quick Actions ở đây
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions({required int height}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -429,13 +378,6 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildQuickAction(
-                icon: Icons.camera_alt_outlined,
-                title: 'Quét rác',
-                onTap: () {
-                  _onCenterButtonPressed();
-                },
-              ),
               _buildQuickAction(
                 icon: Icons.calendar_today_outlined,
                 title: 'Đặt lịch',
@@ -1018,11 +960,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildNavItem(Icons.person_outline, 4),
             ],
           ),
-          // Center button
-          Positioned(
-            top: -15,
-            child: _buildCenterButton(),
-          ),
         ],
       ),
     );
@@ -1044,30 +981,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCenterButton() {
-    return GestureDetector(
-      onTap: _onCenterButtonPressed,
-      child: Container(
-        height: 60,
-        width: 60,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              spreadRadius: 1,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.camera_alt,
-          color: AppColors.primaryGreen,
-          size: 30,
-        ),
-      ),
-    );
-  }
+
 }
