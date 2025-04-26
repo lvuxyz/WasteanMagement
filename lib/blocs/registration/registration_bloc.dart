@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 import '../../core/api/api_constants.dart';
-import '../../generated/l10n.dart';
 import 'registration_event.dart';
 import 'registration_state.dart';
 

@@ -38,59 +38,6 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _onCameraButtonPressed() {
-    // Mở ra menu tùy chọn để chụp ảnh hoặc chọn ảnh từ thư viện
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Nhận diện rác bằng ảnh',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildImageSourceOption(
-                  icon: Icons.camera_alt,
-                  title: 'Chụp ảnh',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Xử lý logic chụp ảnh ở đây
-                    _showImageCaptureSuccess(context);
-                  },
-                ),
-                _buildImageSourceOption(
-                  icon: Icons.photo_library,
-                  title: 'Chọn từ thư viện',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Xử lý logic chọn ảnh từ thư viện ở đây
-                    _showImageCaptureSuccess(context);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildImageSourceOption({
     required IconData icon,
@@ -281,12 +228,6 @@ class _MainScreenState extends State<MainScreen> {
             child: ProfileScreen(username: widget.username),
           ),
         ],
-      ),
-      // Giữ lại FloatingActionButton camera và loại bỏ camera ở bottom navigation bar
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onCameraButtonPressed,
-        backgroundColor: AppColors.primaryGreen,
-        child: const Icon(Icons.camera_alt, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _buildBottomNavigationBar(),
