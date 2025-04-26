@@ -9,6 +9,7 @@ import '../utils/app_colors.dart';
 import '../widgets/waste_type/waste_type_card.dart';
 import '../widgets/waste_type/waste_type_detail.dart';
 import '../widgets/waste_type/waste_type_guide.dart';
+import '../widgets/common/custom_app_bar.dart'; // Sử dụng AppBar tùy chỉnh có sẵn
 
 class WasteTypeManagementScreen extends StatefulWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -20,6 +21,7 @@ class WasteTypeManagementScreen extends StatefulWidget {
 class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -56,6 +58,13 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
     context.read<WasteTypeBloc>().add(SearchWasteTypes(_searchController.text));
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _isSearching = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -68,15 +77,39 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
               backgroundColor: Colors.white,
               appBar: AppBar(
                 backgroundColor: AppColors.primaryGreen,
-                title: const Text(
+                title: _isSearching
+                    ? _buildSearchField()
+                    : const Text(
                   'Quản lý Loại Rác Thải',
                   style: TextStyle(color: Colors.white),
                 ),
+                actions: [
+                  // Nút tìm kiếm
+                  IconButton(
+                    icon: Icon(_isSearching ? Icons.close : Icons.search, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        _isSearching = !_isSearching;
+                        if (!_isSearching) {
+                          _clearSearch();
+                        }
+                      });
+                    },
+                  ),
+                  // Nút refresh
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    onPressed: () {
+                      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                    },
+                  ),
+                ],
                 bottom: TabBar(
                   controller: _tabController,
                   indicatorColor: Colors.white,
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.white70,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                   tabs: const [
                     Tab(text: 'Tất cả'),
                     Tab(text: 'Tái chế'),
@@ -91,6 +124,17 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: AppColors.primaryGreen,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        action: SnackBarAction(
+                          label: 'Đóng',
+                          textColor: Colors.white,
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          },
+                        ),
                       ),
                     );
                   } else if (state is WasteTypeError) {
@@ -98,34 +142,107 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        action: SnackBarAction(
+                          label: 'Thử lại',
+                          textColor: Colors.white,
+                          onPressed: () {
+                            context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                          },
+                        ),
                       ),
                     );
                   }
                 },
                 builder: (context, state) {
+                  // Hiển thị loading khi đang tải dữ liệu
                   if (state is WasteTypeInitial || state is WasteTypeLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: AppColors.primaryGreen),
+                          SizedBox(height: 16),
+                          Text(
+                            'Đang tải dữ liệu...',
+                            style: TextStyle(
+                              color: AppColors.primaryGreen,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   if (state is WasteTypeLoaded) {
                     return Column(
                       children: [
-                        // Thanh tìm kiếm
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Tìm kiếm loại rác...',
-                              prefixIcon: const Icon(Icons.search),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: Colors.grey[300]!),
+                        // Thanh tìm kiếm (chỉ hiển thị khi không ở trong AppBar)
+                        if (!_isSearching)
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Tìm kiếm loại rác...',
+                                prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                  icon: const Icon(Icons.clear, color: AppColors.primaryGreen),
+                                  onPressed: _clearSearch,
+                                )
+                                    : null,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: AppColors.primaryGreen.withOpacity(0.5)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: AppColors.primaryGreen, width: 2),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                                filled: true,
+                                fillColor: Colors.grey[100],
                               ),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                              filled: true,
-                              fillColor: Colors.grey[100],
                             ),
+                          ),
+
+                        // Hiển thị số lượng kết quả
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Tìm thấy ${state.filteredWasteTypes.length} loại rác',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  // Nút sắp xếp (có thể thêm chức năng sau)
+                                  IconButton(
+                                    icon: Icon(Icons.sort, color: Colors.grey[600]),
+                                    onPressed: () {
+                                      // Thêm chức năng sắp xếp sau này
+                                    },
+                                  ),
+                                  // Nút lọc (có thể thêm chức năng sau)
+                                  IconButton(
+                                    icon: Icon(Icons.filter_list, color: Colors.grey[600]),
+                                    onPressed: () {
+                                      // Thêm chức năng lọc sau này
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
 
@@ -137,6 +254,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                     );
                   }
 
+                  // Xử lý trường hợp lỗi
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -148,20 +266,31 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                           style: TextStyle(color: Colors.red),
                         ),
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        ElevatedButton.icon(
                           onPressed: () {
                             context.read<WasteTypeBloc>().add(LoadWasteTypes());
                           },
-                          child: const Text('Thử lại'),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Thử lại'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   );
                 },
               ),
-              floatingActionButton: FloatingActionButton(
+              // Nút hướng dẫn phân loại rác
+              floatingActionButton: FloatingActionButton.extended(
                 backgroundColor: AppColors.primaryGreen,
-                child: const Icon(Icons.category_outlined),
+                icon: const Icon(Icons.info_outline),
+                label: const Text('Hướng dẫn phân loại'),
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -175,6 +304,26 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
     );
   }
 
+  // Widget tìm kiếm trong AppBar
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      autofocus: true,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Tìm kiếm loại rác...',
+        hintStyle: const TextStyle(color: Colors.white70),
+        border: InputBorder.none,
+        prefixIcon: const Icon(Icons.search, color: Colors.white),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.clear, color: Colors.white),
+          onPressed: _clearSearch,
+        ),
+      ),
+    );
+  }
+
+  // Widget danh sách loại rác
   Widget _buildWasteTypesList(BuildContext context, List<WasteType> wasteTypes) {
     if (wasteTypes.isEmpty) {
       return Center(
@@ -190,24 +339,44 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                 color: Colors.grey[600],
               ),
             ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: _clearSearch,
+              icon: const Icon(Icons.refresh, color: AppColors.primaryGreen),
+              label: const Text(
+                'Xóa bộ lọc',
+                style: TextStyle(color: AppColors.primaryGreen),
+              ),
+            ),
           ],
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: wasteTypes.length,
-      itemBuilder: (context, index) {
-        final wasteType = wasteTypes[index];
-        return WasteTypeCard(
-          wasteType: wasteType,
-          onTap: () => _showWasteTypeDetail(context, wasteType),
-        );
-      },
+    // Hiển thị danh sách loại rác với animation
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: ListView.builder(
+        key: ValueKey<int>(wasteTypes.length),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: wasteTypes.length,
+        itemBuilder: (context, index) {
+          final wasteType = wasteTypes[index];
+          return Hero(
+            tag: 'waste_type_${wasteType.id}',
+            child: Material(
+              child: WasteTypeCard(
+                wasteType: wasteType,
+                onTap: () => _showWasteTypeDetail(context, wasteType),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
+  // Hiển thị chi tiết loại rác
   void _showWasteTypeDetail(BuildContext context, WasteType wasteType) {
     context.read<WasteTypeBloc>().add(SelectWasteType(wasteType.id));
 
