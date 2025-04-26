@@ -292,10 +292,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> w
                 icon: const Icon(Icons.info_outline),
                 label: const Text('Hướng dẫn phân loại'),
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const WasteTypeGuide(),
-                  );
+                  Navigator.of(context).pushNamed('/waste-guide');
                 },
               ),
             );
