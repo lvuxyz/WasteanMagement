@@ -6,6 +6,7 @@ import 'screens/registration_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/map_screen.dart';
+import 'screens/waste_classification_guide_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -15,6 +16,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
+  static const String wasteClassificationGuide = '/waste-guide';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -33,6 +35,7 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const MainScreen());
       case map:
         return MaterialPageRoute(builder: (_) => const MapScreen());
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
