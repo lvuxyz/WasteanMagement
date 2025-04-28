@@ -99,9 +99,12 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy ApiClient được khởi tạo từ RepositoryProvider
+    final wasteTypeRepository = RepositoryProvider.of<WasteTypeRepository>(context);
+    
     return BlocProvider(
       create: (context) => WasteTypeBloc(
-        repository: WasteTypeRepository(),
+        repository: wasteTypeRepository,
       )..add(LoadWasteTypes()),
       child: Builder(builder: (blocContext) {
         return Scaffold(

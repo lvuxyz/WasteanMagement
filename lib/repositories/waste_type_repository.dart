@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/waste_type_model.dart';
 import '../models/collection_point_model.dart';
-import '../constants/api_constants.dart';
+import '../core/api/api_constants.dart';
 import '../core/api/api_client.dart';
 import 'dart:developer' as developer;
 
