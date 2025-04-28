@@ -7,7 +7,6 @@ import 'package:wasteanmagement/screens/waste_type/waste_type_list_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_details_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_collection_points_screen.dart';
-import '../../widgets/common/custom_app_bar.dart';
 
 class WasteTypeManagementScreen extends StatelessWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -18,12 +17,7 @@ class WasteTypeManagementScreen extends StatelessWidget {
       create: (context) => WasteTypeBloc(
         repository: WasteTypeRepository(),
       )..add(LoadWasteTypes()),
-      child: Scaffold(
-        appBar: CustomAppBar(
-          title: 'Quản lý loại rác',
-        ),
-        body: const WasteTypeListScreen(),
-      ),
+      child: const WasteTypeListScreen(),
     );
   }
 }

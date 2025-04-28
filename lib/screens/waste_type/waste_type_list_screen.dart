@@ -73,7 +73,7 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          'Quản lý Loại Rác Thải',
+          'Quản lý loại rác',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
@@ -95,15 +95,35 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
       ),
       body: Column(
         children: [
-          // Search bar - Always visible
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: SearchField(
+          // Search field
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: TextField(
               controller: _searchController,
-              hintText: 'Tìm kiếm loại rác...',
-              onClear: () {
-                _searchController.clear();
-              },
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm loại rác...',
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
             ),
           ),
           
@@ -155,50 +175,6 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
               ),
             ),
           ),
-
-          // Status indicator (applied filters)
-          if (_selectedCategory != 'Tất cả' || _searchController.text.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    'Bộ lọc đang áp dụng:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  if (_selectedCategory != 'Tất cả')
-                    Chip(
-                      label: Text(_selectedCategory),
-                      deleteIcon: Icon(Icons.close, size: 16),
-                      onDeleted: () {
-                        setState(() {
-                          _selectedCategory = 'Tất cả';
-                        });
-                        context.read<WasteTypeBloc>().add(FilterWasteTypesByCategory('Tất cả'));
-                      },
-                      backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-                      labelStyle: TextStyle(fontSize: 12),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  SizedBox(width: 4),
-                  if (_searchController.text.isNotEmpty)
-                    Chip(
-                      label: Text('Tìm kiếm: ${_searchController.text}'),
-                      deleteIcon: Icon(Icons.close, size: 16),
-                      onDeleted: () {
-                        _searchController.clear();
-                      },
-                      backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-                      labelStyle: TextStyle(fontSize: 12),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                ],
-              ),
-            ),
 
           // List of waste types
           Expanded(
