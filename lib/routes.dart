@@ -7,6 +7,7 @@ import 'screens/main_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/waste_classification_guide_screen.dart';
+import 'screens/recycling_progress_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
   static const String wasteClassificationGuide = '/waste-guide';
+  static const String recyclingProgress = '/recycling-progress';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -38,6 +40,8 @@ class AppRoutes {
     // Thêm case này
       case wasteClassificationGuide:
         return MaterialPageRoute(builder: (_) => const WasteClassificationGuideScreen());
+      case recyclingProgress:
+        return MaterialPageRoute(builder: (_) => const RecyclingProgressScreen());
 
       default:
         return MaterialPageRoute(
