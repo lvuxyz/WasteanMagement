@@ -242,7 +242,6 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
               },
             );
           }
-
           return Center(
             child: Text('Không tìm thấy dữ liệu'),
           );

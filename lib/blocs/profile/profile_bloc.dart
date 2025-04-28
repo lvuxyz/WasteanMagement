@@ -10,10 +10,26 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc({required this.userRepository}) : super(ProfileInitial()) {
     on<FetchProfile>(_onFetchProfile);
     on<UpdateProfile>(_onUpdateProfile);
+    on<LoadUserProfile>(_onLoadUserProfile);
   }
 
   Future<void> _onFetchProfile(
       FetchProfile event,
+      Emitter<ProfileState> emit,
+      ) async {
+    emit(ProfileLoading());
+    try {
+      final user = await userRepository.getUserProfile();
+      emit(ProfileLoaded(user));
+    } on UnauthorizedException catch (e) {
+      emit(ProfileError(e.toString()));
+    } catch (e) {
+      emit(ProfileError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadUserProfile(
+      LoadUserProfile event,
       Emitter<ProfileState> emit,
       ) async {
     emit(ProfileLoading());
