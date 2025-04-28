@@ -215,11 +215,12 @@ class WasteTypeRepository {
       description: wasteType.description,
       icon: wasteType.icon,
       color: wasteType.color,
-      recyclingMethod: wasteType.recyclingMethod,
+      handlingInstructions: wasteType.handlingInstructions,
       examples: wasteType.examples,
-      buyingPrice: wasteType.buyingPrice,
+      unitPrice: wasteType.unitPrice,
       unit: wasteType.unit,
       recentPoints: wasteType.recentPoints,
+      recyclable: wasteType.recyclable,
     );
     
     // Trong thực tế, sẽ lưu dữ liệu này xuống database hoặc gửi đến server
