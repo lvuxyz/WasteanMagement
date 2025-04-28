@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wasteanmagement/screens/waste_type_management_screen.dart';
+import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
