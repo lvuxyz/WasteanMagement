@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
+import 'package:wasteanmagement/screens/waste_type/waste_type_test_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
+  static const String wasteTypeTest = '/waste-type-test';
   static const String wasteClassificationGuide = '/waste-guide';
   static const String recyclingProgress = '/recycling-progress';
 
@@ -25,6 +27,8 @@ class AppRoutes {
     switch (settings.name) {
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
+      case wasteTypeTest:
+        return MaterialPageRoute(builder: (_) => const WasteTypeTestScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:
