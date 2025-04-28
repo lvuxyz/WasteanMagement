@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/waste_type/waste_type_bloc.dart';
-import '../blocs/waste_type/waste_type_event.dart';
-import '../blocs/waste_type/waste_type_state.dart';
-import '../models/waste_type_model.dart';
-import '../utils/app_colors.dart';
-import '../widgets/common/custom_text_field.dart';
-import '../widgets/common/custom_dropdown_field.dart';
-import '../widgets/common/custom_switch_field.dart';
-import '../widgets/common/custom_button.dart';
+import '../../blocs/waste_type/waste_type_bloc.dart';
+import '../../blocs/waste_type/waste_type_event.dart';
+import '../../blocs/waste_type/waste_type_state.dart';
+import '../../models/waste_type_model.dart';
+import '../../utils/app_colors.dart';
+import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_dropdown_field.dart';
+import '../../widgets/common/custom_switch_field.dart';
+import '../../widgets/common/custom_button.dart';
 
 class WasteTypeEditScreen extends StatefulWidget {
   final int? wasteTypeId; // Null for create, not null for update
@@ -24,18 +24,20 @@ class WasteTypeEditScreen extends StatefulWidget {
 
 class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _recyclingMethodController;
-  late TextEditingController _buyingPriceController;
-  late TextEditingController _unitController;
-  late TextEditingController _recentPointsController;
+  final _scrollController = ScrollController();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _recyclingMethodController = TextEditingController();
+  final _buyingPriceController = TextEditingController();
+  final _unitController = TextEditingController(text: 'kg');
+  final _recentPointsController = TextEditingController();
+  
   String _selectedCategory = 'Tái chế';
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
   List<String> _examples = [''];
-
+  
   // Available icon options could be extended
   final Map<String, IconData> _availableIcons = {
     'Chai nhựa': Icons.local_drink_outlined,
@@ -68,13 +70,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
-    _descriptionController = TextEditingController();
-    _recyclingMethodController = TextEditingController();
-    _buyingPriceController = TextEditingController();
-    _unitController = TextEditingController(text: 'kg');
-    _recentPointsController = TextEditingController();
-
     _isEditing = widget.wasteTypeId != null;
 
     if (_isEditing) {
@@ -91,6 +86,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _buyingPriceController.dispose();
     _unitController.dispose();
     _recentPointsController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -126,6 +122,17 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     setState(() {
       _examples.add('');
     });
+    
+    // Scroll to the new field after rendering
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _removeExample(int index) {
@@ -142,50 +149,61 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     });
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
-
-      if (finalExamples.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cần nhập ít nhất một ví dụ'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      int buyingPrice = 0;
-      try {
-        buyingPrice = int.parse(_buyingPriceController.text);
-      } catch (e) {
-        // Default to 0 if parsing fails
-      }
-
-      final wasteType = WasteType(
-        id: _isEditing ? widget.wasteTypeId! : 0, // Temporary ID for new items
-        name: _nameController.text,
-        category: _selectedCategory,
-        description: _descriptionController.text,
-        icon: _availableIcons[_selectedIconKey]!,
-        color: _selectedColor,
-        recyclingMethod: _recyclingMethodController.text,
-        examples: finalExamples,
-        buyingPrice: buyingPrice,
-        unit: _unitController.text,
-        recentPoints: _recentPointsController.text,
+  bool _validateForm() {
+    if (!_formKey.currentState!.validate()) {
+      return false;
+    }
+    
+    // Validate examples
+    final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
+    if (finalExamples.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cần nhập ít nhất một ví dụ'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
+      return false;
+    }
+    
+    return true;
+  }
 
-      setState(() {
-        _isLoading = true;
-      });
+  void _submitForm() {
+    if (!_validateForm()) return;
+    
+    final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
+    
+    int buyingPrice = 0;
+    try {
+      buyingPrice = int.parse(_buyingPriceController.text);
+    } catch (e) {
+      // Default to 0 if parsing fails
+    }
 
-      if (_isEditing) {
-        context.read<WasteTypeBloc>().add(UpdateWasteType(wasteType));
-      } else {
-        context.read<WasteTypeBloc>().add(CreateWasteType(wasteType));
-      }
+    final wasteType = WasteType(
+      id: _isEditing ? widget.wasteTypeId! : 0, // Temporary ID for new items
+      name: _nameController.text,
+      category: _selectedCategory,
+      description: _descriptionController.text,
+      icon: _availableIcons[_selectedIconKey]!,
+      color: _selectedColor,
+      recyclingMethod: _recyclingMethodController.text,
+      examples: finalExamples,
+      buyingPrice: buyingPrice,
+      unit: _unitController.text,
+      recentPoints: _recentPointsController.text,
+    );
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    if (_isEditing) {
+      context.read<WasteTypeBloc>().add(UpdateWasteType(wasteType));
+    } else {
+      context.read<WasteTypeBloc>().add(CreateWasteType(wasteType));
     }
   }
 
@@ -195,9 +213,20 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: Text(
-          _isEditing ? 'Sửa loại rác thải' : 'Thêm loại rác thải',
+          _isEditing ? 'Cập nhật loại rác thải' : 'Thêm loại rác thải mới',
           style: TextStyle(color: Colors.white),
         ),
+        actions: [
+          if (!_isLoading)
+            TextButton.icon(
+              onPressed: _submitForm,
+              icon: Icon(Icons.save, color: Colors.white),
+              label: Text(
+                'Lưu',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
       ),
       body: BlocConsumer<WasteTypeBloc, WasteTypeState>(
         listener: (context, state) {
@@ -205,6 +234,10 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             // Populate form only once when loading details for editing
             _populateForm(state.wasteType);
           } else if (state is WasteTypeCreated || state is WasteTypeUpdated) {
+            setState(() {
+              _isLoading = false;
+            });
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -213,395 +246,607 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                       : 'Tạo loại rác mới thành công',
                 ),
                 backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
               ),
             );
-            Navigator.of(context).pop();
+            
+            Navigator.of(context).pop(true); // Return true to indicate success
           } else if (state is WasteTypeError) {
             setState(() {
               _isLoading = false;
             });
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
               ),
             );
           }
         },
         builder: (context, state) {
           if (state is WasteTypeLoading && _isEditing && !_isLoading) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Đang tải thông tin...',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
           }
 
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Basic Information Section
-                  Text(
-                    'Thông tin cơ bản',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Name field
-                  CustomTextField(
-                    controller: _nameController,
-                    label: 'Tên loại rác',
-                    hintText: 'Nhập tên loại rác',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Tên loại rác là bắt buộc';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Description field
-                  CustomTextField(
-                    controller: _descriptionController,
-                    label: 'Mô tả',
-                    hintText: 'Nhập mô tả về loại rác',
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Mô tả là bắt buộc';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Category dropdown
-                  CustomDropdownField<String>(
-                    label: 'Danh mục',
-                    value: _selectedCategory,
-                    items: const [
-                      'Tái chế',
-                      'Hữu cơ',
-                      'Nguy hại',
-                      'Thường',
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                controller: _scrollController,
+                padding: EdgeInsets.all(16),
+                physics: BouncingScrollPhysics(),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Icon and Color Selection
+                      _buildIconAndColorSection(),
+                      
+                      SizedBox(height: 24),
+                      
+                      // Basic Information Section
+                      _buildSectionTitle('Thông tin cơ bản'),
+                      _buildBasicInfoSection(),
+                      
+                      SizedBox(height: 24),
+                      
+                      // Description and Recycling Method Section
+                      _buildSectionTitle('Mô tả và Hướng dẫn'),
+                      _buildDescriptionAndRecyclingSection(),
+                      
+                      SizedBox(height: 24),
+                      
+                      // Example Items Section
+                      _buildSectionTitle('Các ví dụ về loại rác'),
+                      _buildExamplesSection(),
+                      
+                      SizedBox(height: 24),
+                      
+                      // Pricing Information Section
+                      _buildSectionTitle('Thông tin thu mua'),
+                      _buildPricingSection(),
+                      
+                      SizedBox(height: 24),
+                      
+                      // Reward Points Section
+                      _buildSectionTitle('Điểm thưởng'),
+                      _buildRewardPointsSection(),
+                      
+                      SizedBox(height: 80), // Extra space for button
                     ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedCategory = value;
-                          // Update recyclable based on category
-                          _isRecyclable = value == 'Tái chế';
-                        });
-                      }
-                    },
                   ),
-                  SizedBox(height: 16),
-
-                  // Recyclable switch
-                  CustomSwitchField(
-                    label: 'Có thể tái chế',
-                    value: _isRecyclable,
-                    onChanged: (value) {
-                      setState(() {
-                        _isRecyclable = value;
-                        // Update category if needed
-                        if (value && _selectedCategory != 'Tái chế') {
-                          _selectedCategory = 'Tái chế';
-                        } else if (!value && _selectedCategory == 'Tái chế') {
-                          _selectedCategory = 'Thường';
-                        }
-                      });
-                    },
-                  ),
-                  SizedBox(height: 24),
-
-                  // Visual representation section
-                  Text(
-                    'Biểu thị trực quan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
+                ),
+              ),
+              
+              // Loading overlay
+              if (_isLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
-                  SizedBox(height: 16),
-
-                  // Icon selection
-                  Column(
+                ),
+            ],
+          );
+        },
+      ),
+      bottomNavigationBar: _isLoading 
+          ? null
+          : Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: Offset(0, -4),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: ElevatedButton(
+                  onPressed: _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryGreen,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    _isEditing ? 'Cập nhật' : 'Tạo mới',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+  
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              color: AppColors.primaryGreen,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildIconAndColorSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Biểu tượng và màu sắc',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                // Preview
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _selectedColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _availableIcons[_selectedIconKey],
+                    color: _selectedColor,
+                    size: 48,
+                  ),
+                ),
+                SizedBox(width: 16),
+                // Selection
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Biểu tượng',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
                         ),
                       ),
                       SizedBox(height: 8),
-                      Container(
-                        height: 60,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _availableIcons.entries.map((entry) {
-                            final isSelected = _selectedIconKey == entry.key;
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedIconKey = entry.key;
-                                });
-                              },
-                              child: Container(
-                                margin: EdgeInsets.only(right: 12),
-                                padding: EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? _selectedColor.withOpacity(0.2)
-                                      : Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: isSelected
-                                      ? Border.all(color: _selectedColor)
-                                      : null,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      entry.value,
-                                      color: isSelected
-                                          ? _selectedColor
-                                          : Colors.grey[600],
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      entry.key,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: isSelected
-                                            ? _selectedColor
-                                            : Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                      DropdownButtonFormField<String>(
+                        value: _selectedIconKey,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          isDense: true,
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-
-                  // Color selection
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Màu sắc',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Container(
-                        height: 40,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _availableColors.map((color) {
-                            final isSelected = _selectedColor == color;
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedColor = color;
-                                });
-                              },
-                              child: Container(
-                                margin: EdgeInsets.only(right: 12),
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  shape: BoxShape.circle,
-                                  border: isSelected
-                                      ? Border.all(color: Colors.black, width: 2)
-                                      : null,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      spreadRadius: 1,
-                                      blurRadius: 2,
-                                      offset: Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: isSelected
-                                    ? Icon(Icons.check, color: Colors.white)
-                                    : null,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-
-                  // Processing Instructions Section
-                  Text(
-                    'Hướng dẫn xử lý',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Recycling method field
-                  CustomTextField(
-                    controller: _recyclingMethodController,
-                    label: 'Phương pháp xử lý',
-                    hintText: 'Nhập hướng dẫn cách xử lý loại rác này',
-                    maxLines: 4,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Hướng dẫn xử lý là bắt buộc';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Examples section
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Ví dụ',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                        items: _availableIcons.keys.map((String key) {
+                          return DropdownMenuItem<String>(
+                            value: key,
+                            child: Row(
+                              children: [
+                                Icon(_availableIcons[key], size: 18),
+                                SizedBox(width: 8),
+                                Text(key),
+                              ],
                             ),
-                          ),
-                          TextButton.icon(
-                            onPressed: _addExample,
-                            icon: Icon(Icons.add, color: AppColors.primaryGreen),
-                            label: Text(
-                              'Thêm ví dụ',
-                              style: TextStyle(color: AppColors.primaryGreen),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      ...List.generate(_examples.length, (index) {
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  initialValue: _examples[index],
-                                  decoration: InputDecoration(
-                                    hintText: 'Nhập ví dụ',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 12,
-                                    ),
-                                  ),
-                                  onChanged: (value) {
-                                    _updateExample(index, value);
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              IconButton(
-                                icon: Icon(Icons.remove_circle, color: Colors.red),
-                                onPressed: () => _removeExample(index),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-
-                  // Incentives Section
-                  Text(
-                    'Khuyến khích',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Buying price field
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 7,
-                        child: CustomTextField(
-                          controller: _buyingPriceController,
-                          label: 'Giá thu mua',
-                          hintText: 'Nhập giá thu mua',
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        flex: 3,
-                        child: CustomTextField(
-                          controller: _unitController,
-                          label: 'Đơn vị',
-                          hintText: 'kg',
-                        ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedIconKey = newValue;
+                            });
+                          }
+                        },
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
-
-                  // Points field
-                  CustomTextField(
-                    controller: _recentPointsController,
-                    label: 'Điểm thưởng',
-                    hintText: 'Ví dụ: Tái chế 1kg = 5 điểm',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Thông tin điểm thưởng là bắt buộc';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 32),
-
-                  // Submit button
-                  CustomButton(
-                    text: _isEditing ? 'Cập nhật' : 'Tạo mới',
-                    isLoading: _isLoading,
-                    onPressed: _submitForm,
-                  ),
-                  SizedBox(height: 32),
-                ],
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Màu sắc',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
               ),
             ),
-          );
-        },
+            SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: _availableColors.map((color) {
+                final isSelected = _selectedColor == color;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedColor = color;
+                    });
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        width: 2,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withOpacity(0.4),
+                                spreadRadius: 2,
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: isSelected
+                        ? Icon(Icons.check, color: Colors.white, size: 18)
+                        : null,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildBasicInfoSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Name field
+            CustomTextField(
+              controller: _nameController,
+              label: 'Tên loại rác thải',
+              hint: 'Ví dụ: Chai nhựa PET',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Vui lòng nhập tên loại rác thải';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            // Category selection
+            Text(
+              'Danh mục',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
+            ),
+            SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              items: [
+                'Tái chế',
+                'Hữu cơ',
+                'Nguy hại',
+                'Thường',
+              ].map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                    _isRecyclable = newValue == 'Tái chế';
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 16),
+            // Recyclable switch
+            CustomSwitchField(
+              label: 'Có thể tái chế',
+              value: _isRecyclable,
+              onChanged: (value) {
+                setState(() {
+                  _isRecyclable = value;
+                  if (value) {
+                    _selectedCategory = 'Tái chế';
+                  } else if (_selectedCategory == 'Tái chế') {
+                    _selectedCategory = 'Thường';
+                  }
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildDescriptionAndRecyclingSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Description field
+            CustomTextField(
+              controller: _descriptionController,
+              label: 'Mô tả',
+              hint: 'Mô tả chi tiết về loại rác thải này',
+              maxLines: 3,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Vui lòng nhập mô tả';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            // Recycling method field
+            CustomTextField(
+              controller: _recyclingMethodController,
+              label: 'Hướng dẫn xử lý',
+              hint: 'Cách thức xử lý, phân loại hoặc tái chế',
+              maxLines: 3,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Vui lòng nhập hướng dẫn xử lý';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildExamplesSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (int i = 0; i < _examples.length; i++) ...[
+              if (i > 0) SizedBox(height: 16),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${i + 1}',
+                      style: TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: _examples[i],
+                      decoration: InputDecoration(
+                        hintText: 'Ví dụ: Chai nước suối',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                      onChanged: (value) => _updateExample(i, value),
+                    ),
+                  ),
+                  if (_examples.length > 1)
+                    IconButton(
+                      icon: Icon(Icons.remove_circle_outline, color: Colors.red),
+                      onPressed: () => _removeExample(i),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                    ),
+                ],
+              ),
+            ],
+            SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _addExample,
+              icon: Icon(Icons.add),
+              label: Text('Thêm ví dụ'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primaryGreen,
+                elevation: 0,
+                side: BorderSide(color: AppColors.primaryGreen),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPricingSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: CustomTextField(
+                    controller: _buyingPriceController,
+                    label: 'Giá thu mua',
+                    hint: '0',
+                    keyboardType: TextInputType.number,
+                    suffixText: 'đồng',
+                    validator: (value) {
+                      if (value != null && value.isNotEmpty) {
+                        try {
+                          int.parse(value);
+                        } catch (e) {
+                          return 'Nhập số hợp lệ';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: CustomTextField(
+                    controller: _unitController,
+                    label: 'Đơn vị',
+                    hint: 'kg',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Nhập đơn vị';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Để mức giá là 0 nếu không thu mua loại rác này',
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildRewardPointsSection() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomTextField(
+              controller: _recentPointsController,
+              label: 'Thông tin điểm thưởng',
+              hint: 'Ví dụ: Tái chế 1kg giấy = 3 điểm',
+              helperText: 'Mô tả cách tính điểm thưởng cho loại rác này',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Vui lòng nhập thông tin điểm thưởng';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
