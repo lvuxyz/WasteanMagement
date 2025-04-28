@@ -20,7 +20,7 @@ class RegistrationScreen extends StatelessWidget {
       create: (context) => RegistrationBloc(context: context),
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CustomAppBar(),
+        appBar: CustomAppBar(title: 'Đăng ký'),
         body: BlocListener<RegistrationBloc, RegistrationState>(
           listener: (context, state) {
             if (state is RegistrationFailure) {

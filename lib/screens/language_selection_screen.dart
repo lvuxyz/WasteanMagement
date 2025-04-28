@@ -16,9 +16,7 @@ class LanguageSelectionScreen extends StatelessWidget {
       // Hoặc sử dụng constructor phù hợp với loại repository mà LanguageBloc yêu cầu
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CustomAppBar(
-          showBackButton: false,
-        ),
+        appBar: CustomAppBar(title: 'Chọn ngôn ngữ'),
         body: BlocListener<LanguageBloc, LanguageState>(
           listener: (context, state) {
             if (state is LanguageError) {

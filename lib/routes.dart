@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wasteanmagement/screens/waste_type_management_screen.dart';
+import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
+import 'package:wasteanmagement/screens/waste_type/waste_type_test_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -7,6 +8,7 @@ import 'screens/main_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/waste_classification_guide_screen.dart';
+import 'screens/recycling_progress_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -16,13 +18,17 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
+  static const String wasteTypeTest = '/waste-type-test';
   static const String wasteClassificationGuide = '/waste-guide';
+  static const String recyclingProgress = '/recycling-progress';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
+      case wasteTypeTest:
+        return MaterialPageRoute(builder: (_) => const WasteTypeTestScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:
@@ -38,6 +44,8 @@ class AppRoutes {
     // Thêm case này
       case wasteClassificationGuide:
         return MaterialPageRoute(builder: (_) => const WasteClassificationGuideScreen());
+      case recyclingProgress:
+        return MaterialPageRoute(builder: (_) => const RecyclingProgressScreen());
 
       default:
         return MaterialPageRoute(

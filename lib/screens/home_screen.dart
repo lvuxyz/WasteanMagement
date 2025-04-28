@@ -62,100 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showImageCaptureSuccess(BuildContext context) {
-    // Demo hiển thị kết quả nhận diện
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nhận diện thành công'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Loại rác được nhận diện:'),
-            const SizedBox(height: 10),
-            _buildWasteTypeItem(
-              icon: Icons.delete_outline,
-              color: Colors.blue,
-              name: 'Nhựa tái chế',
-              confidence: '95%',
-            ),
-            const SizedBox(height: 8),
-            _buildWasteTypeItem(
-              icon: Icons.description_outlined,
-              color: Colors.amber,
-              name: 'Giấy, bìa carton',
-              confidence: '5%',
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Bạn có thể gửi rác tại các điểm thu gom gần nhất.',
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Chuyển đến trang gửi rác
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGreen,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Gửi rác ngay'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWasteTypeItem({
-    required IconData icon,
-    required Color color,
-    required String name,
-    required String confidence,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ),
-        Text(
-          confidence,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -188,6 +94,67 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _buildQuickActions(height: 16),
             const SizedBox(height: 16),
+            // Thêm nút để kiểm tra API loại rác
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 2,
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/waste-type-test');
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.recycling,
+                          color: Colors.green,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kiểm tra API Loại Rác',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Hiển thị danh sách loại rác từ API',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.black45,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
