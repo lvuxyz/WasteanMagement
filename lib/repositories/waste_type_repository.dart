@@ -4,27 +4,42 @@ import 'package:http/http.dart' as http;
 import '../models/waste_type_model.dart';
 import '../models/collection_point_model.dart';
 import '../constants/api_constants.dart';
+import '../core/api/api_client.dart';
+import 'dart:developer' as developer;
 
 class WasteTypeRepository {
+  final ApiClient apiClient;
   final String baseUrl = ApiConstants.baseUrl;
+  
+  WasteTypeRepository({required this.apiClient});
 
   Future<List<WasteType>> getWasteTypes() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/waste-types'));
+      developer.log('Đang gọi API ${ApiConstants.wasteTypes}');
       
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final response = await apiClient.get(ApiConstants.wasteTypes);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
         
-        if (jsonResponse['status'] == 'success') {
-          final List<dynamic> wasteTypesJson = jsonResponse['data']['wasteTypes'];
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          final List<dynamic> wasteTypesJson = data['data']['wasteTypes'];
           return wasteTypesJson.map((json) => WasteType.fromJson(json)).toList();
         } else {
-          throw Exception('API error: ${jsonResponse['message']}');
+          developer.log('Lỗi API: ${data['message']}', error: data['message']);
+          throw Exception('API error: ${data['message']}');
         }
       } else {
+        developer.log('Lỗi khi tải loại rác. Mã trạng thái: ${response.statusCode}', 
+          error: 'Lỗi HTTP ${response.statusCode}');
         throw Exception('Failed to load waste types. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      developer.log('Lỗi khi tải danh sách loại rác: $e', error: e);
       throw Exception('Failed to load waste types: $e');
     }
   }
@@ -39,21 +54,31 @@ class WasteTypeRepository {
   // Phương thức tìm WasteType theo ID
   Future<WasteType> getWasteTypeById(int wasteTypeId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/waste-types/$wasteTypeId'));
+      developer.log('Đang gọi API ${ApiConstants.wasteTypes}/$wasteTypeId');
       
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final response = await apiClient.get('${ApiConstants.wasteTypes}/$wasteTypeId');
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
         
-        if (jsonResponse['status'] == 'success') {
-          final Map<String, dynamic> wasteTypeJson = jsonResponse['data']['wasteType'];
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
           return WasteType.fromJson(wasteTypeJson);
         } else {
-          throw Exception('API error: ${jsonResponse['message']}');
+          developer.log('Lỗi API: ${data['message']}', error: data['message']);
+          throw Exception('API error: ${data['message']}');
         }
       } else {
+        developer.log('Lỗi khi tải chi tiết loại rác. Mã trạng thái: ${response.statusCode}',
+          error: 'Lỗi HTTP ${response.statusCode}');
         throw Exception('Failed to load waste type. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      developer.log('Lỗi khi tải chi tiết loại rác: $e', error: e);
       throw Exception('Failed to load waste type: $e');
     }
   }
