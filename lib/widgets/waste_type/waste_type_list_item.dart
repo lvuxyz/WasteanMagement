@@ -68,22 +68,24 @@ class WasteTypeListItem extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         
-                        // Category badge
+                        // Recyclable badge
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getCategoryColor(wasteType.category).withOpacity(0.1),
+                            color: wasteType.recyclable 
+                              ? Colors.green.withOpacity(0.1) 
+                              : Colors.grey.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            wasteType.category,
+                            wasteType.recyclable ? 'Tái chế được' : 'Không tái chế',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: _getCategoryColor(wasteType.category),
+                              color: wasteType.recyclable ? Colors.green : Colors.grey,
                             ),
                           ),
                         ),
@@ -91,7 +93,7 @@ class WasteTypeListItem extends StatelessWidget {
                         const SizedBox(height: 4),
                         
                         // Price information
-                        if (wasteType.buyingPrice > 0)
+                        if (wasteType.unitPrice > 0)
                           Row(
                             children: [
                               Icon(
@@ -101,7 +103,7 @@ class WasteTypeListItem extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '${wasteType.buyingPrice}đ/${wasteType.unit}',
+                                '${wasteType.unitPrice}đ/${wasteType.unit}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -120,19 +122,52 @@ class WasteTypeListItem extends StatelessWidget {
               ),
             ),
 
-            // Description section
+            // Description and handling instructions
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Text(
-                wasteType.description,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    wasteType.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (wasteType.handlingInstructions.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: Colors.blue[700],
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              wasteType.handlingInstructions,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.blue[700],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
+            const SizedBox(height: 6),
           ],
         ),
       ),
