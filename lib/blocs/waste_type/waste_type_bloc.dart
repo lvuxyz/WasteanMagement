@@ -13,6 +13,8 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     on<FilterWasteTypesByCategory>(_onFilterWasteTypesByCategory);
     on<SelectWasteType>(_onSelectWasteType);
     on<AddToRecyclingPlan>(_onAddToRecyclingPlan);
+    on<LoadWasteTypeDetails>(_onLoadWasteTypeDetails);
+    on<LoadWasteTypeDetailsWithAvailablePoints>(_onLoadWasteTypeDetailsWithAvailablePoints);
   }
 
   Future<void> _onLoadWasteTypes(
@@ -40,29 +42,17 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       final query = event.query.toLowerCase();
 
       List<WasteType> filteredList;
-
+      
       if (query.isEmpty) {
-        // Nếu query rỗng, lọc theo danh mục đang chọn (nếu có)
-        if (currentState.selectedCategory.isEmpty || currentState.selectedCategory == 'Tất cả') {
-          filteredList = currentState.wasteTypes;
-        } else {
-          filteredList = currentState.wasteTypes.where((wasteType) {
-            return wasteType.category == currentState.selectedCategory;
-          }).toList();
-        }
+        filteredList = currentState.wasteTypes;
       } else {
-        // Lọc theo query và danh mục đang chọn
-        filteredList = currentState.wasteTypes.where((wasteType) {
-          final matchesQuery = wasteType.name.toLowerCase().contains(query) ||
-              wasteType.description.toLowerCase().contains(query) ||
-              wasteType.category.toLowerCase().contains(query);
-
-          if (currentState.selectedCategory.isEmpty || currentState.selectedCategory == 'Tất cả') {
-            return matchesQuery;
-          } else {
-            return matchesQuery && wasteType.category == currentState.selectedCategory;
-          }
-        }).toList();
+        filteredList = currentState.wasteTypes
+            .where((type) => 
+                type.name.toLowerCase().contains(query) ||
+                type.description.toLowerCase().contains(query) ||
+                type.category.toLowerCase().contains(query) ||
+                type.examples.any((example) => example.toLowerCase().contains(query)))
+            .toList();
       }
 
       emit(currentState.copyWith(
@@ -81,35 +71,13 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       final category = event.category;
 
       List<WasteType> filteredList;
-
+      
       if (category.isEmpty || category == 'Tất cả') {
-        // Nếu không có danh mục hoặc là 'Tất cả', lọc theo query hiện tại (nếu có)
-        if (currentState.searchQuery.isEmpty) {
-          filteredList = currentState.wasteTypes;
-        } else {
-          final query = currentState.searchQuery.toLowerCase();
-          filteredList = currentState.wasteTypes.where((wasteType) {
-            return wasteType.name.toLowerCase().contains(query) ||
-                wasteType.description.toLowerCase().contains(query) ||
-                wasteType.category.toLowerCase().contains(query);
-          }).toList();
-        }
+        filteredList = currentState.wasteTypes;
       } else {
-        // Lọc theo danh mục và query hiện tại (nếu có)
-        filteredList = currentState.wasteTypes.where((wasteType) {
-          final matchesCategory = wasteType.category == category;
-
-          if (currentState.searchQuery.isEmpty) {
-            return matchesCategory;
-          } else {
-            final query = currentState.searchQuery.toLowerCase();
-            final matchesQuery = wasteType.name.toLowerCase().contains(query) ||
-                wasteType.description.toLowerCase().contains(query) ||
-                wasteType.category.toLowerCase().contains(query);
-
-            return matchesCategory && matchesQuery;
-          }
-        }).toList();
+        filteredList = currentState.wasteTypes
+            .where((type) => type.category == category)
+            .toList();
       }
 
       emit(currentState.copyWith(
@@ -135,24 +103,52 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       AddToRecyclingPlan event,
       Emitter<WasteTypeState> emit,
       ) async {
-    final currentState = state;
-
-    if (currentState is WasteTypeLoaded) {
-      try {
-        final success = await repository.addToRecyclingPlan(event.wasteTypeId);
-
-        if (success) {
-          emit(const RecyclingPlanUpdated('Đã thêm vào kế hoạch tái chế'));
-          // Sau khi hiển thị thông báo, quay lại trạng thái trước đó
-          emit(currentState);
-        } else {
-          emit(const WasteTypeError('Không thể thêm vào kế hoạch tái chế'));
-          emit(currentState);
-        }
-      } catch (e) {
-        emit(WasteTypeError('Lỗi: $e'));
-        emit(currentState);
+    try {
+      final result = await repository.addToRecyclingPlan(event.wasteTypeId);
+      if (result) {
+        emit(RecyclingPlanUpdated('Đã thêm loại rác vào kế hoạch tái chế thành công'));
+      } else {
+        emit(WasteTypeError('Không thể thêm loại rác vào kế hoạch tái chế'));
       }
+    } catch (e) {
+      emit(WasteTypeError('Đã xảy ra lỗi khi thêm vào kế hoạch tái chế: $e'));
+    }
+  }
+
+  Future<void> _onLoadWasteTypeDetails(
+      LoadWasteTypeDetails event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
+      final collectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
+      emit(WasteTypeDetailLoaded(
+        wasteType: wasteType,
+        collectionPoints: collectionPoints,
+      ));
+    } catch (e) {
+      emit(WasteTypeError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadWasteTypeDetailsWithAvailablePoints(
+      LoadWasteTypeDetailsWithAvailablePoints event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
+      final linkedCollectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
+      final allCollectionPoints = await repository.getAllCollectionPoints();
+      
+      emit(WasteTypeDetailLoaded(
+        wasteType: wasteType,
+        collectionPoints: linkedCollectionPoints,
+        allCollectionPoints: allCollectionPoints,
+      ));
+    } catch (e) {
+      emit(WasteTypeError(e.toString()));
     }
   }
 }
