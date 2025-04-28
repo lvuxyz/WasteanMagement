@@ -63,6 +63,19 @@ class WasteTypeDetailLoaded extends WasteTypeState {
   List<Object?> get props => [wasteType, collectionPoints, allCollectionPoints];
 }
 
+class WasteTypeDeleted extends WasteTypeState {
+  final int wasteTypeId;
+  final String message;
+
+  const WasteTypeDeleted({
+    required this.wasteTypeId,
+    this.message = 'Đã xóa loại rác thành công',
+  });
+
+  @override
+  List<Object?> get props => [wasteTypeId, message];
+}
+
 class CollectionPointLinked extends WasteTypeState {
   final int wasteTypeId;
   final int collectionPointId;
@@ -146,4 +159,30 @@ class WasteTypeCollectionPointsLoaded extends WasteTypeState {
       availableSearchQuery: availableSearchQuery ?? this.availableSearchQuery,
     );
   }
+}
+
+class WasteTypeCreated extends WasteTypeState {
+  final WasteType wasteType;
+  final String message;
+
+  const WasteTypeCreated({
+    required this.wasteType,
+    this.message = 'Loại rác đã được tạo thành công',
+  });
+
+  @override
+  List<Object?> get props => [wasteType, message];
+}
+
+class WasteTypeUpdated extends WasteTypeState {
+  final WasteType wasteType;
+  final String message;
+
+  const WasteTypeUpdated({
+    required this.wasteType,
+    this.message = 'Loại rác đã được cập nhật thành công',
+  });
+
+  @override
+  List<Object?> get props => [wasteType, message];
 }

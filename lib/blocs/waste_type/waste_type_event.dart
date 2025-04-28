@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../models/waste_type_model.dart';
 
 abstract class WasteTypeEvent extends Equatable {
   const WasteTypeEvent();
@@ -61,4 +62,57 @@ class LoadWasteTypeDetailsWithAvailablePoints extends WasteTypeEvent {
 
   @override
   List<Object?> get props => [wasteTypeId];
+}
+
+class DeleteWasteType extends WasteTypeEvent {
+  final int wasteTypeId;
+
+  const DeleteWasteType(this.wasteTypeId);
+
+  @override
+  List<Object?> get props => [wasteTypeId];
+}
+
+class LinkCollectionPoint extends WasteTypeEvent {
+  final int wasteTypeId;
+  final int collectionPointId;
+
+  const LinkCollectionPoint({
+    required this.wasteTypeId,
+    required this.collectionPointId,
+  });
+
+  @override
+  List<Object?> get props => [wasteTypeId, collectionPointId];
+}
+
+class UnlinkCollectionPoint extends WasteTypeEvent {
+  final int wasteTypeId;
+  final int collectionPointId;
+
+  const UnlinkCollectionPoint({
+    required this.wasteTypeId,
+    required this.collectionPointId,
+  });
+
+  @override
+  List<Object?> get props => [wasteTypeId, collectionPointId];
+}
+
+class CreateWasteType extends WasteTypeEvent {
+  final WasteType wasteType;
+
+  const CreateWasteType(this.wasteType);
+
+  @override
+  List<Object?> get props => [wasteType];
+}
+
+class UpdateWasteType extends WasteTypeEvent {
+  final WasteType wasteType;
+
+  const UpdateWasteType(this.wasteType);
+
+  @override
+  List<Object?> get props => [wasteType];
 }

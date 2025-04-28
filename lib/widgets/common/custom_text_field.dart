@@ -10,6 +10,8 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final int maxLines;
   final Widget? suffixIcon;
+  final String? suffixText;
+  final String? helperText;
   final String? Function(String?)? validator;
 
   const CustomTextField({
@@ -21,6 +23,8 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.maxLines = 1,
     this.suffixIcon,
+    this.suffixText,
+    this.helperText,
     this.validator,
   }) : super(key: key);
 
@@ -44,6 +48,7 @@ class CustomTextField extends StatelessWidget {
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hintText,
+            helperText: helperText,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 12,
@@ -61,6 +66,7 @@ class CustomTextField extends StatelessWidget {
               borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
             ),
             suffixIcon: suffixIcon,
+            suffixText: suffixText,
             filled: true,
             fillColor: Colors.grey[50],
           ),

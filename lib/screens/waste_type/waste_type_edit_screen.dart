@@ -566,7 +566,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             CustomTextField(
               controller: _nameController,
               label: 'Tên loại rác thải',
-              hint: 'Ví dụ: Chai nhựa PET',
+              hintText: 'Ví dụ: Chai nhựa PET',
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Vui lòng nhập tên loại rác thải';
@@ -650,7 +650,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             CustomTextField(
               controller: _descriptionController,
               label: 'Mô tả',
-              hint: 'Mô tả chi tiết về loại rác thải này',
+              hintText: 'Mô tả chi tiết về loại rác thải này',
               maxLines: 3,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -664,7 +664,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             CustomTextField(
               controller: _recyclingMethodController,
               label: 'Hướng dẫn xử lý',
-              hint: 'Cách thức xử lý, phân loại hoặc tái chế',
+              hintText: 'Cách thức xử lý, phân loại hoặc tái chế',
               maxLines: 3,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -775,9 +775,8 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   child: CustomTextField(
                     controller: _buyingPriceController,
                     label: 'Giá thu mua',
-                    hint: '0',
+                    hintText: '0',
                     keyboardType: TextInputType.number,
-                    suffixText: 'đồng',
                     validator: (value) {
                       if (value != null && value.isNotEmpty) {
                         try {
@@ -796,7 +795,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   child: CustomTextField(
                     controller: _unitController,
                     label: 'Đơn vị',
-                    hint: 'kg',
+                    hintText: 'kg',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Nhập đơn vị';
@@ -836,8 +835,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             CustomTextField(
               controller: _recentPointsController,
               label: 'Thông tin điểm thưởng',
-              hint: 'Ví dụ: Tái chế 1kg giấy = 3 điểm',
-              helperText: 'Mô tả cách tính điểm thưởng cho loại rác này',
+              hintText: 'Ví dụ: Tái chế 1kg giấy = 3 điểm',
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Vui lòng nhập thông tin điểm thưởng';

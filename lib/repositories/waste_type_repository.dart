@@ -250,4 +250,64 @@ class WasteTypeRepository {
       ),
     ];
   }
+
+  // Phương thức xóa loại rác
+  Future<bool> deleteWasteType(int wasteTypeId) async {
+    // Giả lập độ trễ khi xóa dữ liệu trên server
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
+    return true;
+  }
+
+  // Phương thức liên kết loại rác với điểm thu gom
+  Future<bool> linkCollectionPoint(int wasteTypeId, int collectionPointId) async {
+    // Giả lập độ trễ khi thực hiện thao tác trên server
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
+    return true;
+  }
+
+  // Phương thức hủy liên kết loại rác với điểm thu gom
+  Future<bool> unlinkCollectionPoint(int wasteTypeId, int collectionPointId) async {
+    // Giả lập độ trễ khi thực hiện thao tác trên server
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
+    return true;
+  }
+  
+  // Phương thức tạo loại rác mới
+  Future<WasteType> createWasteType(WasteType wasteType) async {
+    // Giả lập độ trễ khi tạo dữ liệu trên server
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Giả lập tạo ID mới
+    final newWasteType = WasteType(
+      id: DateTime.now().millisecondsSinceEpoch % 1000, // Tạo ID giả
+      name: wasteType.name,
+      category: wasteType.category,
+      description: wasteType.description,
+      icon: wasteType.icon,
+      color: wasteType.color,
+      recyclingMethod: wasteType.recyclingMethod,
+      examples: wasteType.examples,
+      buyingPrice: wasteType.buyingPrice,
+      unit: wasteType.unit,
+      recentPoints: wasteType.recentPoints,
+    );
+    
+    // Trong thực tế, sẽ lưu dữ liệu này xuống database hoặc gửi đến server
+    return newWasteType;
+  }
+  
+  // Phương thức cập nhật loại rác
+  Future<WasteType> updateWasteType(WasteType wasteType) async {
+    // Giả lập độ trễ khi cập nhật dữ liệu trên server
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Trong thực tế, sẽ cập nhật xuống database hoặc gửi đến server
+    return wasteType;
+  }
 }

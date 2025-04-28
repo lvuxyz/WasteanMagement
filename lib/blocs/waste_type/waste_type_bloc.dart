@@ -15,6 +15,11 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     on<AddToRecyclingPlan>(_onAddToRecyclingPlan);
     on<LoadWasteTypeDetails>(_onLoadWasteTypeDetails);
     on<LoadWasteTypeDetailsWithAvailablePoints>(_onLoadWasteTypeDetailsWithAvailablePoints);
+    on<DeleteWasteType>(_onDeleteWasteType);
+    on<LinkCollectionPoint>(_onLinkCollectionPoint);
+    on<UnlinkCollectionPoint>(_onUnlinkCollectionPoint);
+    on<CreateWasteType>(_onCreateWasteType);
+    on<UpdateWasteType>(_onUpdateWasteType);
   }
 
   Future<void> _onLoadWasteTypes(
@@ -149,6 +154,103 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       ));
     } catch (e) {
       emit(WasteTypeError(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteWasteType(
+      DeleteWasteType event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    try {
+      final result = await repository.deleteWasteType(event.wasteTypeId);
+      if (result) {
+        emit(WasteTypeDeleted(
+          wasteTypeId: event.wasteTypeId,
+          message: 'Đã xóa loại rác thành công',
+        ));
+        
+        add(LoadWasteTypes());
+      } else {
+        emit(WasteTypeError('Không thể xóa loại rác'));
+      }
+    } catch (e) {
+      emit(WasteTypeError('Đã xảy ra lỗi khi xóa loại rác: $e'));
+    }
+  }
+
+  Future<void> _onLinkCollectionPoint(
+      LinkCollectionPoint event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    try {
+      final result = await repository.linkCollectionPoint(
+        event.wasteTypeId,
+        event.collectionPointId,
+      );
+      
+      if (result) {
+        emit(CollectionPointLinked(
+          wasteTypeId: event.wasteTypeId,
+          collectionPointId: event.collectionPointId,
+        ));
+        
+        add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
+      } else {
+        emit(WasteTypeError('Không thể liên kết điểm thu gom'));
+      }
+    } catch (e) {
+      emit(WasteTypeError('Đã xảy ra lỗi khi liên kết điểm thu gom: $e'));
+    }
+  }
+
+  Future<void> _onUnlinkCollectionPoint(
+      UnlinkCollectionPoint event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    try {
+      final result = await repository.unlinkCollectionPoint(
+        event.wasteTypeId,
+        event.collectionPointId,
+      );
+      
+      if (result) {
+        emit(CollectionPointUnlinked(
+          wasteTypeId: event.wasteTypeId,
+          collectionPointId: event.collectionPointId,
+        ));
+        
+        add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
+      } else {
+        emit(WasteTypeError('Không thể hủy liên kết điểm thu gom'));
+      }
+    } catch (e) {
+      emit(WasteTypeError('Đã xảy ra lỗi khi hủy liên kết điểm thu gom: $e'));
+    }
+  }
+
+  Future<void> _onCreateWasteType(
+    CreateWasteType event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteType = await repository.createWasteType(event.wasteType);
+      emit(WasteTypeCreated(wasteType: wasteType));
+    } catch (e) {
+      emit(WasteTypeError('Không thể tạo loại rác: $e'));
+    }
+  }
+
+  Future<void> _onUpdateWasteType(
+    UpdateWasteType event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteType = await repository.updateWasteType(event.wasteType);
+      emit(WasteTypeUpdated(wasteType: wasteType));
+    } catch (e) {
+      emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
     }
   }
 }
