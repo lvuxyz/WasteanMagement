@@ -29,3 +29,36 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(48);
 }
+
+class CustomAppBar extends AppBar {
+  CustomAppBar({
+    Key? key,
+    required String title,
+    List<Widget>? actions,
+    bool centerTitle = true,
+    Color backgroundColor = Colors.transparent,
+    Color titleColor = Colors.white,
+    bool automaticallyImplyLeading = true,
+    double elevation = 0,
+    PreferredSizeWidget? bottom,
+    Widget? leading,
+  }) : super(
+    key: key,
+    title: Text(
+      title,
+      style: TextStyle(
+        color: titleColor,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    backgroundColor: backgroundColor == Colors.transparent 
+        ? AppColors.primaryGreen 
+        : backgroundColor,
+    centerTitle: centerTitle,
+    elevation: elevation,
+    automaticallyImplyLeading: automaticallyImplyLeading,
+    actions: actions,
+    bottom: bottom,
+    leading: leading,
+  );
+}

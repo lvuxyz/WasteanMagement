@@ -9,6 +9,8 @@ abstract class ProfileEvent extends Equatable {
 
 class FetchProfile extends ProfileEvent {} // Đổi từ ProfileFetchEvent
 
+class LoadUserProfile extends ProfileEvent {} // Thêm event này cho MainScreen
+
 class UpdateProfile extends ProfileEvent { // Đổi từ ProfileUpdateEvent
   final String? fullName;
   final String? email;

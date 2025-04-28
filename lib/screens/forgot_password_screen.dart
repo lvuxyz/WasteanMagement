@@ -19,7 +19,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       create: (context) => ForgotPasswordBloc(context: context),
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CustomAppBar(),
+        appBar: CustomAppBar(title: 'Quên mật khẩu'),
         body: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
           listener: (context, state) {
             if (state is ForgotPasswordFailure) {

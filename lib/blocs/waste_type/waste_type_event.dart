@@ -44,3 +44,21 @@ class AddToRecyclingPlan extends WasteTypeEvent {
   @override
   List<Object?> get props => [wasteTypeId];
 }
+
+class LoadWasteTypeDetails extends WasteTypeEvent {
+  final int wasteTypeId;
+
+  const LoadWasteTypeDetails(this.wasteTypeId);
+
+  @override
+  List<Object?> get props => [wasteTypeId];
+}
+
+class LoadWasteTypeDetailsWithAvailablePoints extends WasteTypeEvent {
+  final int wasteTypeId;
+
+  const LoadWasteTypeDetailsWithAvailablePoints(this.wasteTypeId);
+
+  @override
+  List<Object?> get props => [wasteTypeId];
+}
