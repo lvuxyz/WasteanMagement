@@ -4,10 +4,6 @@ import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_list_screen.dart';
-import 'package:wasteanmagement/screens/waste_type/waste_type_details_screen.dart';
-import 'package:wasteanmagement/screens/waste_type/waste_type_edit_screen.dart';
-import 'package:wasteanmagement/screens/waste_type/waste_type_collection_points_screen.dart';
-
 class WasteTypeManagementScreen extends StatelessWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
 
