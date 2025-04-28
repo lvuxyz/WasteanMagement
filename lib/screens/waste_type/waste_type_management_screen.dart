@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
+import '../../blocs/waste_type/waste_type_event.dart';
+import '../../repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_list_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_details_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_collection_points_screen.dart';
+import '../../widgets/common/custom_app_bar.dart';
 
 class WasteTypeManagementScreen extends StatelessWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -13,27 +16,13 @@ class WasteTypeManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => WasteTypeBloc(
-        repository: context.read<WasteTypeRepository>(),
-      ),
-      child: Navigator(
-        initialRoute: '/list',
-        onGenerateRoute: (settings) {
-          switch (settings.name) {
-            case '/list':
-              return MaterialPageRoute(builder: (_) => const WasteTypeListScreen());
-            case '/details':
-              final wasteTypeId = settings.arguments as int;
-              return MaterialPageRoute(builder: (_) => WasteTypeDetailsScreen(wasteTypeId: wasteTypeId));
-            case '/edit':
-              final wasteTypeId = settings.arguments as int?;
-              return MaterialPageRoute(builder: (_) => WasteTypeEditScreen(wasteTypeId: wasteTypeId));
-            case '/collection-points':
-              final wasteTypeId = settings.arguments as int;
-              return MaterialPageRoute(builder: (_) => WasteTypeCollectionPointsScreen(wasteTypeId: wasteTypeId));
-            default:
-              return MaterialPageRoute(builder: (_) => const WasteTypeListScreen());
-          }
-        },
+        repository: WasteTypeRepository(),
+      )..add(LoadWasteTypes()),
+      child: Scaffold(
+        appBar: CustomAppBar(
+          title: 'Quản lý loại rác',
+        ),
+        body: const WasteTypeListScreen(),
       ),
     );
   }

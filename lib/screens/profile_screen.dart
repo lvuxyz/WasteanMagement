@@ -18,11 +18,11 @@ import '../generated/l10n.dart';
 import '../utils/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String username;
+  final String? username;
 
   const ProfileScreen({
     Key? key,
-    required this.username,
+    this.username,
   }) : super(key: key);
 
   @override
@@ -98,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileHeader() {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
-        String userName = widget.username;
+        String userName = widget.username ?? '';
         String userEmail = '';
         String memberSince = 'Thành viên kể từ Tháng 3, 2023';
 
