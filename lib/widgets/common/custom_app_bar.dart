@@ -1,49 +1,64 @@
+// widgets/common/custom_tab_bar.dart
 import 'package:flutter/material.dart';
+import '../../utils/app_colors.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String? title;
-  final bool showBackButton;
-  final List<Widget>? actions;
-  final Color backgroundColor;
-  final Color iconColor;
-  final Color? titleColor;
+class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
+  final TabController controller;
+  final List<Widget> tabs;
 
-  const CustomAppBar({
-    super.key,
-    this.title,
-    this.showBackButton = true,
-    this.actions,
-    this.backgroundColor = Colors.white,
-    this.iconColor = Colors.black,
-    this.titleColor,
-  });
+  const CustomTabBar({
+    Key? key,
+    required this.controller,
+    required this.tabs,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: title != null
-          ? Text(
-              title!,
-              style: TextStyle(
-                color: titleColor ?? Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
-      centerTitle: true,
-      leading: showBackButton
-          ? IconButton(
-              icon: Icon(Icons.arrow_back, color: iconColor),
-              onPressed: () => Navigator.pop(context),
-            )
-          : null,
-      actions: actions,
-      backgroundColor: backgroundColor,
-      elevation: 0,
+    return TabBar(
+      controller: controller,
+      indicatorColor: Colors.white,
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white70,
+      labelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+      ),
+      tabs: tabs,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-} 
+  Size get preferredSize => const Size.fromHeight(48);
+}
 
+class CustomAppBar extends AppBar {
+  CustomAppBar({
+    Key? key,
+    required String title,
+    List<Widget>? actions,
+    bool centerTitle = true,
+    Color backgroundColor = Colors.transparent,
+    Color titleColor = Colors.white,
+    bool automaticallyImplyLeading = true,
+    double elevation = 0,
+    PreferredSizeWidget? bottom,
+    Widget? leading,
+  }) : super(
+    key: key,
+    title: Text(
+      title,
+      style: TextStyle(
+        color: titleColor,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    backgroundColor: backgroundColor == Colors.transparent 
+        ? AppColors.primaryGreen 
+        : backgroundColor,
+    centerTitle: centerTitle,
+    elevation: elevation,
+    automaticallyImplyLeading: automaticallyImplyLeading,
+    actions: actions,
+    bottom: bottom,
+    leading: leading,
+  );
+}

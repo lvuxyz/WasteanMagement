@@ -6,7 +6,10 @@ import 'package:wasteanmagement/blocs/language/language_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
+import 'package:wasteanmagement/blocs/waste_type/waste_type_bloc.dart';
+import 'package:wasteanmagement/blocs/waste_type/waste_type_event.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
 import 'blocs/auth/auth_bloc.dart';
@@ -29,20 +32,27 @@ Future<void> main() async {
   final localDataSource = LocalDataSource();
   final secureStorage = SecureStorage();
   final languageRepository = LanguageRepository(localDataSource: localDataSource);
+  
+  // Tạo ApiClient cho nhiều repository dùng chung
+  final apiClient = ApiClient(
+    client: http.Client(),
+    secureStorage: secureStorage,
+  );
+  
   final userRepository = UserRepository(
-    remoteDataSource: RemoteDataSource(apiClient: ApiClient(
-      client: http.Client(),
-      secureStorage: secureStorage,
-    )),
+    remoteDataSource: RemoteDataSource(apiClient: apiClient),
     localDataSource: localDataSource,
     networkInfo: NetworkInfoImpl(),
   );
+  
+  final wasteTypeRepository = WasteTypeRepository(apiClient: apiClient);
 
   runApp(
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider<UserRepository>.value(value: userRepository),
         RepositoryProvider<LanguageRepository>.value(value: languageRepository),
+        RepositoryProvider<WasteTypeRepository>.value(value: wasteTypeRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -55,6 +65,11 @@ Future<void> main() async {
             create: (context) => AuthBloc(
               userRepository: userRepository,
             )..add(CheckAuthenticationStatus()),
+          ),
+          BlocProvider(
+            create: (context) => WasteTypeBloc(
+              repository: wasteTypeRepository,
+            ),
           ),
         ],
         child: const MyApp(),

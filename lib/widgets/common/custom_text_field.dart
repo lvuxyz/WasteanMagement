@@ -1,25 +1,32 @@
+// widgets/common/custom_text_field.dart
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
+  final TextEditingController controller;
   final String label;
   final String hintText;
-  final TextEditingController controller;
-  final TextInputType keyboardType;
   final bool obscureText;
+  final TextInputType keyboardType;
+  final int maxLines;
   final Widget? suffixIcon;
+  final String? suffixText;
+  final String? helperText;
   final String? Function(String?)? validator;
 
   const CustomTextField({
-    super.key,
+    Key? key,
+    required this.controller,
     required this.label,
     required this.hintText,
-    required this.controller,
-    this.keyboardType = TextInputType.text,
     this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
     this.suffixIcon,
+    this.suffixText,
+    this.helperText,
     this.validator,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,27 +38,44 @@ class CustomTextField extends StatelessWidget {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          keyboardType: keyboardType,
           obscureText: obscureText,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hintText,
+            helperText: helperText,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.textGrey),
+              borderSide: BorderSide(color: Colors.grey[300]!),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: AppColors.primaryGreen, width: 2),
+            ),
             suffixIcon: suffixIcon,
+            suffixText: suffixText,
+            filled: true,
+            fillColor: Colors.grey[50],
           ),
           validator: validator,
         ),
       ],
     );
   }
-} 
+}
+
+
 

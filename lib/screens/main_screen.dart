@@ -7,6 +7,7 @@ import '../utils/app_colors.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'map_screen.dart';
+import 'recycling_progress_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String username;
@@ -188,44 +189,35 @@ class _MainScreenState extends State<MainScreen> {
           // Trang Địa điểm
           const MapScreen(),
           // Trang Thống kê
-          Container(
-            color: Colors.white,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.bar_chart, size: 80, color: AppColors.primaryGreen),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Thống Kê',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryGreen,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(
-                      'Xem thống kê rác thải và tái chế của bạn',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Trang Cá nhân
+          const RecyclingProgressScreen(),
+          // Trang thống kê cũ
+          // Container(
+          //   color: Colors.white,
+          //   child: Center(
+          //     child: Column(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         Icon(Icons.bar_chart, size: 80, color: AppColors.primaryGreen),
+          //         const SizedBox(height: 20),
+          //         const Text(
+          //           'Thống Kê',
+          //           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          //         ),
+          //         const SizedBox(height: 16),
+          //         const Text(
+          //           'Tính năng đang được phát triển',
+          //           style: TextStyle(fontSize: 16, color: Colors.grey),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // Trang Tài khoản
           BlocProvider(
             create: (context) => ProfileBloc(
-              userRepository: context.read<UserRepository>(),
-            )..add(FetchProfile()), // Thay thế ProfileFetchEvent bằng FetchProfile
-            child: ProfileScreen(username: widget.username),
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+            )..add(LoadUserProfile()),
+            child: const ProfileScreen(),
           ),
         ],
       ),
