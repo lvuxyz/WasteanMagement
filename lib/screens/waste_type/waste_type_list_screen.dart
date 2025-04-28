@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/waste_type/waste_type_bloc.dart';
-import '../blocs/waste_type/waste_type_event.dart';
-import '../blocs/waste_type/waste_type_state.dart';
-import '../utils/app_colors.dart';
-import '../widgets/waste_type/waste_type_list_item.dart';
-import '../widgets/common/search_field.dart';
-import '../widgets/common/filter_dropdown.dart';
-import '../widgets/common/confirmation_dialog.dart';
-import '../generated/l10n.dart';
+import '../../blocs/waste_type/waste_type_bloc.dart';
+import '../../blocs/waste_type/waste_type_event.dart';
+import '../../blocs/waste_type/waste_type_state.dart';
+import '../../utils/app_colors.dart';
+import '../../widgets/waste_type/waste_type_list_item.dart';
+import '../../widgets/common/search_field.dart';
+import '../../widgets/common/filter_dropdown.dart';
+import '../../widgets/common/confirmation_dialog.dart';
+import '../../generated/l10n.dart';
 
 class WasteTypeListScreen extends StatefulWidget {
   const WasteTypeListScreen({Key? key}) : super(key: key);
@@ -21,6 +21,7 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'Tất cả';
   bool _isAdmin = true; // Thực tế cần lấy từ context hoặc user repository
+  bool _showFilterOptions = false;
 
   @override
   void initState() {
@@ -58,7 +59,6 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
         cancelText: 'Hủy',
         onConfirm: () {
           Navigator.of(context).pop();
-          // Add delete event here when implemented
           context.read<WasteTypeBloc>().add(DeleteWasteType(wasteTypeId));
         },
       ),
@@ -77,7 +77,14 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
           style: TextStyle(color: Colors.white),
         ),
         actions: [
-          // Nút refresh
+          IconButton(
+            icon: Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () {
+              setState(() {
+                _showFilterOptions = !_showFilterOptions;
+              });
+            },
+          ),
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
@@ -88,41 +95,110 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
       ),
       body: Column(
         children: [
-          // Search and filter section
+          // Search bar - Always visible
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                // Search field
-                Expanded(
-                  flex: 3,
-                  child: SearchField(
-                    controller: _searchController,
-                    hintText: 'Tìm kiếm loại rác...',
-                    onClear: () {
-                      _searchController.clear();
-                    },
-                  ),
-                ),
-                SizedBox(width: 12),
-                // Category filter
-                Expanded(
-                  flex: 2,
-                  child: FilterDropdown(
-                    value: _selectedCategory,
-                    items: const [
-                      'Tất cả',
-                      'Tái chế',
-                      'Hữu cơ',
-                      'Nguy hại',
-                      'Thường',
-                    ],
-                    onChanged: _onCategoryChanged,
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: SearchField(
+              controller: _searchController,
+              hintText: 'Tìm kiếm loại rác...',
+              onClear: () {
+                _searchController.clear();
+              },
             ),
           ),
+          
+          // Expandable filter options
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            height: _showFilterOptions ? 80 : 0,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilterDropdown(
+                            value: _selectedCategory,
+                            items: const [
+                              'Tất cả',
+                              'Tái chế',
+                              'Hữu cơ',
+                              'Nguy hại',
+                              'Thường',
+                            ],
+                            label: 'Danh mục',
+                            onChanged: _onCategoryChanged,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        OutlinedButton.icon(
+                          icon: Icon(Icons.refresh, size: 18),
+                          label: Text('Đặt lại'),
+                          onPressed: () {
+                            setState(() {
+                              _selectedCategory = 'Tất cả';
+                            });
+                            context.read<WasteTypeBloc>().add(FilterWasteTypesByCategory('Tất cả'));
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primaryGreen,
+                            side: BorderSide(color: AppColors.primaryGreen),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Status indicator (applied filters)
+          if (_selectedCategory != 'Tất cả' || _searchController.text.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Text(
+                    'Bộ lọc đang áp dụng:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  if (_selectedCategory != 'Tất cả')
+                    Chip(
+                      label: Text(_selectedCategory),
+                      deleteIcon: Icon(Icons.close, size: 16),
+                      onDeleted: () {
+                        setState(() {
+                          _selectedCategory = 'Tất cả';
+                        });
+                        context.read<WasteTypeBloc>().add(FilterWasteTypesByCategory('Tất cả'));
+                      },
+                      backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
+                      labelStyle: TextStyle(fontSize: 12),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  SizedBox(width: 4),
+                  if (_searchController.text.isNotEmpty)
+                    Chip(
+                      label: Text('Tìm kiếm: ${_searchController.text}'),
+                      deleteIcon: Icon(Icons.close, size: 16),
+                      onDeleted: () {
+                        _searchController.clear();
+                      },
+                      backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
+                      labelStyle: TextStyle(fontSize: 12),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                ],
+              ),
+            ),
 
           // List of waste types
           Expanded(
@@ -135,7 +211,6 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
                       backgroundColor: Colors.green,
                     ),
                   );
-                  // Reload list
                   context.read<WasteTypeBloc>().add(LoadWasteTypes());
                 } else if (state is WasteTypeError) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -168,6 +243,21 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
                               color: Colors.grey[600],
                             ),
                           ),
+                          SizedBox(height: 16),
+                          TextButton.icon(
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _selectedCategory = 'Tất cả';
+                              });
+                              context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                            },
+                            icon: Icon(Icons.refresh),
+                            label: Text('Xóa bộ lọc'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primaryGreen,
+                            ),
+                          ),
                         ],
                       ),
                     );
@@ -183,14 +273,14 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
                         onView: () {
                           Navigator.pushNamed(
                             context,
-                            '/details',
+                            '/waste-type/details',
                             arguments: wasteType.id,
                           );
                         },
                         onEdit: _isAdmin ? () {
                           Navigator.pushNamed(
                             context,
-                            '/edit',
+                            '/waste-type/edit',
                             arguments: wasteType.id,
                           );
                         } : null,
@@ -204,7 +294,7 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
                         onManageCollectionPoints: _isAdmin ? () {
                           Navigator.pushNamed(
                             context,
-                            '/collection-points',
+                            '/waste-type/collection-points',
                             arguments: wasteType.id,
                           );
                         } : null,
@@ -214,19 +304,42 @@ class _WasteTypeListScreenState extends State<WasteTypeListScreen> {
                 }
 
                 return Center(
-                  child: Text('Đã xảy ra lỗi khi tải dữ liệu'),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red.withOpacity(0.7)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Đã xảy ra lỗi khi tải dữ liệu',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                        },
+                        icon: Icon(Icons.refresh),
+                        label: Text('Thử lại'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryGreen,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
           ),
         ],
       ),
-      floatingActionButton: _isAdmin ? FloatingActionButton(
+      floatingActionButton: _isAdmin ? FloatingActionButton.extended(
         backgroundColor: AppColors.primaryGreen,
         onPressed: () {
-          Navigator.pushNamed(context, '/edit');
+          Navigator.pushNamed(context, '/waste-type/edit');
         },
-        child: Icon(Icons.add),
+        icon: Icon(Icons.add),
+        label: Text('Thêm loại rác thải'),
       ) : null,
     );
   }
