@@ -21,7 +21,7 @@ class ApiConstants {
   static String get updateProfile => '$baseUrl/users/update-profile';
 
   // Endpoint cho quản lý rác thải
-  static String get wasteTypes => '$baseUrl/waste/types';
+  static String get wasteTypes => '$baseUrl/waste-types';
   static String get collectionPoints => '$baseUrl/waste/collection-points';
   static String get transactions => '$baseUrl/waste/transactions';
   static String get schedules => '$baseUrl/waste/schedules';

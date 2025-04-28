@@ -39,7 +39,7 @@ class WasteTypeInfoTab extends StatelessWidget {
           _buildExamplesSection(),
           
           // Thông tin thu mua nếu có
-          if (wasteType.buyingPrice > 0) ...[
+          if (wasteType.unitPrice > 0) ...[
             const SizedBox(height: 24),
             _buildPriceSection(),
           ],
@@ -150,7 +150,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          wasteType.recyclingMethod,
+                          wasteType.handlingInstructions,
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey[800],
@@ -320,7 +320,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '${wasteType.buyingPrice}đ/${wasteType.unit}',
+                          '${wasteType.unitPrice}đ/${wasteType.unit}',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,

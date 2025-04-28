@@ -27,8 +27,8 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   final _scrollController = ScrollController();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _recyclingMethodController = TextEditingController();
-  final _buyingPriceController = TextEditingController();
+  final _handlingInstructionsController = TextEditingController();
+  final _unitPriceController = TextEditingController();
   final _unitController = TextEditingController(text: 'kg');
   final _recentPointsController = TextEditingController();
   
@@ -82,8 +82,8 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _recyclingMethodController.dispose();
-    _buyingPriceController.dispose();
+    _handlingInstructionsController.dispose();
+    _unitPriceController.dispose();
     _unitController.dispose();
     _recentPointsController.dispose();
     _scrollController.dispose();
@@ -94,12 +94,12 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   void _populateForm(WasteType wasteType) {
     _nameController.text = wasteType.name;
     _descriptionController.text = wasteType.description;
-    _recyclingMethodController.text = wasteType.recyclingMethod;
-    _buyingPriceController.text = wasteType.buyingPrice.toString();
+    _handlingInstructionsController.text = wasteType.handlingInstructions;
+    _unitPriceController.text = wasteType.unitPrice.toString();
     _unitController.text = wasteType.unit;
     _recentPointsController.text = wasteType.recentPoints;
     _selectedCategory = wasteType.category;
-    _isRecyclable = wasteType.category == 'Tái chế';
+    _isRecyclable = wasteType.recyclable;
 
     // Find icon and color
     _selectedIconKey = _availableIcons.entries
@@ -175,9 +175,9 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     
     final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
     
-    int buyingPrice = 0;
+    double unitPrice = 0;
     try {
-      buyingPrice = int.parse(_buyingPriceController.text);
+      unitPrice = double.parse(_unitPriceController.text);
     } catch (e) {
       // Default to 0 if parsing fails
     }
@@ -189,11 +189,12 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       description: _descriptionController.text,
       icon: _availableIcons[_selectedIconKey]!,
       color: _selectedColor,
-      recyclingMethod: _recyclingMethodController.text,
+      handlingInstructions: _handlingInstructionsController.text,
       examples: finalExamples,
-      buyingPrice: buyingPrice,
+      unitPrice: unitPrice,
       unit: _unitController.text,
       recentPoints: _recentPointsController.text,
+      recyclable: _isRecyclable,
     );
 
     setState(() {
@@ -662,7 +663,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             SizedBox(height: 16),
             // Recycling method field
             CustomTextField(
-              controller: _recyclingMethodController,
+              controller: _handlingInstructionsController,
               label: 'Hướng dẫn xử lý',
               hintText: 'Cách thức xử lý, phân loại hoặc tái chế',
               maxLines: 3,
@@ -773,14 +774,14 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 Expanded(
                   flex: 3,
                   child: CustomTextField(
-                    controller: _buyingPriceController,
+                    controller: _unitPriceController,
                     label: 'Giá thu mua',
                     hintText: '0',
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value != null && value.isNotEmpty) {
                         try {
-                          int.parse(value);
+                          double.parse(value);
                         } catch (e) {
                           return 'Nhập số hợp lệ';
                         }

@@ -168,7 +168,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                             ),
                           ),
                           // Price badge if applicable
-                          if (wasteType.buyingPrice > 0)
+                          if (wasteType.unitPrice > 0)
                             Positioned(
                               right: 16,
                               bottom: 16,
@@ -188,7 +188,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                                     ),
                                     SizedBox(width: 4),
                                     Text(
-                                      '${wasteType.buyingPrice}đ/${wasteType.unit}',
+                                      '${wasteType.unitPrice}đ/${wasteType.unit}',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
