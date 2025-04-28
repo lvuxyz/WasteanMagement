@@ -21,61 +21,40 @@ class WasteTypeListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Xác định màu sắc dựa trên loại rác
-    final bool isHazardous = wasteType.category == 'Nguy hại';
-    final bool isRecyclable = wasteType.category == 'Tái chế';
-
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shadowColor: isHazardous 
-          ? Colors.red.withOpacity(0.2)
-          : Colors.black.withOpacity(0.1),
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isHazardous
-              ? Colors.red.withOpacity(0.3)
-              : isRecyclable
-                  ? AppColors.primaryGreen.withOpacity(0.3)
-                  : Colors.transparent,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         onTap: onView,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: Column(
           children: [
-            // Header với thông tin cơ bản và icon
+            // Main content
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Icon container
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: wasteType.color.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: wasteType.color.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      color: wasteType.color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       wasteType.icon,
                       color: wasteType.color,
-                      size: 32,
+                      size: 28,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
 
-                  // Name and category
+                  // Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,152 +62,89 @@ class WasteTypeListItem extends StatelessWidget {
                         Text(
                           wasteType.name,
                           style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         
-                        // Category badges
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _buildBadge(
-                              wasteType.category,
-                              _getCategoryColor(wasteType.category),
-                              icon: _getCategoryIcon(wasteType.category),
-                            ),
-                            if (wasteType.buyingPrice > 0)
-                              _buildBadge(
-                                '${wasteType.buyingPrice}đ/${wasteType.unit}',
-                                Colors.orange,
-                                icon: Icons.monetization_on_outlined,
-                              ),
-                          ],
-                        ),
-                        
-                        // Description
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
+                        // Category badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getCategoryColor(wasteType.category).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                           child: Text(
-                            wasteType.description,
+                            wasteType.category,
                             style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              height: 1.3,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: _getCategoryColor(wasteType.category),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        
+                        const SizedBox(height: 4),
+                        
+                        // Price information
+                        if (wasteType.buyingPrice > 0)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.monetization_on_outlined,
+                                size: 14,
+                                color: Colors.orange[700],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${wasteType.buyingPrice}đ/${wasteType.unit}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.orange[700],
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
 
-                  // Actions
+                  // Menu button
                   _buildActionMenu(),
                 ],
               ),
             ),
 
-            // Examples section
-            if (wasteType.examples.isNotEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                  ),
+            // Description section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Text(
+                wasteType.description,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ví dụ:',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      wasteType.examples.join(', '),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text, Color color, {IconData? icon}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              size: 14,
-              color: color,
-            ),
-            SizedBox(width: 4),
-          ],
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildActionMenu() {
-    // Only show menu if at least one action is available
     if (onEdit == null && onDelete == null && onManageCollectionPoints == null) {
-      return Container(
-        margin: EdgeInsets.only(top: 8),
-        padding: EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey[100],
-        ),
-        child: Icon(
-          Icons.arrow_forward_ios,
-          size: 14,
-          color: Colors.grey[600],
-        ),
+      return Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: Colors.grey[400],
       );
     }
 
