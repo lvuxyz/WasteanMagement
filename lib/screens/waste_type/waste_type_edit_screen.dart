@@ -4,7 +4,10 @@ import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../models/waste_type_model.dart';
+import '../../repositories/user_repository.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/snackbar_utils.dart';
+import 'dart:developer' as developer;
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
 
@@ -21,8 +24,8 @@ class WasteTypeEditScreen extends StatefulWidget {
 }
 
 class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _scrollController = ScrollController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _handlingInstructionsController = TextEditingController();
@@ -34,6 +37,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _isAdmin = false; // Default to false until we check user role
   List<String> _examples = [''];
   
   // Available icon options could be extended
@@ -68,6 +72,8 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   @override
   void initState() {
     super.initState();
+    _checkAdminPrivileges();
+    
     _isEditing = widget.wasteTypeId != null;
 
     if (_isEditing) {
@@ -211,6 +217,52 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
           unitPrice: unitPrice,
         ),
       );
+    }
+  }
+
+  Future<void> _checkAdminPrivileges() async {
+    try {
+      final userRepository = RepositoryProvider.of<UserRepository>(context);
+      final user = await userRepository.getUserProfile();
+      
+      setState(() {
+        _isAdmin = user.isAdmin;
+      });
+      
+      // If not admin and trying to edit, navigate back
+      if (!_isAdmin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bạn không có quyền chỉnh sửa loại rác'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        
+        // Navigate back after showing the error
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
+      
+      developer.log('User admin status: $_isAdmin');
+    } catch (e) {
+      developer.log('Error checking admin privileges: $e', error: e);
+      // Default to non-admin in case of error
+      setState(() {
+        _isAdmin = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể xác minh quyền truy cập'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      
+      // Navigate back after showing the error
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.of(context).pop();
+      });
     }
   }
 

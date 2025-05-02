@@ -284,11 +284,36 @@ class WasteTypeRepository {
   }
   
   // Phương thức cập nhật loại rác
-  Future<WasteType> updateWasteType(WasteType wasteType) async {
-    // Giả lập độ trễ khi cập nhật dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, sẽ cập nhật xuống database hoặc gửi đến server
-    return wasteType;
+  Future<WasteType> updateWasteType(int wasteTypeId, Map<String, dynamic> updateData) async {
+    try {
+      developer.log('Đang gọi API cập nhật loại rác: ${ApiConstants.wasteTypes}/$wasteTypeId');
+      developer.log('Dữ liệu gửi đi: $updateData');
+      
+      final response = await apiClient.patch('${ApiConstants.wasteTypes}/$wasteTypeId', body: updateData);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
+          final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
+          return WasteType.fromJson(wasteTypeJson);
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to update waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error updating waste type: $e', error: e);
+      throw Exception('Failed to update waste type: $e');
+    }
   }
 }
