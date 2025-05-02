@@ -227,28 +227,37 @@ class WasteTypeRepository {
   }
   
   // Phương thức tạo loại rác mới
-  Future<WasteType> createWasteType(WasteType wasteType) async {
-    // Giả lập độ trễ khi tạo dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Giả lập tạo ID mới
-    final newWasteType = WasteType(
-      id: DateTime.now().millisecondsSinceEpoch % 1000, // Tạo ID giả
-      name: wasteType.name,
-      category: wasteType.category,
-      description: wasteType.description,
-      icon: wasteType.icon,
-      color: wasteType.color,
-      handlingInstructions: wasteType.handlingInstructions,
-      examples: wasteType.examples,
-      unitPrice: wasteType.unitPrice,
-      unit: wasteType.unit,
-      recentPoints: wasteType.recentPoints,
-      recyclable: wasteType.recyclable,
-    );
-    
-    // Trong thực tế, sẽ lưu dữ liệu này xuống database hoặc gửi đến server
-    return newWasteType;
+  Future<WasteType> createWasteType(Map<String, dynamic> wasteTypeData) async {
+    try {
+      developer.log('Đang gọi API tạo loại rác mới: ${ApiConstants.wasteTypes}');
+      developer.log('Dữ liệu gửi đi: $wasteTypeData');
+      
+      final response = await apiClient.post(ApiConstants.wasteTypes, body: wasteTypeData);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
+          final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
+          return WasteType.fromJson(wasteTypeJson);
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to create waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error creating waste type: $e', error: e);
+      throw Exception('Failed to create waste type: $e');
+    }
   }
   
   // Phương thức cập nhật loại rác
