@@ -10,6 +10,7 @@ class WasteTypeListItem extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onManageCollectionPoints;
   final bool isDeleting;
+  final bool isUpdating;
 
   const WasteTypeListItem({
     Key? key,
@@ -19,6 +20,7 @@ class WasteTypeListItem extends StatelessWidget {
     this.onDelete,
     this.onManageCollectionPoints,
     this.isDeleting = false,
+    this.isUpdating = false,
   }) : super(key: key);
 
   @override
@@ -32,7 +34,7 @@ class WasteTypeListItem extends StatelessWidget {
       child: Stack(
         children: [
           InkWell(
-            onTap: isDeleting ? null : onView,
+            onTap: isDeleting || isUpdating ? null : onView,
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
@@ -121,7 +123,7 @@ class WasteTypeListItem extends StatelessWidget {
                       ),
 
                       // Menu button
-                      if (!isDeleting) _buildActionMenu(),
+                      if (!isDeleting && !isUpdating) _buildActionMenu(),
                     ],
                   ),
                 ),
@@ -202,6 +204,41 @@ class WasteTypeListItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.red[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
+          // Loading overlay when updating
+          if (isUpdating)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Đang cập nhật...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[700],
                           fontWeight: FontWeight.bold,
                         ),
                       ),
