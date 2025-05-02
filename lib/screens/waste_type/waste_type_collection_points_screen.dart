@@ -12,6 +12,8 @@ import '../../widgets/collection_point/collection_point_item.dart';
 import '../../widgets/common/loading_view.dart';
 import '../../widgets/common/error_view.dart';
 import '../../widgets/common/confirmation_dialog.dart';
+import '../../repositories/collection_point_repository.dart';
+import '../../core/api/api_client.dart';
 
 class WasteTypeCollectionPointsScreen extends StatefulWidget {
   final int wasteTypeId;
@@ -31,6 +33,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
   final TextEditingController _availableSearchController = TextEditingController();
   String _linkedSearchQuery = '';
   String _availableSearchQuery = '';
+  late CollectionPointRepository _collectionPointRepository;
   
   @override
   void initState() {
@@ -38,6 +41,10 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
     _tabController = TabController(length: 2, vsync: this);
     _linkedSearchController.addListener(_onLinkedSearchChanged);
     _availableSearchController.addListener(_onAvailableSearchChanged);
+    
+    // Initialize the collection point repository
+    final apiClient = context.read<ApiClient>();
+    _collectionPointRepository = CollectionPointRepository(apiClient: apiClient);
     
     // Load waste type details with collection points
     context.read<WasteTypeBloc>().add(LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId));
@@ -101,6 +108,13 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
               'Quản lý điểm thu gom',
               style: TextStyle(color: Colors.white),
             );
+          },
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Return true to indicate changes were made
+            Navigator.pop(context, true);
           },
         ),
         bottom: CustomTabBar(

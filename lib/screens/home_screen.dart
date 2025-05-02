@@ -361,6 +361,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.location_on_outlined,
                 title: 'Điểm thu gom',
                 onTap: () {
+                  // This navigation is for a future functionality
+                  // Currently, we navigate to the collection points list screen
+                  // In the future, this will be changed to a different functionality
                   Navigator.pushNamed(context, '/collection-points');
                 },
               ),
