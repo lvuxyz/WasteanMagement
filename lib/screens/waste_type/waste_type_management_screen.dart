@@ -171,6 +171,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   }
 
   void _navigateToCollectionPoints(BuildContext blocContext, int wasteTypeId) {
+    // Chuyển đến màn hình quản lý điểm thu gom cho loại rác cụ thể
+    // Đây là một phần của chức năng quản lý loại chất thải
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -179,7 +181,10 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
           child: WasteTypeCollectionPointsScreen(wasteTypeId: wasteTypeId),
         ),
       ),
-    );
+    ).then((_) {
+      // Refresh the waste type list after managing collection points
+      blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
+    });
   }
 
   @override

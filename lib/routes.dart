@@ -11,6 +11,7 @@ import 'screens/recycling_progress_screen.dart';
 import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
+import 'screens/waste_type/waste_type_collection_points_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -22,6 +23,7 @@ class AppRoutes {
   static const String wasteTypeManagement = '/waste-type';
   static const String wasteTypeAdd = '/waste-type/add';
   static const String wasteTypeTest = '/waste-type-test';
+  static const String wasteTypeCollectionPoints = '/waste-type/collection-points';
   static const String wasteClassificationGuide = '/waste-guide';
   static const String recyclingProgress = '/recycling-progress';
   static const String collectionPointsList = '/collection-points';
@@ -33,6 +35,11 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
       case wasteTypeAdd:
         return MaterialPageRoute(builder: (_) => const WasteTypeAddScreen());
+      case wasteTypeCollectionPoints:
+        final args = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => WasteTypeCollectionPointsScreen(wasteTypeId: args),
+        );
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:

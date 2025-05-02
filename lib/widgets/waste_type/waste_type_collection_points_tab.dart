@@ -80,7 +80,19 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     context,
                     '/waste-type/collection-points',
                     arguments: wasteTypeId,
-                  );
+                  ).then((result) {
+                    // Refresh data if changes were made
+                    if (result == true) {
+                      // This is part of waste management functionality
+                      // Reload this screen with updated data
+                      Navigator.of(context).pop();  // Close current screen
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/waste-type/details',
+                        arguments: wasteTypeId,
+                      );
+                    }
+                  });
                 },
                 icon: const Icon(Icons.add_location_alt),
                 label: const Text('Thêm điểm thu gom'),
