@@ -257,8 +257,11 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
   ) async {
     emit(WasteTypeLoading());
     try {
-      final wasteType = await repository.updateWasteType(event.wasteType);
+      final wasteType = await repository.updateWasteType(event.wasteType.id, event.wasteType.toJson());
       emit(WasteTypeUpdated(wasteType: wasteType));
+      
+      // Reload waste types list after successful update
+      add(LoadWasteTypes());
     } catch (e) {
       emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
     }
