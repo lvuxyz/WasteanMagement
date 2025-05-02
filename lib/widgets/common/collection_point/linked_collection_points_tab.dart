@@ -1,7 +1,6 @@
 // widgets/collection_point/linked_collection_points_tab.dart
 import 'package:flutter/material.dart';
 import '../../../models/collection_point_model.dart';
-import '../../../utils/app_colors.dart';
 
 class LinkedCollectionPointsTab extends StatelessWidget {
   final List<CollectionPoint> linkedCollectionPoints;

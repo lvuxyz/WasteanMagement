@@ -6,9 +6,7 @@ import '../../blocs/waste_type/waste_type_state.dart';
 import '../../models/waste_type_model.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common/custom_text_field.dart';
-import '../../widgets/common/custom_dropdown_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
-import '../../widgets/common/custom_button.dart';
 
 class WasteTypeEditScreen extends StatefulWidget {
   final int? wasteTypeId; // Null for create, not null for update

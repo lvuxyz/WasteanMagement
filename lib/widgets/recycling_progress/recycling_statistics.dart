@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/recycling_progress/recycling_progress_state.dart';
 import '../../utils/app_colors.dart';
 
 class RecyclingStatistics extends StatelessWidget {
