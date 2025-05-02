@@ -126,3 +126,13 @@ class UpdateWasteType extends WasteTypeEvent {
   @override
   List<Object?> get props => [wasteType];
 }
+
+class UpdateWasteTypeData extends WasteTypeEvent {
+  final int wasteTypeId;
+  final Map<String, dynamic> data;
+
+  const UpdateWasteTypeData(this.wasteTypeId, this.data);
+
+  @override
+  List<Object?> get props => [wasteTypeId, data];
+}

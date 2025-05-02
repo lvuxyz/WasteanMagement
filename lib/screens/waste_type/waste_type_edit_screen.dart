@@ -31,7 +31,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   final _handlingInstructionsController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _unitController = TextEditingController(text: 'kg');
-  final _recentPointsController = TextEditingController();
   
   String _selectedCategory = 'Tái chế';
   bool _isRecyclable = true;
@@ -40,35 +39,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   bool _isAdmin = false; // Default to false until we check user role
   List<String> _examples = [''];
   
-  // Available icon options could be extended
-  final Map<String, IconData> _availableIcons = {
-    'Chai nhựa': Icons.local_drink_outlined,
-    'Giấy': Icons.description_outlined,
-    'Kim loại': Icons.settings_outlined,
-    'Thủy tinh': Icons.wine_bar_outlined,
-    'Thực phẩm': Icons.restaurant_outlined,
-    'Pin': Icons.battery_alert_outlined,
-    'Điện tử': Icons.smartphone_outlined,
-    'Quần áo': Icons.checkroom_outlined,
-    'Khác': Icons.category_outlined,
-  };
-
-  String _selectedIconKey = 'Chai nhựa';
-  Color _selectedColor = Colors.blue;
-
-  // Available color options
-  final List<Color> _availableColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.amber,
-    Colors.purple,
-    Colors.red,
-    Colors.orange,
-    Colors.teal,
-    Colors.grey,
-    Colors.lightBlue,
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -92,7 +62,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _handlingInstructionsController.dispose();
     _unitPriceController.dispose();
     _unitController.dispose();
-    _recentPointsController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -104,7 +73,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _handlingInstructionsController.text = wasteType.handlingInstructions;
     _unitPriceController.text = wasteType.unitPrice.toString();
     _unitController.text = wasteType.unit;
-    _recentPointsController.text = wasteType.recentPoints;
     
     // Đảm bảo category phù hợp với các tùy chọn trong dropdown
     if (wasteType.category == 'Tái chế' || 
@@ -119,16 +87,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     }
     
     _isRecyclable = wasteType.recyclable;
-
-    // Find icon and color
-    _selectedIconKey = _availableIcons.entries
-        .firstWhere(
-          (entry) => entry.value == wasteType.icon,
-      orElse: () => MapEntry('Khác', Icons.category_outlined),
-    )
-        .key;
-
-    _selectedColor = wasteType.color;
 
     // Set examples
     _examples = List.from(wasteType.examples);
@@ -218,22 +176,24 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     });
 
     if (_isEditing) {
-      context.read<WasteTypeBloc>().add(UpdateWasteType(
-        WasteType(
-          id: widget.wasteTypeId!,
-          name: _nameController.text.trim(),
-          category: _selectedCategory,
-          description: _descriptionController.text.trim(),
-          icon: _availableIcons[_selectedIconKey]!,
-          color: _selectedColor,
-          handlingInstructions: _handlingInstructionsController.text.trim(),
-          examples: finalExamples,
-          unitPrice: unitPrice,
-          unit: _unitController.text,
-          recentPoints: _recentPointsController.text,
-          recyclable: _isRecyclable,
-        ),
-      ));
+      // Tạo đối tượng WasteType với các thông tin cần thiết
+      final wasteType = WasteType(
+        id: widget.wasteTypeId!,
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        recyclable: _isRecyclable,
+        handlingInstructions: _handlingInstructionsController.text.trim(),
+        unitPrice: unitPrice,
+        unit: _unitController.text,
+        examples: finalExamples,
+        category: _selectedCategory,
+        // Các trường hiển thị tùy thuộc vào recyclable
+        icon: _isRecyclable ? Icons.recycling : Icons.delete_outline,
+        color: _isRecyclable ? Colors.green : Colors.red,
+        recentPoints: '',
+      );
+      
+      context.read<WasteTypeBloc>().add(UpdateWasteType(wasteType));
     } else {
       context.read<WasteTypeBloc>().add(
         CreateWasteType(
@@ -400,11 +360,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Icon and Color Selection
-                      _buildIconAndColorSection(),
-                      
-                      SizedBox(height: 24),
-                      
                       // Basic Information Section
                       _buildSectionTitle('Thông tin cơ bản'),
                       _buildBasicInfoSection(),
@@ -426,12 +381,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                       // Pricing Information Section
                       _buildSectionTitle('Thông tin thu mua'),
                       _buildPricingSection(),
-                      
-                      SizedBox(height: 24),
-                      
-                      // Reward Points Section
-                      _buildSectionTitle('Điểm thưởng'),
-                      _buildRewardPointsSection(),
                       
                       SizedBox(height: 80), // Extra space for button
                     ],
@@ -532,144 +481,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     );
   }
   
-  Widget _buildIconAndColorSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Biểu tượng và màu sắc',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                // Preview
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _selectedColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    _availableIcons[_selectedIconKey],
-                    color: _selectedColor,
-                    size: 48,
-                  ),
-                ),
-                SizedBox(width: 16),
-                // Selection
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Biểu tượng',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        value: _selectedIconKey,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          isDense: true,
-                        ),
-                        items: _availableIcons.keys.map((String key) {
-                          return DropdownMenuItem<String>(
-                            value: key,
-                            child: Row(
-                              children: [
-                                Icon(_availableIcons[key], size: 18),
-                                SizedBox(width: 8),
-                                Text(key),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedIconKey = newValue;
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Màu sắc',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-            SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: _availableColors.map((color) {
-                final isSelected = _selectedColor == color;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColor = color;
-                    });
-                  },
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
-                        width: 2,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withOpacity(0.4),
-                                spreadRadius: 2,
-                                blurRadius: 4,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: isSelected
-                        ? Icon(Icons.check, color: Colors.white, size: 18)
-                        : null,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
   Widget _buildBasicInfoSection() {
     return Card(
       elevation: 1,
@@ -748,7 +559,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   if (value) {
                     _selectedCategory = 'Tái chế';
                   } else if (_selectedCategory == 'Tái chế') {
-                    _selectedCategory = 'Thường';
+                    _selectedCategory = 'Không tái chế';
                   }
                 });
               },
@@ -938,34 +749,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 fontStyle: FontStyle.italic,
                 color: Colors.grey[600],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildRewardPointsSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomTextField(
-              controller: _recentPointsController,
-              labelText: 'Thông tin điểm thưởng',
-              hintText: 'Ví dụ: Tái chế 1kg giấy = 3 điểm',
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Vui lòng nhập thông tin điểm thưởng';
-                }
-                return null;
-              },
             ),
           ],
         ),
