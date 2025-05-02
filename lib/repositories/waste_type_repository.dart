@@ -233,20 +233,78 @@ class WasteTypeRepository {
 
   // Phương thức liên kết loại rác với điểm thu gom
   Future<bool> linkCollectionPoint(int wasteTypeId, int collectionPointId) async {
-    // Giả lập độ trễ khi thực hiện thao tác trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API liên kết loại rác với điểm thu gom: ${ApiConstants.baseUrl}/waste-types/collection-point');
+      
+      final Map<String, dynamic> requestBody = {
+        'waste_type_id': wasteTypeId,
+        'collection_point_id': collectionPointId,
+      };
+      
+      developer.log('Dữ liệu gửi đi: $requestBody');
+      
+      final response = await apiClient.post('${ApiConstants.baseUrl}/waste-types/collection-point', body: requestBody);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to link waste type with collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error linking waste type with collection point: $e', error: e);
+      throw Exception('Failed to link waste type with collection point: $e');
+    }
   }
 
   // Phương thức hủy liên kết loại rác với điểm thu gom
   Future<bool> unlinkCollectionPoint(int wasteTypeId, int collectionPointId) async {
-    // Giả lập độ trễ khi thực hiện thao tác trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API hủy liên kết loại rác với điểm thu gom');
+      
+      // Chuẩn bị query params cho DELETE request
+      final url = '${ApiConstants.baseUrl}/waste-types/collection-point?waste_type_id=$wasteTypeId&collection_point_id=$collectionPointId';
+      
+      developer.log('URL yêu cầu: $url');
+      
+      final response = await apiClient.delete(url);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to unlink waste type from collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error unlinking waste type from collection point: $e', error: e);
+      throw Exception('Failed to unlink waste type from collection point: $e');
+    }
   }
   
   // Phương thức tạo loại rác mới
