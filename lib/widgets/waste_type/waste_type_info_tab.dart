@@ -14,7 +14,7 @@ class WasteTypeInfoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHazardous = wasteType.category == 'Nguy hại';
-    final isRecyclable = wasteType.category == 'Tái chế';
+    final isRecyclable = wasteType.recyclable;
     final statusColor = isHazardous 
         ? Colors.red 
         : isRecyclable ? AppColors.primaryGreen : Colors.grey;
@@ -25,29 +25,29 @@ class WasteTypeInfoTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ID and Badge section
+          _buildIdAndStatusSection(isRecyclable),
+          
+          const SizedBox(height: 20),
+          
           // Mô tả chi tiết
           _buildDescriptionSection(),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           
           // Hướng dẫn xử lý
           _buildRecyclingMethodSection(statusColor),
           
-          const SizedBox(height: 24),
-          
-          // Ví dụ các loại rác thuộc nhóm
-          _buildExamplesSection(),
-          
           // Thông tin thu mua nếu có
           if (wasteType.unitPrice > 0) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             _buildPriceSection(),
           ],
           
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           
-          // Điểm thưởng
-          _buildRewardPointsSection(),
+          // Call to action
+          _buildActionButton(context, isRecyclable),
           
           const SizedBox(height: 32),
         ],
@@ -55,9 +55,78 @@ class WasteTypeInfoTab extends StatelessWidget {
     );
   }
 
+  Widget _buildIdAndStatusSection(bool isRecyclable) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // ID Card
+        Expanded(
+          flex: 1,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.tag, size: 18, color: Colors.grey[700]),
+                SizedBox(width: 8),
+                Text(
+                  'ID: ${wasteType.id}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        SizedBox(width: 12),
+        
+        // Recyclable status
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isRecyclable ? AppColors.primaryGreen.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isRecyclable ? AppColors.primaryGreen.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isRecyclable ? Icons.recycling : Icons.do_not_disturb,
+                  size: 18, 
+                  color: isRecyclable ? AppColors.primaryGreen : Colors.red,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  isRecyclable ? 'Có thể tái chế' : 'Không thể tái chế',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isRecyclable ? AppColors.primaryGreen : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDescriptionSection() {
     return Card(
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -97,7 +166,7 @@ class WasteTypeInfoTab extends StatelessWidget {
 
   Widget _buildRecyclingMethodSection(Color statusColor) {
     return Card(
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -139,9 +208,9 @@ class WasteTypeInfoTab extends StatelessWidget {
                       CircleAvatar(
                         backgroundColor: statusColor.withOpacity(0.1),
                         child: Icon(
-                          wasteType.category == 'Nguy hại'
-                              ? Icons.warning_amber_rounded
-                              : Icons.tips_and_updates_outlined,
+                          wasteType.recyclable
+                              ? Icons.tips_and_updates_outlined
+                              : Icons.warning_amber_rounded,
                           color: statusColor,
                           size: 20,
                         ),
@@ -169,96 +238,9 @@ class WasteTypeInfoTab extends StatelessWidget {
     );
   }
 
-  Widget _buildExamplesSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.category_outlined, color: Colors.blue),
-                SizedBox(width: 8),
-                Text(
-                  'Ví dụ các loại rác',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ],
-            ),
-            Divider(height: 24),
-            ListView.separated(
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: wasteType.examples.length,
-              separatorBuilder: (context, index) => SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                return _buildExampleItem(wasteType.examples[index], index);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExampleItem(String example, int index) {
-    final colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-    ];
-    final color = colors[index % colors.length];
-    
-    return Row(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: color.withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-          child: Text(
-            '${index + 1}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            example,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey[800],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildPriceSection() {
     return Card(
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -269,7 +251,7 @@ class WasteTypeInfoTab extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.monetization_on_outlined, color: Colors.orange),
+                Icon(Icons.attach_money, color: Colors.orange),
                 SizedBox(width: 8),
                 Text(
                   'Thông tin thu mua',
@@ -283,6 +265,7 @@ class WasteTypeInfoTab extends StatelessWidget {
             ),
             Divider(height: 24),
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.orange.withOpacity(0.05),
@@ -292,63 +275,32 @@ class WasteTypeInfoTab extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.attach_money,
+                  Text(
+                    '${wasteType.unitPrice}đ',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                       color: Colors.orange,
-                      size: 28,
                     ),
                   ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Giá thu mua hiện tại',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          '${wasteType.unitPrice}đ/${wasteType.unit}',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.grey[500],
-                              size: 14,
-                            ),
-                            SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                'Giá có thể thay đổi tùy theo thời gian và địa điểm thu mua',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[500],
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  SizedBox(height: 4),
+                  Text(
+                    'trên mỗi ${wasteType.unit}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Hãy mang tới các điểm thu gom để bán và nhận tiền mặt!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey[800],
                     ),
                   ),
                 ],
@@ -360,84 +312,32 @@ class WasteTypeInfoTab extends StatelessWidget {
     );
   }
 
-  Widget _buildRewardPointsSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.emoji_events, color: Colors.purple),
-                SizedBox(width: 8),
-                Text(
-                  'Điểm thưởng',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ],
+  Widget _buildActionButton(BuildContext context, bool isRecyclable) {
+    return Container(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã thêm ${wasteType.name} vào kế hoạch tái chế của bạn'),
+              backgroundColor: AppColors.primaryGreen,
             ),
-            Divider(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.purple.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.workspace_premium,
-                      color: Colors.purple,
-                      size: 28,
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          wasteType.recentPoints,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Tích lũy điểm thưởng khi phân loại rác đúng cách và đổi quà trên ứng dụng',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isRecyclable ? AppColors.primaryGreen : Colors.grey,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          isRecyclable ? 'Thêm vào kế hoạch tái chế' : 'Không thể tái chế',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

@@ -52,32 +52,33 @@ class WasteTypeRepository {
   // Phương thức tìm WasteType theo ID
   Future<WasteType> getWasteTypeById(int wasteTypeId) async {
     try {
-      developer.log('Đang gọi API ${ApiConstants.wasteTypes}/$wasteTypeId');
+      developer.log('Fetching waste type details from API: ${ApiConstants.wasteTypes}/$wasteTypeId');
       
       final response = await apiClient.get('${ApiConstants.wasteTypes}/$wasteTypeId');
       
-      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      developer.log('API response status code: ${response.statusCode}');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = response.data;
         
-        developer.log('Dữ liệu phản hồi: $data');
+        developer.log('Response data: $data');
         
-        if (data['status'] == 'success') {
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
           final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
           return WasteType.fromJson(wasteTypeJson);
         } else {
-          developer.log('Lỗi API: ${data['message']}', error: data['message']);
-          throw Exception('API error: ${data['message']}');
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
         }
       } else {
-        developer.log('Lỗi khi tải chi tiết loại rác. Mã trạng thái: ${response.statusCode}',
-          error: 'Lỗi HTTP ${response.statusCode}');
-        throw Exception('Failed to load waste type. Status code: ${response.statusCode}');
+        final errorMessage = 'Failed to load waste type details. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      developer.log('Lỗi khi tải chi tiết loại rác: $e', error: e);
-      throw Exception('Failed to load waste type: $e');
+      developer.log('Error fetching waste type details: $e', error: e);
+      throw Exception('Failed to load waste type details: $e');
     }
   }
 
