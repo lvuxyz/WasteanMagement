@@ -186,3 +186,18 @@ class WasteTypeUpdated extends WasteTypeState {
   @override
   List<Object?> get props => [wasteType, message];
 }
+
+class WasteTypesForCollectionPointLoaded extends WasteTypeState {
+  final int collectionPointId;
+  final String collectionPointName;
+  final List<WasteType> wasteTypes;
+
+  const WasteTypesForCollectionPointLoaded({
+    required this.collectionPointId,
+    required this.collectionPointName,
+    required this.wasteTypes,
+  });
+
+  @override
+  List<Object?> get props => [collectionPointId, wasteTypes];
+}
