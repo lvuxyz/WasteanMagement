@@ -234,8 +234,18 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
   ) async {
     emit(WasteTypeLoading());
     try {
-      final wasteType = await repository.createWasteType(event.wasteType);
+      final Map<String, dynamic> wasteTypeData = {
+        'name': event.name,
+        'description': event.description,
+        'recyclable': event.recyclable ? 1 : 0,
+        'handling_instructions': event.handlingInstructions,
+        'unit_price': event.unitPrice,
+      };
+      
+      final wasteType = await repository.createWasteType(wasteTypeData);
       emit(WasteTypeCreated(wasteType: wasteType));
+      // Reload the waste types list
+      add(LoadWasteTypes());
     } catch (e) {
       emit(WasteTypeError('Không thể tạo loại rác: $e'));
     }

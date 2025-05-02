@@ -124,6 +124,18 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               ),
             ],
           ),
+          floatingActionButton: _isAdmin 
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/waste-type/add').then((_) {
+                    // Reload the list when coming back from add screen
+                    blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
+                  });
+                },
+                backgroundColor: AppColors.primaryGreen,
+                child: Icon(Icons.add, color: Colors.white),
+              )
+            : null,
           body: Column(
             children: [
               // Search and filter bar
@@ -261,11 +273,6 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               ),
             ],
           ),
-          floatingActionButton: _isAdmin ? FloatingActionButton(
-            backgroundColor: AppColors.primaryGreen,
-            child: Icon(Icons.add),
-            onPressed: () => _navigateToEdit(blocContext, null),
-          ) : null,
         );
       }),
     );

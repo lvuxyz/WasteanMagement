@@ -8,6 +8,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/waste_classification_guide_screen.dart';
 import 'screens/recycling_progress_screen.dart';
+import 'screens/waste_type/waste_type_add_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
+  static const String wasteTypeAdd = '/waste-type/add';
   static const String wasteTypeTest = '/waste-type-test';
   static const String wasteClassificationGuide = '/waste-guide';
   static const String recyclingProgress = '/recycling-progress';
@@ -26,6 +28,8 @@ class AppRoutes {
     switch (settings.name) {
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
+      case wasteTypeAdd:
+        return MaterialPageRoute(builder: (_) => const WasteTypeAddScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:

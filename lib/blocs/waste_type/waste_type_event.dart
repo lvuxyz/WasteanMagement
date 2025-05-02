@@ -100,12 +100,22 @@ class UnlinkCollectionPoint extends WasteTypeEvent {
 }
 
 class CreateWasteType extends WasteTypeEvent {
-  final WasteType wasteType;
+  final String name;
+  final String description;
+  final bool recyclable;
+  final String handlingInstructions;
+  final double unitPrice;
 
-  const CreateWasteType(this.wasteType);
+  const CreateWasteType({
+    required this.name,
+    required this.description,
+    required this.recyclable,
+    required this.handlingInstructions,
+    required this.unitPrice,
+  });
 
   @override
-  List<Object?> get props => [wasteType];
+  List<Object?> get props => [name, description, recyclable, handlingInstructions, unitPrice];
 }
 
 class UpdateWasteType extends WasteTypeEvent {
