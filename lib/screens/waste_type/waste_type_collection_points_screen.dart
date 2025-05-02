@@ -34,18 +34,18 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
   String _linkedSearchQuery = '';
   String _availableSearchQuery = '';
   late CollectionPointRepository _collectionPointRepository;
-  
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _linkedSearchController.addListener(_onLinkedSearchChanged);
     _availableSearchController.addListener(_onAvailableSearchChanged);
-    
+
     // Initialize the collection point repository
     final apiClient = context.read<ApiClient>();
     _collectionPointRepository = CollectionPointRepository(apiClient: apiClient);
-    
+
     // Load waste type details with collection points
     context.read<WasteTypeBloc>().add(LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId));
   }
@@ -57,19 +57,19 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
     _availableSearchController.dispose();
     super.dispose();
   }
-  
+
   void _onLinkedSearchChanged() {
     setState(() {
       _linkedSearchQuery = _linkedSearchController.text;
     });
   }
-  
+
   void _onAvailableSearchChanged() {
     setState(() {
       _availableSearchQuery = _availableSearchController.text;
     });
   }
-  
+
   void _showUnlinkConfirmation(BuildContext context, int collectionPointId, String name) {
     showDialog(
       context: context,
@@ -134,7 +134,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               context.read<WasteTypeBloc>().add(
-                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+                  LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
               );
             },
           ),
@@ -152,7 +152,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             );
             // Reload to get updated list
             context.read<WasteTypeBloc>().add(
-              LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
             );
           } else if (state is CollectionPointUnlinked) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +164,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             );
             // Reload to get updated list
             context.read<WasteTypeBloc>().add(
-              LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
             );
           } else if (state is WasteTypeError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -190,22 +190,22 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             final availableCollectionPoints = allCollectionPoints
                 .where((cp) => !linkedCollectionPoints.any((lcp) => lcp.id == cp.id))
                 .toList();
-                
+
             // Filter linked points by search query
             final filteredLinkedPoints = _linkedSearchQuery.isEmpty
                 ? linkedCollectionPoints
-                : linkedCollectionPoints.where((cp) => 
-                    cp.name.toLowerCase().contains(_linkedSearchQuery.toLowerCase()) ||
-                    cp.address.toLowerCase().contains(_linkedSearchQuery.toLowerCase())
-                  ).toList();
-                  
+                : linkedCollectionPoints.where((cp) =>
+            cp.name.toLowerCase().contains(_linkedSearchQuery.toLowerCase()) ||
+                cp.address.toLowerCase().contains(_linkedSearchQuery.toLowerCase())
+            ).toList();
+
             // Filter available points by search query
             final filteredAvailablePoints = _availableSearchQuery.isEmpty
                 ? availableCollectionPoints
-                : availableCollectionPoints.where((cp) => 
-                    cp.name.toLowerCase().contains(_availableSearchQuery.toLowerCase()) ||
-                    cp.address.toLowerCase().contains(_availableSearchQuery.toLowerCase())
-                  ).toList();
+                : availableCollectionPoints.where((cp) =>
+            cp.name.toLowerCase().contains(_availableSearchQuery.toLowerCase()) ||
+                cp.address.toLowerCase().contains(_availableSearchQuery.toLowerCase())
+            ).toList();
 
             return TabBarView(
               controller: _tabController,
@@ -240,7 +240,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
       ),
     );
   }
-  
+
   Widget _buildLinkedCollectionPointsTab(List<CollectionPoint> collectionPoints, WasteType wasteType) {
     if (collectionPoints.isEmpty) {
       return Center(
@@ -288,7 +288,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             },
           ),
         ),
-        
+
         // Counter
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -312,52 +312,52 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             ],
           ),
         ),
-        
+
         // List of linked collection points
         Expanded(
           child: collectionPoints.isEmpty && _linkedSearchQuery.isNotEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
-                      Text(
-                        'Không tìm thấy điểm thu gom phù hợp',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+                SizedBox(height: 16),
+                Text(
+                  'Không tìm thấy điểm thu gom phù hợp',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: collectionPoints.length,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final collectionPoint = collectionPoints[index];
-                    return CollectionPointItem(
-                      collectionPoint: collectionPoint,
-                      actionButtonText: 'Xóa liên kết',
-                      actionButtonIcon: Icons.link_off,
-                      actionButtonColor: Colors.red,
-                      onActionPressed: () {
-                        _showUnlinkConfirmation(
-                          context,
-                          int.parse(collectionPoint.id),
-                          collectionPoint.name,
-                        );
-                      },
-                    );
-                  },
                 ),
+              ],
+            ),
+          )
+              : ListView.builder(
+            padding: EdgeInsets.all(16),
+            itemCount: collectionPoints.length,
+            physics: BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              final collectionPoint = collectionPoints[index];
+              return CollectionPointItem(
+                collectionPoint: collectionPoint,
+                actionButtonText: 'Xóa liên kết',
+                actionButtonIcon: Icons.link_off,
+                actionButtonColor: Colors.red,
+                onActionPressed: () {
+                  _showUnlinkConfirmation(
+                    context,
+                    int.parse(collectionPoint.id),
+                    collectionPoint.name,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
   }
-  
+
   Widget _buildAvailableCollectionPointsTab(List<CollectionPoint> collectionPoints, WasteType wasteType) {
     if (collectionPoints.isEmpty) {
       return Center(
@@ -405,7 +405,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             },
           ),
         ),
-        
+
         // Counter
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -429,48 +429,48 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             ],
           ),
         ),
-        
+
         // List of available collection points
         Expanded(
           child: collectionPoints.isEmpty && _availableSearchQuery.isNotEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
-                      Text(
-                        'Không tìm thấy điểm thu gom phù hợp',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+                SizedBox(height: 16),
+                Text(
+                  'Không tìm thấy điểm thu gom phù hợp',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: collectionPoints.length,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final collectionPoint = collectionPoints[index];
-                    return CollectionPointItem(
-                      collectionPoint: collectionPoint,
-                      actionButtonText: 'Thêm liên kết',
-                      actionButtonIcon: Icons.link,
-                      actionButtonColor: Colors.blue,
-                      onActionPressed: () {
-                        context.read<WasteTypeBloc>().add(
-                          LinkCollectionPoint(
-                            wasteTypeId: widget.wasteTypeId,
-                            collectionPointId: int.parse(collectionPoint.id),
-                          ),
-                        );
-                      },
-                    );
-                  },
                 ),
+              ],
+            ),
+          )
+              : ListView.builder(
+            padding: EdgeInsets.all(16),
+            itemCount: collectionPoints.length,
+            physics: BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              final collectionPoint = collectionPoints[index];
+              return CollectionPointItem(
+                collectionPoint: collectionPoint,
+                actionButtonText: 'Thêm liên kết',
+                actionButtonIcon: Icons.link,
+                actionButtonColor: Colors.blue,
+                onActionPressed: () {
+                  context.read<WasteTypeBloc>().add(
+                    LinkCollectionPoint(
+                      wasteTypeId: widget.wasteTypeId,
+                      collectionPointId: int.parse(collectionPoint.id),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
