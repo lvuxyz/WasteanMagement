@@ -25,6 +25,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   bool _isAdmin = false; // Default to false until we check user role
   String _selectedFilterOption = 'all';
   Map<int, bool> _deletingItems = {}; // Track which items are being deleted
+  Map<int, bool> _updatingItems = {}; // Track which items are being updated
 
   @override
   void initState() {
@@ -141,6 +142,13 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   }
 
   void _navigateToEdit(BuildContext blocContext, int? wasteTypeId) {
+    // If it's an update operation, mark the item as updating
+    if (wasteTypeId != null) {
+      setState(() {
+        _updatingItems[wasteTypeId] = true;
+      });
+    }
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -149,7 +157,17 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
           child: WasteTypeEditScreen(wasteTypeId: wasteTypeId),
         ),
       ),
-    ).then((_) => context.read<WasteTypeBloc>().add(LoadWasteTypes()));
+    ).then((result) {
+      // If returning without a successful update, clear the updating state
+      if (wasteTypeId != null && (result != true)) {
+        setState(() {
+          _updatingItems.remove(wasteTypeId);
+        });
+      }
+      
+      // Refresh the list
+      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+    });
   }
 
   void _navigateToCollectionPoints(BuildContext blocContext, int wasteTypeId) {
@@ -294,6 +312,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       // Clear any deletion status on error
                       setState(() {
                         _deletingItems.clear();
+                        _updatingItems.clear();
                       });
                       
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -308,6 +327,18 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                               ScaffoldMessenger.of(context).hideCurrentSnackBar();
                             },
                           ),
+                        ),
+                      );
+                    } else if (state is WasteTypeUpdated) {
+                      setState(() {
+                        _updatingItems.remove(state.wasteType.id);
+                      });
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message),
+                          backgroundColor: Colors.green,
+                          behavior: SnackBarBehavior.floating,
                         ),
                       );
                     }
@@ -345,13 +376,14 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                               wasteType: wasteType,
                               onView: () => _navigateToDetails(wasteType.id),
                               onEdit: _isAdmin ? () => _navigateToEdit(blocContext, wasteType.id) : null,
-                              onDelete: _isAdmin && !(_deletingItems[wasteType.id] ?? false) ? 
+                              onDelete: _isAdmin && !(_deletingItems[wasteType.id] ?? false) && !(_updatingItems[wasteType.id] ?? false) ? 
                                 () => _showDeleteConfirmation(blocContext, wasteType.id, wasteType.name) : null,
                               onManageCollectionPoints: _isAdmin ? () => _navigateToCollectionPoints(
                                 blocContext,
                                 wasteType.id,
                               ) : null,
                               isDeleting: _deletingItems[wasteType.id] ?? false,
+                              isUpdating: _updatingItems[wasteType.id] ?? false,
                             );
                           },
                         ),

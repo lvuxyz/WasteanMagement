@@ -76,6 +76,9 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     
     _isEditing = widget.wasteTypeId != null;
 
+    // Đặt giá trị mặc định cho DropdownButtonFormField
+    _selectedCategory = _isRecyclable ? 'Tái chế' : 'Không tái chế';
+
     if (_isEditing) {
       // Load waste type details for editing
       context.read<WasteTypeBloc>().add(LoadWasteTypeDetails(widget.wasteTypeId!));
@@ -102,7 +105,19 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _unitPriceController.text = wasteType.unitPrice.toString();
     _unitController.text = wasteType.unit;
     _recentPointsController.text = wasteType.recentPoints;
-    _selectedCategory = wasteType.category;
+    
+    // Đảm bảo category phù hợp với các tùy chọn trong dropdown
+    if (wasteType.category == 'Tái chế' || 
+        wasteType.category == 'Hữu cơ' || 
+        wasteType.category == 'Nguy hại' || 
+        wasteType.category == 'Thường' ||
+        wasteType.category == 'Không tái chế') {
+      _selectedCategory = wasteType.category;
+    } else {
+      // Nếu category không khớp với bất kỳ tùy chọn nào, chọn mặc định dựa trên recyclable
+      _selectedCategory = wasteType.recyclable ? 'Tái chế' : 'Không tái chế';
+    }
+    
     _isRecyclable = wasteType.recyclable;
 
     // Find icon and color
@@ -176,6 +191,18 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
 
   void _submitForm() {
     if (!_validateForm()) return;
+    
+    // Check if user is admin before proceeding
+    if (!_isAdmin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn không có quyền cập nhật loại rác'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     
     final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
     
@@ -300,16 +327,27 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  _isEditing
-                      ? 'Cập nhật loại rác thành công'
-                      : 'Tạo loại rác mới thành công',
+                  state is WasteTypeUpdated 
+                      ? state.message 
+                      : (state is WasteTypeCreated ? state.message : 'Thao tác thành công'),
                 ),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'OK',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
             
-            Navigator.of(context).pop(true); // Return true to indicate success
+            // Add a slight delay before popping to ensure the user sees the success message
+            Future.delayed(Duration(milliseconds: 500), () {
+              Navigator.of(context).pop(true); // Return true to indicate success
+            });
           } else if (state is WasteTypeError) {
             setState(() {
               _isLoading = false;
@@ -320,6 +358,14 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 content: Text(state.message),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Thử lại',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
           }
@@ -398,8 +444,22 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 Container(
                   color: Colors.black.withOpacity(0.3),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          _isEditing ? 'Đang cập nhật loại rác...' : 'Đang tạo loại rác mới...',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -657,6 +717,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 'Hữu cơ',
                 'Nguy hại',
                 'Thường',
+                'Không tái chế',
               ].map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -667,7 +728,11 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 if (newValue != null) {
                   setState(() {
                     _selectedCategory = newValue;
-                    _isRecyclable = newValue == 'Tái chế';
+                    if (newValue == 'Tái chế') {
+                      _isRecyclable = true;
+                    } else {
+                      _isRecyclable = false;
+                    }
                   });
                 }
               },

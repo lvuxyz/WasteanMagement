@@ -35,7 +35,24 @@ class WasteType extends Equatable {
     final bool isRecyclable = json['recyclable'] == 1;
     
     // Determine category based on recyclable status
-    String category = isRecyclable ? 'Tái chế' : 'Không tái chế';
+    String category;
+    
+    // Nếu API đã trả về category, ưu tiên sử dụng
+    if (json['category'] != null && json['category'].toString().isNotEmpty) {
+      category = json['category'];
+      // Đảm bảo category phù hợp với các tùy chọn trong dropdown
+      if (category != 'Tái chế' && 
+          category != 'Hữu cơ' && 
+          category != 'Nguy hại' && 
+          category != 'Thường' && 
+          category != 'Không tái chế') {
+        // Nếu không khớp, sử dụng category dựa trên recyclable
+        category = isRecyclable ? 'Tái chế' : 'Không tái chế';
+      }
+    } else {
+      // Nếu API không trả về category, xác định dựa trên recyclable
+      category = isRecyclable ? 'Tái chế' : 'Không tái chế';
+    }
     
     // Set icon based on recyclable status
     IconData iconData = isRecyclable ? Icons.recycling : Icons.delete_outline;
