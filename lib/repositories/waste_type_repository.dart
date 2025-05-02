@@ -201,11 +201,34 @@ class WasteTypeRepository {
 
   // Phương thức xóa loại rác
   Future<bool> deleteWasteType(int wasteTypeId) async {
-    // Giả lập độ trễ khi xóa dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API xóa loại rác: ${ApiConstants.wasteTypes}/$wasteTypeId');
+      
+      final response = await apiClient.delete('${ApiConstants.wasteTypes}/$wasteTypeId');
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to delete waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error deleting waste type: $e', error: e);
+      throw Exception('Failed to delete waste type: $e');
+    }
   }
 
   // Phương thức liên kết loại rác với điểm thu gom
