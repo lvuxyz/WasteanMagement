@@ -6,7 +6,6 @@ import '../widgets/recycling_progress/recycling_statistics.dart';
 import '../blocs/recycling_progress/recycling_progress_bloc.dart';
 import '../blocs/recycling_progress/recycling_progress_event.dart';
 import '../blocs/recycling_progress/recycling_progress_state.dart';
-import '../models/recycling_record_model.dart';
 import '../repositories/recycling_progress_repository.dart';
 import '../utils/app_colors.dart';
 import '../core/network/network_info.dart';

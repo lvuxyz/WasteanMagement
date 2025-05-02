@@ -56,11 +56,11 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
     final confirmPasswordRequired = l10n.confirmPasswordRequired;
     final passwordsDoNotMatch = l10n.passwordsDoNotMatch;
     
-    final phoneLabel = "Phone";
-    final phoneHint = "Enter your phone number";
+    final phoneLabel = l10n.phone;
+    final phoneHint = l10n.enterPhone;
     
-    final addressLabel = "Address";
-    final addressHint = "Enter your address";
+    final addressLabel = l10n.address;
+    final addressHint = l10n.enterAddress;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

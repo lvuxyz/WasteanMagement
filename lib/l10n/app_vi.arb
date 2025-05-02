@@ -14,7 +14,10 @@
   "changeLanguageContent": "Bạn có muốn thay đổi ngôn ngữ không?",
   "languageChangeSuccess": "Đã thay đổi ngôn ngữ thành công",
   "languageChangeError": "Không thể thay đổi ngôn ngữ",
-
+  "phone": "Điện thoại",
+  "enterPhone": "Nhập số điện thoại của bạn",
+  "address": "Địa chỉ",
+  "enterAddress": "Nhập địa chỉ của bạn",
   "welcomeTitle": "LVuRác",
   "welcomeSubtitle": "Khám phá ứng dụng",
   "welcomeDescription": "Bây giờ tài khoản của bạn ở cùng một nơi và luôn được kiểm soát",

@@ -5,7 +5,6 @@ import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../repositories/waste_type_repository.dart';
 import '../../widgets/waste_type/waste_type_list_item.dart';
-import '../../widgets/common/search_field.dart';
 import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
 import 'waste_type_edit_screen.dart';
