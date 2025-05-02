@@ -67,7 +67,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
       children: [
         // Full Name field
         CustomTextField(
-          label: fullNameLabel,
+          labelText: fullNameLabel,
           hintText: fullNameHint,
           controller: widget.fullNameController,
           keyboardType: TextInputType.name,
@@ -82,7 +82,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Username field
         CustomTextField(
-          label: usernameLabel,
+          labelText: usernameLabel,
           hintText: usernameHint,
           controller: widget.usernameController,
           keyboardType: TextInputType.text,
@@ -97,7 +97,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Email field
         CustomTextField(
-          label: emailLabel,
+          labelText: emailLabel,
           hintText: emailHint,
           controller: widget.emailController,
           keyboardType: TextInputType.emailAddress,
@@ -115,7 +115,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Phone field
         CustomTextField(
-          label: phoneLabel,
+          labelText: phoneLabel,
           hintText: phoneHint,
           controller: widget.phoneController,
           keyboardType: TextInputType.phone,
@@ -124,7 +124,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Address field
         CustomTextField(
-          label: addressLabel,
+          labelText: addressLabel,
           hintText: addressHint,
           controller: widget.addressController,
           keyboardType: TextInputType.streetAddress,
@@ -133,7 +133,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Password field
         CustomTextField(
-          label: passwordLabel,
+          labelText: passwordLabel,
           hintText: passwordHint,
           controller: widget.passwordController,
           obscureText: _obscurePassword,
@@ -162,7 +162,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
         
         // Confirm Password field
         CustomTextField(
-          label: confirmPasswordLabel,
+          labelText: confirmPasswordLabel,
           hintText: confirmPasswordHint,
           controller: widget.confirmPasswordController,
           obscureText: _obscureConfirmPassword,
