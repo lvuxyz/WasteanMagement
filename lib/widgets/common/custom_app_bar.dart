@@ -1,6 +1,9 @@
 // widgets/common/custom_tab_bar.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../utils/app_colors.dart';
+import '../../generated/l10n.dart';
+import '../../services/language_service.dart';
 
 class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
   final TabController controller;
@@ -42,6 +45,7 @@ class CustomAppBar extends AppBar {
     double elevation = 0,
     PreferredSizeWidget? bottom,
     Widget? leading,
+    bool showLanguageSelector = false,
   }) : super(
     key: key,
     title: Text(
@@ -57,8 +61,61 @@ class CustomAppBar extends AppBar {
     centerTitle: centerTitle,
     elevation: elevation,
     automaticallyImplyLeading: automaticallyImplyLeading,
-    actions: actions,
+    actions: [
+      if (showLanguageSelector)
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Change Language',
+            onPressed: () {
+              final currentLanguage = LanguageService.getCurrentLanguageCode(key!.currentContext!);
+              final newLanguage = currentLanguage == 'en' ? 'vi' : 'en';
+              
+              LanguageService.showLanguageConfirmationDialog(
+                key!.currentContext!,
+                newLanguage,
+              ).then((confirmed) {
+                if (confirmed) {
+                  LanguageService.changeLanguage(key!.currentContext!, newLanguage);
+                }
+              });
+            },
+          ),
+        ),
+      if (actions != null) ...actions,
+    ],
     bottom: bottom,
     leading: leading,
   );
+  
+  static CustomAppBar localized({
+    Key? key,
+    required BuildContext context,
+    required String Function(S) titleBuilder,
+    List<Widget>? actions,
+    bool centerTitle = true,
+    Color backgroundColor = Colors.transparent,
+    Color titleColor = Colors.white,
+    bool automaticallyImplyLeading = true,
+    double elevation = 0,
+    PreferredSizeWidget? bottom,
+    Widget? leading,
+    bool showLanguageSelector = false,
+  }) {
+    final l10n = S.of(context);
+    return CustomAppBar(
+      key: key,
+      title: titleBuilder(l10n),
+      actions: actions,
+      centerTitle: centerTitle,
+      backgroundColor: backgroundColor,
+      titleColor: titleColor,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      elevation: elevation,
+      bottom: bottom,
+      leading: leading,
+      showLanguageSelector: showLanguageSelector,
+    );
+  }
 }

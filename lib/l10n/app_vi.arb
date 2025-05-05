@@ -168,5 +168,25 @@
   "passwordStrengthStrong": "Mạnh",
   "passwordChangedTitle": "Đã thay đổi mật khẩu",
   "passwordChangedMessage": "Mật khẩu của bạn đã được cập nhật thành công",
-  "ok": "OK"
+  "ok": "OK",
+
+  "wasteClassificationGuide": "Hướng dẫn Phân loại Rác",
+  "allCategories": "Tất cả",
+  "recyclableWaste": "Rác tái chế",
+  "organicWaste": "Rác hữu cơ",
+  "hazardousWaste": "Rác nguy hại",
+  "loadingWasteGuide": "Đang tải hướng dẫn phân loại rác...",
+  "searchGuideHint": "Tìm kiếm trong hướng dẫn...",
+  "showingCategories": "Hiển thị {count} danh mục",
+  "@showingCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "collectionPoints": "Điểm Thu Gom Rác",
+  "loadingCollectionPoints": "Đang tải điểm thu gom rác...",
+  "noCollectionPointsFound": "Không tìm thấy điểm thu gom nào"
 }

@@ -168,5 +168,25 @@
   "passwordStrengthStrong": "Strong",
   "passwordChangedTitle": "Password Changed",
   "passwordChangedMessage": "Your password has been successfully updated",
-  "ok": "OK"
+  "ok": "OK",
+
+  "wasteClassificationGuide": "Waste Classification Guide",
+  "allCategories": "All",
+  "recyclableWaste": "Recyclable Waste",
+  "organicWaste": "Organic Waste",
+  "hazardousWaste": "Hazardous Waste",
+  "loadingWasteGuide": "Loading waste classification guide...",
+  "searchGuideHint": "Search in guide...",
+  "showingCategories": "Showing {count} categories",
+  "@showingCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "collectionPoints": "Waste Collection Points",
+  "loadingCollectionPoints": "Loading collection points...",
+  "noCollectionPointsFound": "No collection points found"
 }

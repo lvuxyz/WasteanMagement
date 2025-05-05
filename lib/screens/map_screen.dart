@@ -8,6 +8,7 @@ import '../blocs/map/map_event.dart';
 import '../blocs/map/map_state.dart';
 import '../services/mapbox_service.dart';
 import '../utils/app_colors.dart';
+import '../generated/l10n.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = S.of(context);
     final screenSize = MediaQuery.of(context).size;
     final cardHeight = screenSize.height * 0.18;
     
@@ -40,9 +42,9 @@ class _MapScreenState extends State<MapScreen> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
-          title: const Text(
-            'Điểm Thu Gom Rác',
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            l10n.collectionPoints,
+            style: const TextStyle(color: Colors.white),
           ),
           actions: [
             IconButton(
@@ -125,9 +127,22 @@ class _MapScreenState extends State<MapScreen> {
                     child: IgnorePointer(
                       child: Container(
                         color: Colors.black.withOpacity(0.3),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryGreen,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(
+                                color: AppColors.primaryGreen,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.loadingCollectionPoints,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

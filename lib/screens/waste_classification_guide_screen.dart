@@ -4,6 +4,7 @@ import '../blocs/waste_guide/waste_guide_bloc.dart';
 import '../blocs/waste_guide/waste_guide_event.dart';
 import '../blocs/waste_guide/waste_guide_state.dart';
 import '../utils/app_colors.dart';
+import '../generated/l10n.dart';
 
 class WasteClassificationGuideScreen extends StatefulWidget {
   const WasteClassificationGuideScreen({Key? key}) : super(key: key);
@@ -35,19 +36,19 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging || _tabController.index != _tabController.previousIndex) {
-      String category = 'Tất cả';
+      String category = S.of(context).allCategories;
       switch (_tabController.index) {
         case 0:
-          category = 'Tất cả';
+          category = S.of(context).allCategories;
           break;
         case 1:
-          category = 'Rác tái chế';
+          category = S.of(context).recyclableWaste;
           break;
         case 2:
-          category = 'Rác hữu cơ';
+          category = S.of(context).organicWaste;
           break;
         case 3:
-          category = 'Rác nguy hại';
+          category = S.of(context).hazardousWaste;
           break;
       }
       context.read<WasteGuideBloc>().add(FilterWasteGuideByCategory(category));
@@ -67,6 +68,8 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   @override
   Widget build(BuildContext context) {
+    final l10n = S.of(context);
+    
     return BlocProvider(
       create: (context) => WasteGuideBloc()..add(LoadWasteGuide()),
       child: Builder(
@@ -77,9 +80,9 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
               backgroundColor: AppColors.primaryGreen,
               title: _isSearching
                   ? _buildSearchField()
-                  : const Text(
-                'Hướng dẫn Phân loại Rác',
-                style: TextStyle(color: Colors.white),
+                  : Text(
+                l10n.wasteClassificationGuide,
+                style: const TextStyle(color: Colors.white),
               ),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -106,11 +109,11 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.white70,
                 labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                tabs: const [
-                  Tab(text: 'Tất cả'),
-                  Tab(text: 'Rác tái chế'),
-                  Tab(text: 'Rác hữu cơ'),
-                  Tab(text: 'Rác nguy hại'),
+                tabs: [
+                  Tab(text: l10n.allCategories),
+                  Tab(text: l10n.recyclableWaste),
+                  Tab(text: l10n.organicWaste),
+                  Tab(text: l10n.hazardousWaste),
                 ],
               ),
             ),
@@ -127,15 +130,15 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
               },
               builder: (context, state) {
                 if (state is WasteGuideInitial || state is WasteGuideLoading) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(color: AppColors.primaryGreen),
-                        SizedBox(height: 16),
+                        const CircularProgressIndicator(color: AppColors.primaryGreen),
+                        const SizedBox(height: 16),
                         Text(
-                          'Đang tải hướng dẫn phân loại rác...',
-                          style: TextStyle(
+                          l10n.loadingWasteGuide,
+                          style: const TextStyle(
                             color: AppColors.primaryGreen,
                             fontSize: 16,
                           ),
@@ -155,7 +158,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           child: TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
-                              hintText: 'Tìm kiếm trong hướng dẫn...',
+                              hintText: l10n.searchGuideHint,
                               prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
@@ -185,7 +188,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Hiển thị ${state.filteredCategories.length} danh mục',
+                              l10n.showingCategories(state.filteredCategories.length),
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,

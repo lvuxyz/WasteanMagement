@@ -5,6 +5,9 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
+import '../utils/language_service.dart';
+import '../utils/s.dart';
+import '../generated/l10n.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -161,35 +164,91 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAppBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Xin chào,',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
+    final l10n = S.of(context);
+    
+    return AppBar(
+      backgroundColor: AppColors.primaryGreen,
+      elevation: 0,
+      centerTitle: false,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
             ),
-            const Text(
-              'Nguyễn Văn A', // Từ bảng Users.full_name
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+            child: const Icon(
+              Icons.recycling,
+              color: Colors.white,
+              size: 24,
             ),
-          ],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            l10n.appTitle,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        // Language switcher
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: IconButton(
+            icon: const Icon(Icons.language, color: Colors.white),
+            tooltip: l10n.changeLanguageTitle,
+            onPressed: () {
+              final currentLanguage = LanguageService.getCurrentLanguageCode(context);
+              final newLanguage = currentLanguage == 'en' ? 'vi' : 'en';
+              
+              LanguageService.showLanguageConfirmationDialog(
+                context,
+                newLanguage,
+              ).then((confirmed) {
+                if (confirmed) {
+                  LanguageService.changeLanguage(context, newLanguage);
+                }
+              });
+            },
+          ),
         ),
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
-          child: const Icon(
-            Icons.person,
-            color: AppColors.primaryGreen,
-            size: 30,
+        // Notification icon
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: IconButton(
+            icon: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                if (hasUnreadNotifications)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 8,
+                        minHeight: 8,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              _navigateToNotifications();
+            },
           ),
         ),
       ],

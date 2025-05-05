@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/language/language_bloc.dart';
 import '../generated/l10n.dart';
 import '../blocs/registration/registration_bloc.dart';
 import '../blocs/registration/registration_state.dart';
@@ -9,7 +10,7 @@ import '../widgets/registration/registration_form.dart';
 import 'dart:developer' as developer;
 
 class RegistrationScreen extends StatelessWidget {
-  const RegistrationScreen({super.key});
+  const RegistrationScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,11 @@ class RegistrationScreen extends StatelessWidget {
       create: (context) => RegistrationBloc(context: context),
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: CustomAppBar(title: 'Đăng ký'),
+        appBar: CustomAppBar.localized(
+          context: context,
+          titleBuilder: (l10n) => l10n.registrationTitle,
+          showLanguageSelector: true,
+        ),
         body: BlocListener<RegistrationBloc, RegistrationState>(
           listener: (context, state) {
             if (state is RegistrationFailure) {
@@ -47,7 +52,15 @@ class RegistrationScreen extends StatelessWidget {
               });
             }
           },
-          child: const RegistrationForm(),
+          child: BlocProvider.value(
+            value: BlocProvider.of<LanguageBloc>(context),
+            child: const SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: RegistrationForm(),
+              ),
+            ),
+          ),
         ),
       ),
     );
