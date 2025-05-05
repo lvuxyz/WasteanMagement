@@ -98,9 +98,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileHeader() {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
+        final l10n = S.of(context);
         String userName = widget.username ?? '';
         String userEmail = '';
-        String memberSince = 'Thành viên kể từ Tháng 3, 2023';
+        String memberSince = l10n.memberSince;
 
         if (state is ProfileLoaded) {
           userName = state.user.fullName;
@@ -154,14 +155,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.eco, color: Colors.white, size: 16),
-                    SizedBox(width: 4),
+                    const Icon(Icons.eco, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
                     Text(
-                      'Người bảo vệ môi trường',
-                      style: TextStyle(
+                      l10n.environmentalist,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
@@ -185,11 +186,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              'Cài đặt tài khoản',
-              style: TextStyle(
+              l10n.accountSettings,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryText,
@@ -199,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           _buildOptionItem(
             icon: Icons.person_outline,
-            title: 'Chỉnh sửa thông tin cá nhân',
+            title: l10n.editProfile,
             onTap: () {
               Navigator.push(
                 context,
@@ -214,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildOptionItem(
             icon: Icons.lock_outline,
-            title: 'Thay đổi mật khẩu',
+            title: l10n.changePassword,
             onTap: () {
               Navigator.push(
                 context,
@@ -226,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildOptionItem(
             icon: Icons.language,
-            title: 'Thay đổi ngôn ngữ',
+            title: l10n.changeLanguageTitle,
             onTap: () {
               Navigator.push(
                 context,
@@ -238,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildOptionItem(
             icon: Icons.notifications_outlined,
-            title: 'Cài đặt thông báo',
+            title: l10n.notificationSettings,
             onTap: () {
               Navigator.push(
                 context,
@@ -250,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildOptionItem(
             icon: Icons.help_outline,
-            title: 'Trợ giúp & Hướng dẫn',
+            title: l10n.helpAndGuidance,
             onTap: () {
               Navigator.push(
                 context,
@@ -262,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           _buildOptionItem(
             icon: Icons.info_outline,
-            title: 'Về ứng dụng',
+            title: l10n.aboutApp,
             onTap: () {
               Navigator.push(
                 context,
@@ -276,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // DEBUG ONLY - XÓA KHI RELEASE
           _buildOptionItem(
             icon: Icons.developer_mode,
-            title: 'Thông tin token (Debug)',
+            title: l10n.tokenInfo,
             onTap: () => _showTokenInfo(context),
           ),
           
@@ -346,19 +347,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void confirmLogout() async {
+    final l10n = S.of(context);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+        title: Text(l10n.confirmLogout),
+        content: Text(l10n.confirmLogoutMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đăng xuất'),
+            child: Text(l10n.logout),
           ),
         ],
       ),
@@ -381,6 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // FUNCTION NÀY CHỈ DÙNG ĐỂ DEBUG - XÓA KHI RELEASE
   Future<void> _showTokenInfo(BuildContext context) async {
+    final l10n = S.of(context);
     final secureStorage = SecureStorage();
     final userRepository = context.read<UserRepository>();
     
@@ -392,14 +395,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Thông tin token (Debug)'),
+        title: Text(l10n.tokenInfo),
         content: token != null 
           ? SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Token hiện tại:'),
+                  Text(l10n.currentToken),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -415,11 +418,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             )
-          : const Text('Không có token'),
+          : Text(l10n.noToken),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Đóng'),
+            child: Text(l10n.close),
           ),
           if (token != null)
             TextButton(
@@ -428,8 +431,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (mounted) {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã xóa token'),
+                    SnackBar(
+                      content: Text(l10n.tokenDeleted),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -437,7 +440,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   context.read<AuthBloc>().add(LogoutRequested());
                 }
               },
-              child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.deleteToken, style: const TextStyle(color: Colors.red)),
             ),
         ],
       ),

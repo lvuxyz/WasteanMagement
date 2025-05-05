@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_button.dart';
+import '../generated/l10n.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -30,14 +31,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = S.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
         elevation: 0,
-        title: const Text(
-          'Thay đổi mật khẩu',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.changePassword,
+          style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -74,9 +77,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const SizedBox(height: 20),
 
                 // Brief instruction text
-                const Text(
-                  'Để bảo mật tài khoản của bạn, vui lòng tạo mật khẩu mạnh với ít nhất 8 ký tự bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
-                  style: TextStyle(
+                Text(
+                  l10n.passwordRequirements,
+                  style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 14,
                   ),
@@ -90,7 +93,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu hiện tại',
+                    labelText: l10n.currentPassword,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -108,7 +111,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập mật khẩu hiện tại';
+                      return l10n.currentPasswordRequired;
                     }
                     return null;
                   },
@@ -120,7 +123,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   controller: _newPasswordController,
                   obscureText: _obscureNewPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu mới',
+                    labelText: l10n.newPassword,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -138,22 +141,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập mật khẩu mới';
+                      return l10n.newPasswordRequired;
                     }
                     if (value.length < 8) {
-                      return 'Mật khẩu phải có ít nhất 8 ký tự';
+                      return l10n.passwordMinLength;
                     }
                     if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                      return 'Mật khẩu phải chứa ít nhất 1 chữ hoa';
+                      return l10n.passwordRequireUppercase;
                     }
                     if (!RegExp(r'[a-z]').hasMatch(value)) {
-                      return 'Mật khẩu phải chứa ít nhất 1 chữ thường';
+                      return l10n.passwordRequireLowercase;
                     }
                     if (!RegExp(r'[0-9]').hasMatch(value)) {
-                      return 'Mật khẩu phải chứa ít nhất 1 số';
+                      return l10n.passwordRequireNumber;
                     }
                     if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-                      return 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt';
+                      return l10n.passwordRequireSpecial;
                     }
                     return null;
                   },
@@ -165,7 +168,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Xác nhận mật khẩu mới',
+                    labelText: l10n.confirmNewPassword,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -183,10 +186,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Vui lòng xác nhận mật khẩu mới';
+                      return l10n.confirmPasswordRequired;
                     }
                     if (value != _newPasswordController.text) {
-                      return 'Mật khẩu xác nhận không khớp';
+                      return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   },
@@ -198,16 +201,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 const SizedBox(height: 40),
 
-                // Submit button
+                // Submit Button
                 CustomButton(
-                  text: 'Cập nhật mật khẩu',
+                  text: l10n.changePassword,
                   isLoading: _isLoading,
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Implement actual password change logic
-                      _mockChangePassword();
-                    }
-                  },
+                  onPressed: _changePassword,
                 ),
               ],
             ),
@@ -217,99 +215,110 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  // This is just for UI mockup - would be replaced with real API call
-  void _mockChangePassword() {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mật khẩu đã được cập nhật thành công'),
-          backgroundColor: AppColors.primaryGreen,
-        ),
-      );
-
-      // Go back to previous screen
-      Navigator.pop(context);
-    });
-  }
-
   Widget _buildPasswordStrengthIndicator() {
-    String password = _newPasswordController.text;
-    double strength = 0;
-    String label = 'Rất yếu';
-    Color color = Colors.red;
-
-    if (password.isEmpty) {
-      return const SizedBox.shrink();
+    final l10n = S.of(context);
+    final String password = _newPasswordController.text;
+    
+    // Mặc định là yếu
+    String strengthText = l10n.passwordStrengthWeak;
+    Color strengthColor = Colors.red;
+    double strengthLevel = 0.25;
+    
+    if (password.length >= 8) {
+      // Mật khẩu có đủ độ dài cơ bản
+      int strength = 0;
+      
+      // Kiểm tra các yếu tố phức tạp
+      if (RegExp(r'[A-Z]').hasMatch(password)) strength++;
+      if (RegExp(r'[a-z]').hasMatch(password)) strength++;
+      if (RegExp(r'[0-9]').hasMatch(password)) strength++;
+      if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) strength++;
+      
+      // Đánh giá độ mạnh dựa trên số yếu tố đạt được
+      if (strength == 1) {
+        strengthText = l10n.passwordStrengthWeak;
+        strengthColor = Colors.red;
+        strengthLevel = 0.25;
+      } else if (strength == 2) {
+        strengthText = l10n.passwordStrengthMedium;
+        strengthColor = Colors.orange;
+        strengthLevel = 0.5;
+      } else if (strength == 3) {
+        strengthText = l10n.passwordStrengthGood;
+        strengthColor = Colors.green;
+        strengthLevel = 0.75;
+      } else if (strength == 4) {
+        strengthText = l10n.passwordStrengthStrong;
+        strengthColor = AppColors.primaryGreen;
+        strengthLevel = 1.0;
+      }
     }
-
-    // Check password length
-    if (password.length >= 8) strength += 0.25;
-
-    // Check for uppercase letters
-    if (RegExp(r'[A-Z]').hasMatch(password)) strength += 0.25;
-
-    // Check for lowercase letters
-    if (RegExp(r'[a-z]').hasMatch(password)) strength += 0.25;
-
-    // Check for numbers
-    if (RegExp(r'[0-9]').hasMatch(password)) strength += 0.15;
-
-    // Check for special characters
-    if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) strength += 0.10;
-
-    // Determine label and color based on strength
-    if (strength <= 0.25) {
-      label = 'Rất yếu';
-      color = Colors.red;
-    } else if (strength <= 0.5) {
-      label = 'Yếu';
-      color = Colors.orange;
-    } else if (strength <= 0.75) {
-      label = 'Khá tốt';
-      color = Colors.amber;
-    } else {
-      label = 'Mạnh';
-      color = AppColors.primaryGreen;
-    }
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Độ mạnh mật khẩu:',
-              style: TextStyle(color: Colors.grey),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        Text(
+          l10n.passwordStrength,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(
-          value: strength,
-          backgroundColor: Colors.grey[200],
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-          minHeight: 10,
-          borderRadius: BorderRadius.circular(10),
+          value: strengthLevel,
+          backgroundColor: Colors.grey[300],
+          valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
+          minHeight: 8,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          strengthText,
+          style: TextStyle(
+            color: strengthColor,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
+  }
+
+  void _changePassword() async {
+    final l10n = S.of(context);
+    
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      // Simulate API request
+      await Future.delayed(const Duration(seconds: 2));
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        // Show success dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.passwordChangedTitle),
+            content: Text(l10n.passwordChangedMessage),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Go back to previous screen
+                },
+                child: Text(l10n.ok),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 }

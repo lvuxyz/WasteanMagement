@@ -149,6 +149,72 @@ class S {
   String get placeWasteInCenter => Intl.message('Place waste in the center of the frame', name: 'placeWasteInCenter');
   String get enoughLight => Intl.message('Ensure enough light to see the object clearly', name: 'enoughLight');
   String get objectNotObscured => Intl.message('Object should not be obscured', name: 'objectNotObscured');
+  
+  // New localization strings
+  String get memberSince => Intl.message('Member since March, 2023', name: 'memberSince');
+  String get environmentalist => Intl.message('Environmental Guardian', name: 'environmentalist');
+  String get accountSettings => Intl.message('Account Settings', name: 'accountSettings');
+  String get editProfile => Intl.message('Edit Profile Information', name: 'editProfile');
+  String get changePassword => Intl.message('Change Password', name: 'changePassword');
+  String get notificationSettings => Intl.message('Notification Settings', name: 'notificationSettings');
+  String get helpAndGuidance => Intl.message('Help & Guidance', name: 'helpAndGuidance');
+  String get aboutApp => Intl.message('About App', name: 'aboutApp');
+  String get tokenInfo => Intl.message('Token Information (Debug)', name: 'tokenInfo');
+  String get confirmLogout => Intl.message('Confirm Logout', name: 'confirmLogout');
+  String get confirmLogoutMessage => Intl.message('Are you sure you want to log out?', name: 'confirmLogoutMessage');
+  String get currentToken => Intl.message('Current token:', name: 'currentToken');
+  String get noToken => Intl.message('No token available', name: 'noToken');
+  String get close => Intl.message('Close', name: 'close');
+  String get tokenDeleted => Intl.message('Token deleted', name: 'tokenDeleted');
+  String get deleteToken => Intl.message('Delete Token', name: 'deleteToken');
+  
+  String get allNotifications => Intl.message('All Notifications', name: 'allNotifications');
+  String get allNotificationsDescription => Intl.message('Enable/disable all notifications from the app', name: 'allNotificationsDescription');
+  String get notificationTypes => Intl.message('Notification Types', name: 'notificationTypes');
+  String get collectionReminders => Intl.message('Collection Reminders', name: 'collectionReminders');
+  String get collectionRemindersDescription => Intl.message('Notifications for scheduled waste collection', name: 'collectionRemindersDescription');
+  String get recyclingTips => Intl.message('Recycling Tips', name: 'recyclingTips');
+  String get recyclingTipsDescription => Intl.message('Receive weekly recycling tips and information', name: 'recyclingTipsDescription');
+  String get scheduleChanges => Intl.message('Schedule Changes', name: 'scheduleChanges');
+  String get scheduleChangesDescription => Intl.message('Notifications for changes in collection schedule', name: 'scheduleChangesDescription');
+  String get recyclingEvents => Intl.message('Recycling Events', name: 'recyclingEvents');
+  String get recyclingEventsDescription => Intl.message('Notifications about recycling events near you', name: 'recyclingEventsDescription');
+  String get rewardsAndOffers => Intl.message('Rewards & Offers', name: 'rewardsAndOffers');
+  String get rewardsAndOffersDescription => Intl.message('Notifications about rewards and new offers', name: 'rewardsAndOffersDescription');
+  String get systemUpdates => Intl.message('System Updates', name: 'systemUpdates');
+  String get systemUpdatesDescription => Intl.message('Notifications about app updates and maintenance', name: 'systemUpdatesDescription');
+  String get notificationChannels => Intl.message('Notification Channels', name: 'notificationChannels');
+  String get pushNotifications => Intl.message('Push Notifications', name: 'pushNotifications');
+  String get pushNotificationsDescription => Intl.message('Receive notifications directly on your device', name: 'pushNotificationsDescription');
+  String get emailNotifications => Intl.message('Email', name: 'emailNotifications');
+  String get emailNotificationsDescription => Intl.message('Receive notifications via email', name: 'emailNotificationsDescription');
+  String get smsNotifications => Intl.message('SMS', name: 'smsNotifications');
+  String get smsNotificationsDescription => Intl.message('Receive notifications via SMS', name: 'smsNotificationsDescription');
+  String get notificationTimeRange => Intl.message('Notification Time Range', name: 'notificationTimeRange');
+  String get from => Intl.message('From', name: 'from');
+  String get to => Intl.message('To', name: 'to');
+  String get saveSettings => Intl.message('Save Settings', name: 'saveSettings');
+  String get settingsSaved => Intl.message('Settings saved successfully', name: 'settingsSaved');
+  
+  String get passwordRequirements => Intl.message('For your account security, please create a strong password with at least 8 characters including uppercase, lowercase, numbers, and special characters.', name: 'passwordRequirements');
+  String get currentPassword => Intl.message('Current Password', name: 'currentPassword');
+  String get currentPasswordRequired => Intl.message('Please enter your current password', name: 'currentPasswordRequired');
+  String get newPassword => Intl.message('New Password', name: 'newPassword');
+  String get newPasswordRequired => Intl.message('Please enter a new password', name: 'newPasswordRequired');
+  String get passwordMinLength => Intl.message('Password must be at least 8 characters long', name: 'passwordMinLength');
+  String get passwordRequireUppercase => Intl.message('Password must contain at least 1 uppercase letter', name: 'passwordRequireUppercase');
+  String get passwordRequireLowercase => Intl.message('Password must contain at least 1 lowercase letter', name: 'passwordRequireLowercase');
+  String get passwordRequireNumber => Intl.message('Password must contain at least 1 number', name: 'passwordRequireNumber');
+  String get passwordRequireSpecial => Intl.message('Password must contain at least 1 special character', name: 'passwordRequireSpecial');
+  String get confirmNewPassword => Intl.message('Confirm New Password', name: 'confirmNewPassword');
+  String get passwordStrength => Intl.message('Password Strength', name: 'passwordStrength');
+  String get passwordStrengthWeak => Intl.message('Weak', name: 'passwordStrengthWeak');
+  String get passwordStrengthMedium => Intl.message('Medium', name: 'passwordStrengthMedium');
+  String get passwordStrengthGood => Intl.message('Good', name: 'passwordStrengthGood');
+  String get passwordStrengthStrong => Intl.message('Strong', name: 'passwordStrengthStrong');
+  String get passwordChangedTitle => Intl.message('Password Changed', name: 'passwordChangedTitle');
+  String get passwordChangedMessage => Intl.message('Your password has been successfully updated', name: 'passwordChangedMessage');
+  String get ok => Intl.message('OK', name: 'ok');
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
