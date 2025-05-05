@@ -18,7 +18,6 @@ class WasteTypeManagementScreen extends StatefulWidget {
   @override
   State<WasteTypeManagementScreen> createState() => _WasteTypeManagementScreenState();
 }
-
 class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();

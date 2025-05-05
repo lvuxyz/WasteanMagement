@@ -206,14 +206,20 @@ class WasteTypeRepository {
       
       final response = await apiClient.delete('${ApiConstants.wasteTypes}/$wasteTypeId');
       
-      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      developer.log('Đang xử lý phản hồi với mã: ${response.statusCode}');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = response.data;
+        // For 204 No Content, the response will be empty
+        if (response.statusCode == 204) {
+          return true;
+        }
         
+        // For other successful status codes, check the response data
+        final data = response.data;
         developer.log('Dữ liệu phản hồi: $data');
         
-        if (data['status'] == 'success') {
+        // Consider both 'success' status and empty response as successful
+        if (data == null || data['status'] == 'success') {
           return true;
         } else {
           final errorMessage = data['message'] ?? 'Unknown API error';
