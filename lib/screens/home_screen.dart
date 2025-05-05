@@ -5,7 +5,6 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
-import '../routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

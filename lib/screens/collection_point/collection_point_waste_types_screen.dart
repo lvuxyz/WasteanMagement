@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
-import '../../models/waste_type_model.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/waste_type/waste_type_item.dart';
 import '../../widgets/common/loading_view.dart';
