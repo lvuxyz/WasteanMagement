@@ -16,7 +16,7 @@ class WasteTypeRepository {
       developer.log('Đang gọi API ${ApiConstants.wasteTypes}');
       
       final response = await apiClient.get(ApiConstants.wasteTypes);
-      
+
       developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {

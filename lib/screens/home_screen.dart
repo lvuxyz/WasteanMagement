@@ -80,6 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomePage() {
+    final l10n = S.of(context);
+    
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -90,15 +92,15 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildUserSummaryCard(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Điểm thu gom gần bạn'),
+            _buildSectionTitle(l10n.nearbyCollectionPoints),
             const SizedBox(height: 16),
             _buildCollectionPointsList(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Loại rác được thu gom'),
+            _buildSectionTitle(l10n.wasteTypesCollected),
             const SizedBox(height: 16),
             _buildWasteTypeList(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Giao dịch gần đây'),
+            _buildSectionTitle(l10n.recentTransactions),
             const SizedBox(height: 16),
             _buildRecentTransactionsList(),
             const SizedBox(height: 16),
@@ -133,21 +135,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Kiểm tra API Loại Rác',
-                              style: TextStyle(
+                              l10n.testWasteTypeAPI,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Hiển thị danh sách loại rác từ API',
-                              style: TextStyle(
+                              l10n.displayWasteTypeFromAPI,
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black54,
                               ),
@@ -251,6 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUserSummaryCard() {
+    final l10n = S.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -271,17 +275,17 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.eco_outlined,
                 color: Colors.white,
                 size: 28,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                'Tổng điểm thưởng', // Từ bảng Rewards.points
-                style: TextStyle(
+                l10n.totalRewardPoints,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -314,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    'Rác đã xử lý',
+                    l10n.wasteProcessed,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
@@ -332,9 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Đổi điểm',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  l10n.redeemPoints,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -345,6 +349,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final l10n = S.of(context);
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -357,9 +363,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         TextButton(
           onPressed: () {},
-          child: const Text(
-            'Xem tất cả',
-            style: TextStyle(
+          child: Text(
+            l10n.viewAll,
+            style: const TextStyle(
               color: AppColors.primaryGreen,
               fontWeight: FontWeight.bold,
             ),
@@ -371,6 +377,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Thêm Quick Actions ở đây
   Widget _buildQuickActions({required int height}) {
+    final l10n = S.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -387,9 +395,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Hành động nhanh',
-            style: TextStyle(
+          Text(
+            l10n.quickActions,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -400,19 +408,19 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildQuickAction(
                 icon: Icons.calendar_today_outlined,
-                title: 'Lịch hẹn',
+                title: l10n.appointments,
                 onTap: () {},
               ),
               _buildQuickAction(
                 icon: Icons.recycling,
-                title: 'Loại rác',
+                title: l10n.wasteTypes,
                 onTap: () {
                   Navigator.pushNamed(context, '/waste-type');
                 },
               ),
               _buildQuickAction(
                 icon: Icons.location_on_outlined,
-                title: 'Điểm thu gom',
+                title: l10n.collectionPoints,
                 onTap: () {
                   // This navigation is for a future functionality
                   // Currently, we navigate to the collection points list screen
@@ -422,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _buildQuickAction(
                 icon: Icons.assignment_outlined,
-                title: 'Hướng dẫn',
+                title: l10n.guidelines,
                 onTap: () {
                   Navigator.pushNamed(context, '/waste-guide');
                 },
@@ -433,9 +441,9 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Cài đặt nhanh',
-                style: TextStyle(
+              Text(
+                l10n.quickSettings,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -520,12 +528,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCollectionPointsList() {
+    final l10n = S.of(context);
+    
     // Hiển thị từ bảng CollectionPoints
     List<Map<String, dynamic>> mockCollectionPoints = [
       {
         'id': 1,
-        'name': 'Điểm thu gom Nguyễn Trãi',
-        'address': 'Số 123 Nguyễn Trãi, Quận 1, TP.HCM',
+        'name': l10n.collectionPointNguyenTrai,
+        'address': l10n.addressNguyenTrai,
         'distance': 2.5,
         'operating_hours': '08:00 - 17:00',
         'status': 'active',
@@ -534,8 +544,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'id': 2,
-        'name': 'Điểm thu gom Lê Duẩn',
-        'address': 'Số 456 Lê Duẩn, Quận 3, TP.HCM',
+        'name': l10n.collectionPointLeDuan,
+        'address': l10n.addressLeDuan,
         'distance': 3.7,
         'operating_hours': '07:30 - 18:00',
         'status': 'active',
@@ -544,8 +554,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'id': 3,
-        'name': 'Điểm thu gom Nguyễn Đình Chiểu',
-        'address': 'Số 789 Nguyễn Đình Chiểu, Quận 3, TP.HCM',
+        'name': l10n.collectionPointNguyenDinhChieu,
+        'address': l10n.addressNguyenDinhChieu,
         'distance': 4.2,
         'operating_hours': '08:00 - 17:30',
         'status': 'active',
@@ -683,7 +693,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                point['status'] == 'active' ? 'Mở cửa' : 'Đóng cửa',
+                                point['status'] == 'active' ? l10n.open : l10n.closed,
                                 style: TextStyle(
                                   color: point['status'] == 'active'
                                       ? AppColors.primaryGreen
@@ -751,12 +761,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWasteTypeList() {
+    final l10n = S.of(context);
+    
     // Hiển thị từ bảng WasteTypes
     List<Map<String, dynamic>> mockWasteTypes = [
       {
         'id': 1,
-        'name': 'Nhựa tái chế',
-        'description': 'Chai, lọ, hộp nhựa đã qua sử dụng',
+        'name': l10n.recyclablePlastic,
+        'description': l10n.plasticDescription,
         'recyclable': true,
         'unit_price': 5000,
         'icon': Icons.delete_outline,
@@ -764,8 +776,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'id': 2,
-        'name': 'Giấy, bìa carton',
-        'description': 'Sách báo, hộp giấy, bìa carton',
+        'name': l10n.paperCardboard,
+        'description': l10n.paperDescription,
         'recyclable': true,
         'unit_price': 3000,
         'icon': Icons.description_outlined,
@@ -773,8 +785,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'id': 3,
-        'name': 'Kim loại',
-        'description': 'Vỏ lon, đồ kim loại cũ',
+        'name': l10n.metal,
+        'description': l10n.metalDescription,
         'recyclable': true,
         'unit_price': 7000,
         'icon': Icons.settings_outlined,
@@ -782,8 +794,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'id': 4,
-        'name': 'Kính, thủy tinh',
-        'description': 'Chai lọ thủy tinh, đồ thủy tinh vỡ',
+        'name': l10n.glass,
+        'description': l10n.glassDescription,
         'recyclable': true,
         'unit_price': 2000,
         'icon': Icons.wine_bar_outlined,
@@ -858,32 +870,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentTransactionsList() {
+    final l10n = S.of(context);
+    
     // Hiển thị từ bảng Transactions
     List<Map<String, dynamic>> mockTransactions = [
       {
         'id': 1,
-        'type': 'Nhựa tái chế',
+        'type': l10n.recyclablePlastic,
         'quantity': 2.5,
         'points': 12,
-        'collection_point': 'Điểm thu gom Nguyễn Trãi',
+        'collection_point': l10n.collectionPointNguyenTrai,
         'date': '22/05/2023',
         'status': 'completed',
       },
       {
         'id': 2,
-        'type': 'Giấy, bìa carton',
+        'type': l10n.paperCardboard,
         'quantity': 3.7,
         'points': 15,
-        'collection_point': 'Điểm thu gom Quận 1',
+        'collection_point': l10n.collectionPointDistrict1,
         'date': '18/05/2023',
         'status': 'completed',
       },
       {
         'id': 3,
-        'type': 'Kim loại',
+        'type': l10n.metal,
         'quantity': 1.2,
         'points': 8,
-        'collection_point': 'Điểm thu gom Quận 3',
+        'collection_point': l10n.collectionPointDistrict3,
         'date': '15/05/2023',
         'status': 'processing',
       },
@@ -895,14 +909,14 @@ class _HomeScreenState extends State<HomeScreen> {
       itemCount: mockTransactions.length,
       itemBuilder: (context, index) {
         final transaction = mockTransactions[index];
-        final IconData icon = transaction['type'] == 'Nhựa tái chế'
+        final IconData icon = transaction['type'] == l10n.recyclablePlastic
             ? Icons.delete_outline
-            : transaction['type'] == 'Giấy, bìa carton'
+            : transaction['type'] == l10n.paperCardboard
             ? Icons.description_outlined
             : Icons.settings_outlined;
-        final Color iconColor = transaction['type'] == 'Nhựa tái chế'
+        final Color iconColor = transaction['type'] == l10n.recyclablePlastic
             ? Colors.blue
-            : transaction['type'] == 'Giấy, bìa carton'
+            : transaction['type'] == l10n.paperCardboard
             ? Colors.amber
             : Colors.grey;
 
@@ -969,9 +983,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.orange.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
-                'Đang xử lý',
-                style: TextStyle(
+              child: Text(
+                l10n.processing,
+                style: const TextStyle(
                   color: Colors.orange,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
