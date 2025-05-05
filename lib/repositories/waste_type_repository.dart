@@ -374,4 +374,36 @@ class WasteTypeRepository {
       throw Exception('Failed to update waste type: $e');
     }
   }
+
+  Future<List<WasteType>> getWasteTypesForCollectionPoint(int collectionPointId) async {
+    try {
+      developer.log('Đang gọi API lấy loại rác cho điểm thu gom: ${ApiConstants.baseUrl}/waste-types/collection-point/$collectionPointId');
+      
+      final response = await apiClient.get('${ApiConstants.baseUrl}/waste-types/collection-point/$collectionPointId');
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteTypes'] != null) {
+          final List<dynamic> wasteTypesJson = data['data']['wasteTypes'];
+          return wasteTypesJson.map((json) => WasteType.fromJson(json)).toList();
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to load waste types for collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error fetching waste types for collection point: $e', error: e);
+      throw Exception('Failed to load waste types for collection point: $e');
+    }
+  }
 }
