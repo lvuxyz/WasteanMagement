@@ -7,6 +7,10 @@ import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
 import '../services/language_service.dart';
 import '../generated/l10n.dart';
+import '../blocs/language/language_bloc.dart';
+import '../blocs/language/language_state.dart';
+import '../widgets/language_menu.dart';
+import '../widgets/language_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -206,23 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Language switcher
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: const Icon(Icons.language, color: Colors.white),
-            tooltip: l10n.changeLanguageTitle,
-            onPressed: () {
-              final currentLanguage = LanguageService.getCurrentLanguageCode(context);
-              final newLanguage = currentLanguage == 'en' ? 'vi' : 'en';
-              
-              LanguageService.showLanguageConfirmationDialog(
-                context,
-                newLanguage,
-              ).then((confirmed) {
-                if (confirmed) {
-                  LanguageService.changeLanguage(context, newLanguage);
-                }
-              });
-            },
-          ),
+          child: LanguageMenu(),
         ),
         // Notification icon
         Padding(
@@ -441,6 +429,28 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Cài đặt nhanh',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              _buildQuickSettingButton(
+                icon: Icons.language_outlined,
+                child: LanguageIndicator(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/language');
+                  },
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -478,6 +488,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickSettingButton({
+    IconData? icon, 
+    Widget? child,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: child ?? Icon(
+          icon ?? Icons.settings,
+          color: AppColors.primaryGreen,
+          size: 20,
+        ),
       ),
     );
   }
