@@ -36,19 +36,20 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging || _tabController.index != _tabController.previousIndex) {
-      String category = S.of(context).allCategories;
+      final l10n = S.of(context);
+      String category = l10n.allCategories;
       switch (_tabController.index) {
         case 0:
-          category = S.of(context).allCategories;
+          category = l10n.allCategories;
           break;
         case 1:
-          category = S.of(context).recyclableWaste;
+          category = l10n.recyclableWaste;
           break;
         case 2:
-          category = S.of(context).organicWaste;
+          category = l10n.organicWaste;
           break;
         case 3:
-          category = S.of(context).hazardousWaste;
+          category = l10n.hazardousWaste;
           break;
       }
       context.read<WasteGuideBloc>().add(FilterWasteGuideByCategory(category));
@@ -68,12 +69,12 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
-    
     return BlocProvider(
       create: (context) => WasteGuideBloc()..add(LoadWasteGuide()),
       child: Builder(
         builder: (context) {
+          final l10n = S.of(context);
+          
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
@@ -129,6 +130,8 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                 }
               },
               builder: (context, state) {
+                final l10n = S.of(context);
+                
                 if (state is WasteGuideInitial || state is WasteGuideLoading) {
                   return Center(
                     child: Column(
@@ -188,7 +191,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              l10n.showingCategories(state.filteredCategories.length),
+                              'Showing ${state.filteredCategories.length} categories',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -213,9 +216,9 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                     children: [
                       const Icon(Icons.error_outline, size: 48, color: Colors.red),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Đã xảy ra lỗi khi tải dữ liệu',
-                        style: TextStyle(color: Colors.red),
+                      Text(
+                        l10n.errorOccurred,
+                        style: const TextStyle(color: Colors.red),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
@@ -223,7 +226,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           context.read<WasteGuideBloc>().add(LoadWasteGuide());
                         },
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Thử lại'),
+                        label: Text(l10n.tryAgain),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryGreen,
                           foregroundColor: Colors.white,
@@ -246,12 +249,13 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   // Widget tìm kiếm trong AppBar
   Widget _buildSearchField() {
+    final l10n = S.of(context);
     return TextField(
       controller: _searchController,
       autofocus: true,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        hintText: 'Tìm kiếm trong hướng dẫn...',
+        hintText: l10n.searchGuideHint,
         hintStyle: const TextStyle(color: Colors.white70),
         border: InputBorder.none,
         prefixIcon: const Icon(Icons.search, color: Colors.white),
@@ -265,6 +269,8 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   // Widget hiển thị nội dung hướng dẫn
   Widget _buildGuideContent(BuildContext context, WasteGuideLoaded state) {
+    final l10n = S.of(context);
+    
     if (state.filteredCategories.isEmpty) {
       return Center(
         child: Column(
@@ -273,7 +279,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
             Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              'Không tìm thấy nội dung phù hợp',
+              'No matching content found',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -283,9 +289,9 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
             TextButton.icon(
               onPressed: _clearSearch,
               icon: const Icon(Icons.refresh, color: AppColors.primaryGreen),
-              label: const Text(
-                'Xóa bộ lọc',
-                style: TextStyle(color: AppColors.primaryGreen),
+              label: Text(
+                'Clear filter',
+                style: const TextStyle(color: AppColors.primaryGreen),
               ),
             ),
           ],
@@ -426,7 +432,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
               children: [
                 // Danh sách ví dụ
                 const Text(
-                  'Ví dụ:',
+                  'Examples:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -464,7 +470,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
                 // Hướng dẫn xử lý
                 const Text(
-                  'Cách xử lý:',
+                  'Instructions:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

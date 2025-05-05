@@ -63,24 +63,25 @@ class CustomAppBar extends AppBar {
     automaticallyImplyLeading: automaticallyImplyLeading,
     actions: [
       if (showLanguageSelector)
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: const Icon(Icons.language),
-            tooltip: 'Change Language',
-            onPressed: () {
-              final currentLanguage = LanguageService.getCurrentLanguageCode(key!.currentContext!);
-              final newLanguage = currentLanguage == 'en' ? 'vi' : 'en';
-              
-              LanguageService.showLanguageConfirmationDialog(
-                key!.currentContext!,
-                newLanguage,
-              ).then((confirmed) {
-                if (confirmed) {
-                  LanguageService.changeLanguage(key!.currentContext!, newLanguage);
-                }
-              });
-            },
+        Builder(
+          builder: (context) => Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.language),
+              tooltip: 'Change Language',
+              onPressed: () {
+                final currentLanguage = LanguageService.getCurrentLanguageCode(context);
+                final newLanguage = currentLanguage == 'en' ? 'vi' : 'en';
+                LanguageService.showLanguageConfirmationDialog(
+                  context,
+                  newLanguage,
+                ).then((confirmed) {
+                  if (confirmed) {
+                    LanguageService.changeLanguage(context, newLanguage);
+                  }
+                });
+              },
+            ),
           ),
         ),
       if (actions != null) ...actions,

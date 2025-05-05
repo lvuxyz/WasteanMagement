@@ -12,7 +12,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ForgotPasswordBloc(),
+      create: (context) => ForgotPasswordBloc(context: context),
       child: Builder(
         builder: (context) {
           return Scaffold(

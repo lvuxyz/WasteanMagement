@@ -5,8 +5,7 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
-import '../utils/language_service.dart';
-import '../utils/s.dart';
+import '../services/language_service.dart';
 import '../generated/l10n.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,7 +17,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+// Add these to the _HomeScreenState class
+  bool hasUnreadNotifications = true; // Or set to false as needed
 
+  void _navigateToNotifications() {
+    Navigator.pushNamed(context, '/notifications');
+  }
   void _onItemTapped(int index){
     setState(() {
       _selectedIndex = index;

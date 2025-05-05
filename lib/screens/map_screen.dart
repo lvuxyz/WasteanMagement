@@ -33,7 +33,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
     final screenSize = MediaQuery.of(context).size;
     final cardHeight = screenSize.height * 0.18;
     
@@ -43,7 +42,7 @@ class _MapScreenState extends State<MapScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
           title: Text(
-            l10n.collectionPoints,
+            S.of(context).collectionPoints,
             style: const TextStyle(color: Colors.white),
           ),
           actions: [
@@ -74,6 +73,9 @@ class _MapScreenState extends State<MapScreen> {
             }
           },
           builder: (context, state) {
+            // Get localization in the builder scope
+            final l10n = S.of(context);
+            
             return Stack(
               children: [
                 // Đảm bảo map có thể nhận các sự kiện cảm ứng
@@ -368,7 +370,7 @@ class _MapScreenState extends State<MapScreen> {
   void _showDirectionsNotImplemented(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Tính năng chỉ đường sẽ được triển khai trong phiên bản sau.'),
+        content: Text('Directions feature will be implemented in a future version.'),
         duration: Duration(seconds: 2),
       ),
     );
