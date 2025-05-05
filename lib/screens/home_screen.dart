@@ -189,12 +189,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            l10n.appTitle,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Flexible(
+            child: Text(
+              l10n.appTitle,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

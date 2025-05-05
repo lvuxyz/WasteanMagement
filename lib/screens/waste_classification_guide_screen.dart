@@ -4,7 +4,6 @@ import '../blocs/waste_guide/waste_guide_bloc.dart';
 import '../blocs/waste_guide/waste_guide_event.dart';
 import '../blocs/waste_guide/waste_guide_state.dart';
 import '../utils/app_colors.dart';
-import '../generated/l10n.dart';
 
 class WasteClassificationGuideScreen extends StatefulWidget {
   const WasteClassificationGuideScreen({Key? key}) : super(key: key);
@@ -36,20 +35,19 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging || _tabController.index != _tabController.previousIndex) {
-      final l10n = S.of(context);
-      String category = l10n.allCategories;
+      String category = "All";
       switch (_tabController.index) {
         case 0:
-          category = l10n.allCategories;
+          category = "All";
           break;
         case 1:
-          category = l10n.recyclableWaste;
+          category = "Recyclable Waste";
           break;
         case 2:
-          category = l10n.organicWaste;
+          category = "Organic Waste";
           break;
         case 3:
-          category = l10n.hazardousWaste;
+          category = "Hazardous Waste";
           break;
       }
       context.read<WasteGuideBloc>().add(FilterWasteGuideByCategory(category));
@@ -73,8 +71,6 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
       create: (context) => WasteGuideBloc()..add(LoadWasteGuide()),
       child: Builder(
         builder: (context) {
-          final l10n = S.of(context);
-          
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
@@ -82,7 +78,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
               title: _isSearching
                   ? _buildSearchField()
                   : Text(
-                l10n.wasteClassificationGuide,
+                "Waste Classification Guide",
                 style: const TextStyle(color: Colors.white),
               ),
               leading: IconButton(
@@ -111,10 +107,10 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                 unselectedLabelColor: Colors.white70,
                 labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                 tabs: [
-                  Tab(text: l10n.allCategories),
-                  Tab(text: l10n.recyclableWaste),
-                  Tab(text: l10n.organicWaste),
-                  Tab(text: l10n.hazardousWaste),
+                  Tab(text: "All"),
+                  Tab(text: "Recyclable Waste"),
+                  Tab(text: "Organic Waste"),
+                  Tab(text: "Hazardous Waste"),
                 ],
               ),
             ),
@@ -130,8 +126,6 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                 }
               },
               builder: (context, state) {
-                final l10n = S.of(context);
-                
                 if (state is WasteGuideInitial || state is WasteGuideLoading) {
                   return Center(
                     child: Column(
@@ -140,7 +134,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                         const CircularProgressIndicator(color: AppColors.primaryGreen),
                         const SizedBox(height: 16),
                         Text(
-                          l10n.loadingWasteGuide,
+                          "Loading Waste Guide",
                           style: const TextStyle(
                             color: AppColors.primaryGreen,
                             fontSize: 16,
@@ -161,7 +155,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           child: TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
-                              hintText: l10n.searchGuideHint,
+                              hintText: "Search Guide",
                               prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
                               suffixIcon: _searchController.text.isNotEmpty
                                   ? IconButton(
@@ -217,7 +211,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                       const Icon(Icons.error_outline, size: 48, color: Colors.red),
                       const SizedBox(height: 16),
                       Text(
-                        l10n.errorOccurred,
+                        "Error occurred",
                         style: const TextStyle(color: Colors.red),
                       ),
                       const SizedBox(height: 16),
@@ -226,7 +220,7 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
                           context.read<WasteGuideBloc>().add(LoadWasteGuide());
                         },
                         icon: const Icon(Icons.refresh),
-                        label: Text(l10n.tryAgain),
+                        label: Text("Try Again"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryGreen,
                           foregroundColor: Colors.white,
@@ -249,13 +243,12 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   // Widget tìm kiếm trong AppBar
   Widget _buildSearchField() {
-    final l10n = S.of(context);
     return TextField(
       controller: _searchController,
       autofocus: true,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        hintText: l10n.searchGuideHint,
+        hintText: "Search Guide",
         hintStyle: const TextStyle(color: Colors.white70),
         border: InputBorder.none,
         prefixIcon: const Icon(Icons.search, color: Colors.white),
@@ -269,8 +262,6 @@ class _WasteClassificationGuideScreenState extends State<WasteClassificationGuid
 
   // Widget hiển thị nội dung hướng dẫn
   Widget _buildGuideContent(BuildContext context, WasteGuideLoaded state) {
-    final l10n = S.of(context);
-    
     if (state.filteredCategories.isEmpty) {
       return Center(
         child: Column(

@@ -42,7 +42,7 @@ class _MapScreenState extends State<MapScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
           title: Text(
-            S.of(context).collectionPoints,
+            "Waste Collection Points",
             style: const TextStyle(color: Colors.white),
           ),
           actions: [
@@ -73,9 +73,6 @@ class _MapScreenState extends State<MapScreen> {
             }
           },
           builder: (context, state) {
-            // Get localization in the builder scope
-            final l10n = S.of(context);
-            
             return Stack(
               children: [
                 // Đảm bảo map có thể nhận các sự kiện cảm ứng
@@ -138,7 +135,7 @@ class _MapScreenState extends State<MapScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                l10n.loadingCollectionPoints,
+                                "Loading collection points...",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
