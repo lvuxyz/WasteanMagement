@@ -252,12 +252,14 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
           if (state is WasteTypeDetailLoaded && _tabController.index == 1) {
             return FloatingActionButton.extended(
               onPressed: () {
+                // Navigate to the waste type collection points management screen
                 Navigator.pushNamed(
                   context,
                   '/waste-type/collection-points',
                   arguments: widget.wasteTypeId,
-                ).then((value) {
-                  if (value == true) {
+                ).then((result) {
+                  // Refresh data if changes were made
+                  if (result == true) {
                     context.read<WasteTypeBloc>().add(
                       LoadWasteTypeDetails(widget.wasteTypeId),
                     );
@@ -265,7 +267,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                 });
               },
               backgroundColor: AppColors.primaryGreen,
-              icon: Icon(Icons.add),
+              icon: Icon(Icons.edit),
               label: Text('Quản lý điểm thu gom'),
             );
           }

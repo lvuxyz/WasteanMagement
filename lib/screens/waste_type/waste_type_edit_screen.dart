@@ -6,7 +6,6 @@ import '../../blocs/waste_type/waste_type_state.dart';
 import '../../models/waste_type_model.dart';
 import '../../repositories/user_repository.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/snackbar_utils.dart';
 import 'dart:developer' as developer;
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_switch_field.dart';

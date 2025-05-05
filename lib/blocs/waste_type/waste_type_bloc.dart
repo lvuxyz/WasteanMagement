@@ -21,6 +21,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     on<CreateWasteType>(_onCreateWasteType);
     on<UpdateWasteType>(_onUpdateWasteType);
     on<UpdateWasteTypeData>(_onUpdateWasteTypeData);
+    on<LoadWasteTypesForCollectionPoint>(_onLoadWasteTypesForCollectionPoint);
   }
 
   Future<void> _onLoadWasteTypes(
@@ -281,6 +282,23 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       add(LoadWasteTypes());
     } catch (e) {
       emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
+    }
+  }
+
+  Future<void> _onLoadWasteTypesForCollectionPoint(
+    LoadWasteTypesForCollectionPoint event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteTypes = await repository.getWasteTypesForCollectionPoint(event.collectionPointId);
+      emit(WasteTypesForCollectionPointLoaded(
+        collectionPointId: event.collectionPointId,
+        collectionPointName: event.collectionPointName,
+        wasteTypes: wasteTypes,
+      ));
+    } catch (e) {
+      emit(WasteTypeError('Không thể tải danh sách loại rác cho điểm thu gom: $e'));
     }
   }
 }

@@ -5,7 +5,6 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import '../utils/app_colors.dart';
-import '../routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -347,24 +346,31 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildQuickAction(
                 icon: Icons.calendar_today_outlined,
-                title: 'Đặt lịch',
+                title: 'Lịch hẹn',
+                onTap: () {},
+              ),
+              _buildQuickAction(
+                icon: Icons.recycling,
+                title: 'Loại rác',
                 onTap: () {
-                  // Xử lý đặt lịch
+                  Navigator.pushNamed(context, '/waste-type');
                 },
               ),
               _buildQuickAction(
-                icon: Icons.emoji_events_outlined,
-                title: 'Điểm thưởng',
+                icon: Icons.location_on_outlined,
+                title: 'Điểm thu gom',
                 onTap: () {
-                  // Xử lý xem điểm thưởng
+                  // This navigation is for a future functionality
+                  // Currently, we navigate to the collection points list screen
+                  // In the future, this will be changed to a different functionality
+                  Navigator.pushNamed(context, '/collection-points');
                 },
               ),
-              // Thêm mục Loại Rác mới
               _buildQuickAction(
-                icon: Icons.category_outlined,
-                title: 'Loại Rác',
+                icon: Icons.assignment_outlined,
+                title: 'Hướng dẫn',
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.wasteTypeManagement);
+                  Navigator.pushNamed(context, '/waste-guide');
                 },
               ),
             ],
