@@ -10,7 +10,6 @@ import 'package:wasteanmagement/repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/repositories/collection_point_repository.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/blocs/waste_type/waste_type_bloc.dart';
-import 'package:wasteanmagement/blocs/waste_type/waste_type_event.dart';
 import 'package:provider/provider.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';

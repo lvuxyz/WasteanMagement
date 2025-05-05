@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../models/collection_point_model.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common/search_field.dart';
