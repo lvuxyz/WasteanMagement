@@ -1,7 +1,6 @@
 
 // widgets/common/custom_dropdown_field.dart
 import 'package:flutter/material.dart';
-import '../../utils/app_colors.dart';
 
 class CustomDropdownField<T> extends StatelessWidget {
   final String label;

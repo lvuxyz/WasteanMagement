@@ -105,6 +105,10 @@ class S {
   String get enterConfirmPassword => Intl.message('Re-enter your password', name: 'enterConfirmPassword');
   String get confirmPasswordRequired => Intl.message('Please confirm your password', name: 'confirmPasswordRequired');
   String get passwordsDoNotMatch => Intl.message('Passwords do not match', name: 'passwordsDoNotMatch');
+  String get phone => Intl.message('Phone', name: 'phone');
+  String get enterPhone  => Intl.message('Enter your phone number', name: 'enterPhone');
+  String get address => Intl.message('Address', name: 'address');
+  String get enterAddress => Intl.message('Enter your address', name: 'enterAddress');
   String get register => Intl.message('Register', name: 'register');
   String get registrationSuccess => Intl.message('Account created successfully', name: 'registrationSuccess');
   String get registrationError => Intl.message('Failed to create account', name: 'registrationError');

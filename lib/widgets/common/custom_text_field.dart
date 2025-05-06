@@ -4,8 +4,8 @@ import '../../utils/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
-  final String hintText;
+  final String labelText;
+  final String? hintText;
   final bool obscureText;
   final TextInputType keyboardType;
   final int maxLines;
@@ -17,8 +17,8 @@ class CustomTextField extends StatelessWidget {
   const CustomTextField({
     Key? key,
     required this.controller,
-    required this.label,
-    required this.hintText,
+    required this.labelText,
+    this.hintText,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.maxLines = 1,
@@ -34,7 +34,7 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          labelText,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,

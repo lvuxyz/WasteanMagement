@@ -55,6 +55,13 @@ class User extends Equatable {
     };
   }
 
+  bool get isAdmin {
+    if (roles == null || roles!.isEmpty) {
+      return false;
+    }
+    return roles!.contains('ADMIN') || roles!.contains('admin');
+  }
+
   @override
   List<Object?> get props => [id, email, username, fullName, phone, address, status, createdAt, roles];
 }

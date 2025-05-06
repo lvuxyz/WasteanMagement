@@ -4,11 +4,11 @@ import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../models/waste_type_model.dart';
+import '../../repositories/user_repository.dart';
 import '../../utils/app_colors.dart';
+import 'dart:developer' as developer;
 import '../../widgets/common/custom_text_field.dart';
-import '../../widgets/common/custom_dropdown_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
-import '../../widgets/common/custom_button.dart';
 
 class WasteTypeEditScreen extends StatefulWidget {
   final int? wasteTypeId; // Null for create, not null for update
@@ -23,54 +23,30 @@ class WasteTypeEditScreen extends StatefulWidget {
 }
 
 class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _scrollController = ScrollController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _handlingInstructionsController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _unitController = TextEditingController(text: 'kg');
-  final _recentPointsController = TextEditingController();
   
   String _selectedCategory = 'Tái chế';
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _isAdmin = false; // Default to false until we check user role
   List<String> _examples = [''];
   
-  // Available icon options could be extended
-  final Map<String, IconData> _availableIcons = {
-    'Chai nhựa': Icons.local_drink_outlined,
-    'Giấy': Icons.description_outlined,
-    'Kim loại': Icons.settings_outlined,
-    'Thủy tinh': Icons.wine_bar_outlined,
-    'Thực phẩm': Icons.restaurant_outlined,
-    'Pin': Icons.battery_alert_outlined,
-    'Điện tử': Icons.smartphone_outlined,
-    'Quần áo': Icons.checkroom_outlined,
-    'Khác': Icons.category_outlined,
-  };
-
-  String _selectedIconKey = 'Chai nhựa';
-  Color _selectedColor = Colors.blue;
-
-  // Available color options
-  final List<Color> _availableColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.amber,
-    Colors.purple,
-    Colors.red,
-    Colors.orange,
-    Colors.teal,
-    Colors.grey,
-    Colors.lightBlue,
-  ];
-
   @override
   void initState() {
     super.initState();
+    _checkAdminPrivileges();
+    
     _isEditing = widget.wasteTypeId != null;
+
+    // Đặt giá trị mặc định cho DropdownButtonFormField
+    _selectedCategory = _isRecyclable ? 'Tái chế' : 'Không tái chế';
 
     if (_isEditing) {
       // Load waste type details for editing
@@ -85,7 +61,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _handlingInstructionsController.dispose();
     _unitPriceController.dispose();
     _unitController.dispose();
-    _recentPointsController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -97,19 +72,20 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     _handlingInstructionsController.text = wasteType.handlingInstructions;
     _unitPriceController.text = wasteType.unitPrice.toString();
     _unitController.text = wasteType.unit;
-    _recentPointsController.text = wasteType.recentPoints;
-    _selectedCategory = wasteType.category;
+    
+    // Đảm bảo category phù hợp với các tùy chọn trong dropdown
+    if (wasteType.category == 'Tái chế' || 
+        wasteType.category == 'Hữu cơ' || 
+        wasteType.category == 'Nguy hại' || 
+        wasteType.category == 'Thường' ||
+        wasteType.category == 'Không tái chế') {
+      _selectedCategory = wasteType.category;
+    } else {
+      // Nếu category không khớp với bất kỳ tùy chọn nào, chọn mặc định dựa trên recyclable
+      _selectedCategory = wasteType.recyclable ? 'Tái chế' : 'Không tái chế';
+    }
+    
     _isRecyclable = wasteType.recyclable;
-
-    // Find icon and color
-    _selectedIconKey = _availableIcons.entries
-        .firstWhere(
-          (entry) => entry.value == wasteType.icon,
-      orElse: () => MapEntry('Khác', Icons.category_outlined),
-    )
-        .key;
-
-    _selectedColor = wasteType.color;
 
     // Set examples
     _examples = List.from(wasteType.examples);
@@ -173,6 +149,18 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   void _submitForm() {
     if (!_validateForm()) return;
     
+    // Check if user is admin before proceeding
+    if (!_isAdmin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn không có quyền cập nhật loại rác'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
     final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
     
     double unitPrice = 0;
@@ -182,29 +170,85 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       // Default to 0 if parsing fails
     }
 
-    final wasteType = WasteType(
-      id: _isEditing ? widget.wasteTypeId! : 0, // Temporary ID for new items
-      name: _nameController.text,
-      category: _selectedCategory,
-      description: _descriptionController.text,
-      icon: _availableIcons[_selectedIconKey]!,
-      color: _selectedColor,
-      handlingInstructions: _handlingInstructionsController.text,
-      examples: finalExamples,
-      unitPrice: unitPrice,
-      unit: _unitController.text,
-      recentPoints: _recentPointsController.text,
-      recyclable: _isRecyclable,
-    );
-
     setState(() {
       _isLoading = true;
     });
 
     if (_isEditing) {
+      // Tạo đối tượng WasteType với các thông tin cần thiết
+      final wasteType = WasteType(
+        id: widget.wasteTypeId!,
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        recyclable: _isRecyclable,
+        handlingInstructions: _handlingInstructionsController.text.trim(),
+        unitPrice: unitPrice,
+        unit: _unitController.text,
+        examples: finalExamples,
+        category: _selectedCategory,
+        // Các trường hiển thị tùy thuộc vào recyclable
+        icon: _isRecyclable ? Icons.recycling : Icons.delete_outline,
+        color: _isRecyclable ? Colors.green : Colors.red,
+        recentPoints: '',
+      );
+      
       context.read<WasteTypeBloc>().add(UpdateWasteType(wasteType));
     } else {
-      context.read<WasteTypeBloc>().add(CreateWasteType(wasteType));
+      context.read<WasteTypeBloc>().add(
+        CreateWasteType(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          recyclable: _isRecyclable,
+          handlingInstructions: _handlingInstructionsController.text.trim(),
+          unitPrice: unitPrice,
+        ),
+      );
+    }
+  }
+
+  Future<void> _checkAdminPrivileges() async {
+    try {
+      final userRepository = RepositoryProvider.of<UserRepository>(context);
+      final user = await userRepository.getUserProfile();
+      
+      setState(() {
+        _isAdmin = user.isAdmin;
+      });
+      
+      // If not admin and trying to edit, navigate back
+      if (!_isAdmin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bạn không có quyền chỉnh sửa loại rác'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        
+        // Navigate back after showing the error
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
+      
+      developer.log('User admin status: $_isAdmin');
+    } catch (e) {
+      developer.log('Error checking admin privileges: $e', error: e);
+      // Default to non-admin in case of error
+      setState(() {
+        _isAdmin = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể xác minh quyền truy cập'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      
+      // Navigate back after showing the error
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.of(context).pop();
+      });
     }
   }
 
@@ -242,16 +286,27 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  _isEditing
-                      ? 'Cập nhật loại rác thành công'
-                      : 'Tạo loại rác mới thành công',
+                  state is WasteTypeUpdated 
+                      ? state.message 
+                      : (state is WasteTypeCreated ? state.message : 'Thao tác thành công'),
                 ),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'OK',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
             
-            Navigator.of(context).pop(true); // Return true to indicate success
+            // Add a slight delay before popping to ensure the user sees the success message
+            Future.delayed(Duration(milliseconds: 500), () {
+              Navigator.of(context).pop(true); // Return true to indicate success
+            });
           } else if (state is WasteTypeError) {
             setState(() {
               _isLoading = false;
@@ -262,6 +317,14 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 content: Text(state.message),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Thử lại',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
           }
@@ -296,11 +359,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Icon and Color Selection
-                      _buildIconAndColorSection(),
-                      
-                      SizedBox(height: 24),
-                      
                       // Basic Information Section
                       _buildSectionTitle('Thông tin cơ bản'),
                       _buildBasicInfoSection(),
@@ -323,12 +381,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                       _buildSectionTitle('Thông tin thu mua'),
                       _buildPricingSection(),
                       
-                      SizedBox(height: 24),
-                      
-                      // Reward Points Section
-                      _buildSectionTitle('Điểm thưởng'),
-                      _buildRewardPointsSection(),
-                      
                       SizedBox(height: 80), // Extra space for button
                     ],
                   ),
@@ -340,8 +392,22 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 Container(
                   color: Colors.black.withOpacity(0.3),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          _isEditing ? 'Đang cập nhật loại rác...' : 'Đang tạo loại rác mới...',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -414,144 +480,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     );
   }
   
-  Widget _buildIconAndColorSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Biểu tượng và màu sắc',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                // Preview
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _selectedColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    _availableIcons[_selectedIconKey],
-                    color: _selectedColor,
-                    size: 48,
-                  ),
-                ),
-                SizedBox(width: 16),
-                // Selection
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Biểu tượng',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        value: _selectedIconKey,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          isDense: true,
-                        ),
-                        items: _availableIcons.keys.map((String key) {
-                          return DropdownMenuItem<String>(
-                            value: key,
-                            child: Row(
-                              children: [
-                                Icon(_availableIcons[key], size: 18),
-                                SizedBox(width: 8),
-                                Text(key),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedIconKey = newValue;
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Màu sắc',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-            SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: _availableColors.map((color) {
-                final isSelected = _selectedColor == color;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColor = color;
-                    });
-                  },
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
-                        width: 2,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withOpacity(0.4),
-                                spreadRadius: 2,
-                                blurRadius: 4,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: isSelected
-                        ? Icon(Icons.check, color: Colors.white, size: 18)
-                        : null,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
   Widget _buildBasicInfoSection() {
     return Card(
       elevation: 1,
@@ -566,7 +494,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             // Name field
             CustomTextField(
               controller: _nameController,
-              label: 'Tên loại rác thải',
+              labelText: 'Tên loại rác thải',
               hintText: 'Ví dụ: Chai nhựa PET',
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -599,6 +527,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 'Hữu cơ',
                 'Nguy hại',
                 'Thường',
+                'Không tái chế',
               ].map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -609,7 +538,11 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 if (newValue != null) {
                   setState(() {
                     _selectedCategory = newValue;
-                    _isRecyclable = newValue == 'Tái chế';
+                    if (newValue == 'Tái chế') {
+                      _isRecyclable = true;
+                    } else {
+                      _isRecyclable = false;
+                    }
                   });
                 }
               },
@@ -625,7 +558,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   if (value) {
                     _selectedCategory = 'Tái chế';
                   } else if (_selectedCategory == 'Tái chế') {
-                    _selectedCategory = 'Thường';
+                    _selectedCategory = 'Không tái chế';
                   }
                 });
               },
@@ -650,7 +583,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             // Description field
             CustomTextField(
               controller: _descriptionController,
-              label: 'Mô tả',
+              labelText: 'Mô tả',
               hintText: 'Mô tả chi tiết về loại rác thải này',
               maxLines: 3,
               validator: (value) {
@@ -664,7 +597,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             // Recycling method field
             CustomTextField(
               controller: _handlingInstructionsController,
-              label: 'Hướng dẫn xử lý',
+              labelText: 'Hướng dẫn xử lý',
               hintText: 'Cách thức xử lý, phân loại hoặc tái chế',
               maxLines: 3,
               validator: (value) {
@@ -775,7 +708,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   flex: 3,
                   child: CustomTextField(
                     controller: _unitPriceController,
-                    label: 'Giá thu mua',
+                    labelText: 'Giá thu mua',
                     hintText: '0',
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -795,7 +728,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   flex: 2,
                   child: CustomTextField(
                     controller: _unitController,
-                    label: 'Đơn vị',
+                    labelText: 'Đơn vị',
                     hintText: 'kg',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -815,34 +748,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 fontStyle: FontStyle.italic,
                 color: Colors.grey[600],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildRewardPointsSection() {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomTextField(
-              controller: _recentPointsController,
-              label: 'Thông tin điểm thưởng',
-              hintText: 'Ví dụ: Tái chế 1kg giấy = 3 điểm',
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Vui lòng nhập thông tin điểm thưởng';
-                }
-                return null;
-              },
             ),
           ],
         ),

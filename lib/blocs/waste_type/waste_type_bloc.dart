@@ -20,6 +20,8 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     on<UnlinkCollectionPoint>(_onUnlinkCollectionPoint);
     on<CreateWasteType>(_onCreateWasteType);
     on<UpdateWasteType>(_onUpdateWasteType);
+    on<UpdateWasteTypeData>(_onUpdateWasteTypeData);
+    on<LoadWasteTypesForCollectionPoint>(_onLoadWasteTypesForCollectionPoint);
   }
 
   Future<void> _onLoadWasteTypes(
@@ -234,8 +236,18 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
   ) async {
     emit(WasteTypeLoading());
     try {
-      final wasteType = await repository.createWasteType(event.wasteType);
+      final Map<String, dynamic> wasteTypeData = {
+        'name': event.name,
+        'description': event.description,
+        'recyclable': event.recyclable ? 1 : 0,
+        'handling_instructions': event.handlingInstructions,
+        'unit_price': event.unitPrice,
+      };
+      
+      final wasteType = await repository.createWasteType(wasteTypeData);
       emit(WasteTypeCreated(wasteType: wasteType));
+      // Reload the waste types list
+      add(LoadWasteTypes());
     } catch (e) {
       emit(WasteTypeError('Không thể tạo loại rác: $e'));
     }
@@ -247,10 +259,46 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
   ) async {
     emit(WasteTypeLoading());
     try {
-      final wasteType = await repository.updateWasteType(event.wasteType);
+      final wasteType = await repository.updateWasteType(event.wasteType.id, event.wasteType.toJson());
       emit(WasteTypeUpdated(wasteType: wasteType));
+      
+      // Reload waste types list after successful update
+      add(LoadWasteTypes());
     } catch (e) {
       emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
+    }
+  }
+
+  Future<void> _onUpdateWasteTypeData(
+    UpdateWasteTypeData event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteType = await repository.updateWasteType(event.wasteTypeId, event.data);
+      emit(WasteTypeUpdated(wasteType: wasteType));
+      
+      // Reload waste types list after successful update
+      add(LoadWasteTypes());
+    } catch (e) {
+      emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
+    }
+  }
+
+  Future<void> _onLoadWasteTypesForCollectionPoint(
+    LoadWasteTypesForCollectionPoint event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    emit(WasteTypeLoading());
+    try {
+      final wasteTypes = await repository.getWasteTypesForCollectionPoint(event.collectionPointId);
+      emit(WasteTypesForCollectionPointLoaded(
+        collectionPointId: event.collectionPointId,
+        collectionPointName: event.collectionPointName,
+        wasteTypes: wasteTypes,
+      ));
+    } catch (e) {
+      emit(WasteTypeError('Không thể tải danh sách loại rác cho điểm thu gom: $e'));
     }
   }
 }
