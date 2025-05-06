@@ -27,5 +27,13 @@ class ApiConstants {
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
 
-
+  // Endpoint mới phát hiện trong quá trình rà soát
+  // Endpoint liên quan đến giao dịch
+  static String get myTransactions => '$baseUrl/transactions/my-transactions';
+  
+  // Endpoint liên quan đến điểm thu gom và loại rác
+  static String wasteTypeDetail(int id) => '$baseUrl/waste-types/$id';
+  static String collectionPointDetail(int id) => '$baseUrl/waste/collection-points/$id';
+  static String get wasteTypeCollectionPoint => '$baseUrl/waste-types/collection-point';
+  static String wasteTypesForCollectionPoint(int collectionPointId) => '$baseUrl/waste-types/collection-point/$collectionPointId';
 }
