@@ -26,4 +26,6 @@ class ApiConstants {
   static String get transactions => '$baseUrl/waste/transactions';
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
+
+
 }
