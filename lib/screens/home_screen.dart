@@ -30,14 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _authService = AuthService();
-    _checkAdminStatus();
-  }
-
-  Future<void> _checkAdminStatus() async {
-    final isAdmin = await _authService.isAdmin();
-    setState(() {
-      _isAdmin = isAdmin;
-    });
   }
 
   void _onItemTapped(int index){
@@ -88,11 +80,25 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildHomePage(),
+      body: FutureBuilder<bool>(
+        future: _authService.isAdmin(),
+        builder: (context, snapshot) {
+          final isAdmin = snapshot.data ?? false;
+          
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Still loading admin status, show loading indicator
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          // Admin status is now available
+          print('Home screen - User is admin: $isAdmin');
+          return _buildHomePage(isAdmin);
+        }
+      ),
     );
   }
 
-  Widget _buildHomePage() {
+  Widget _buildHomePage(bool isAdmin) {
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -111,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _buildWasteTypeList(),
             const SizedBox(height: 24),
-            if (_isAdmin) ...[
+            if (isAdmin) ...[
               _buildSectionTitle('Quản lý giao dịch'),
               const SizedBox(height: 16),
               _buildAllTransactionsList(),
@@ -728,322 +734,360 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAllTransactionsList() {
-    return BlocProvider(
-      create: (context) {
-        final apiClient = context.read<ApiClient>();
-        final transactionRepository = TransactionRepository(apiClient: apiClient);
+    return FutureBuilder<bool>(
+      future: _authService.isAdmin(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
         
-        print('Building all transactions list for admin');
-        return TransactionBloc(
-          transactionRepository: transactionRepository,
-        )..add(FetchTransactions(limit: 5));
-      },
-      child: BlocBuilder<TransactionBloc, TransactionState>(
-        builder: (context, state) {
-          if (state.status == TransactionStatus.initial || 
-              state.status == TransactionStatus.loading && state.transactions.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else if (state.status == TransactionStatus.failure) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Không thể tải giao dịch',
-                      style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
+        final isAdmin = snapshot.data ?? false;
+        if (!isAdmin) {
+          print('Not an admin, but trying to build admin transaction list');
+        }
+        
+        return BlocProvider(
+          create: (context) {
+            final apiClient = context.read<ApiClient>();
+            final transactionRepository = TransactionRepository(apiClient: apiClient);
+            
+            print('Building all transactions list for admin: $isAdmin');
+            return TransactionBloc(
+              transactionRepository: transactionRepository,
+            )..add(FetchTransactions(limit: 5));
+          },
+          child: BlocBuilder<TransactionBloc, TransactionState>(
+            builder: (context, state) {
+              if (state.status == TransactionStatus.initial || 
+                  state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              } else if (state.status == TransactionStatus.failure) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Không thể tải giao dịch',
+                          style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
+                        ),
+                        if (state.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: Text(
+                              state.errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            print('Retrying admin transactions fetch');
+                            context.read<TransactionBloc>().add(RefreshTransactions());
+                          },
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Thử lại'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            textStyle: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
-                    if (state.errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  ),
+                );
+              } else if (state.transactions.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text('Không có giao dịch nào'),
+                  ),
+                );
+              }
+              
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: state.transactions.length,
+                itemBuilder: (context, index) {
+                  final transaction = state.transactions[index];
+                  final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+                  final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+                  final DateFormat formatter = DateFormat('dd/MM/yyyy');
+                  
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: iconColor,
+                        size: 24,
+                      ),
+                    ),
+                    title: Text(
+                      '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          transaction.collectionPointName,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          formatter.format(transaction.transactionDate),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    trailing: Container(
+                      constraints: const BoxConstraints(maxWidth: 80),
+                      child: transaction.status == 'completed'
+                          ? const Text(
+                        '+12',  // Replace with actual points when available in API
+                        style: TextStyle(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      )
+                          : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(transaction.status).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                         child: Text(
-                          state.errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                          _getStatusText(transaction.status),
+                          style: TextStyle(
+                            color: _getStatusColor(transaction.status),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        print('Retrying admin transactions fetch');
-                        context.read<TransactionBloc>().add(RefreshTransactions());
-                      },
-                      icon: const Icon(Icons.refresh, size: 16),
-                      label: const Text('Thử lại'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryGreen,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          } else if (state.transactions.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('Không có giao dịch nào'),
-              ),
-            );
-          }
-          
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: state.transactions.length,
-            itemBuilder: (context, index) {
-              final transaction = state.transactions[index];
-              final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
-              final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
-              final DateFormat formatter = DateFormat('dd/MM/yyyy');
-              
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 24,
-                  ),
-                ),
-                title: Text(
-                  '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      transaction.collectionPointName,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      formatter.format(transaction.transactionDate),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-                trailing: Container(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: transaction.status == 'completed'
-                      ? const Text(
-                    '+12',  // Replace with actual points when available in API
-                    style: TextStyle(
-                      color: AppColors.primaryGreen,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  )
-                      : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(transaction.status).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      _getStatusText(transaction.status),
-                      style: TextStyle(
-                        color: _getStatusColor(transaction.status),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildMyTransactionsList() {
-    return BlocProvider(
-      create: (context) {
-        final apiClient = context.read<ApiClient>();
-        final transactionRepository = TransactionRepository(apiClient: apiClient);
+    return FutureBuilder<bool>(
+      future: _authService.isAdmin(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
         
-        print('Building my transactions list for regular user');
-        return TransactionBloc(
-          transactionRepository: transactionRepository,
-        )..add(FetchMyTransactions(limit: 5));
-      },
-      child: BlocBuilder<TransactionBloc, TransactionState>(
-        builder: (context, state) {
-          if (state.status == TransactionStatus.initial || 
-              state.status == TransactionStatus.loading && state.transactions.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else if (state.status == TransactionStatus.failure) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Không thể tải giao dịch của bạn',
-                      style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
+        final isAdmin = snapshot.data ?? false;
+        if (isAdmin) {
+          print('Admin user, but trying to build regular user transaction list');
+        }
+        
+        return BlocProvider(
+          create: (context) {
+            final apiClient = context.read<ApiClient>();
+            final transactionRepository = TransactionRepository(apiClient: apiClient);
+            
+            print('Building my transactions list for regular user. Admin status: $isAdmin');
+            return TransactionBloc(
+              transactionRepository: transactionRepository,
+            )..add(FetchMyTransactions(limit: 5));
+          },
+          child: BlocBuilder<TransactionBloc, TransactionState>(
+            builder: (context, state) {
+              if (state.status == TransactionStatus.initial || 
+                  state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              } else if (state.status == TransactionStatus.failure) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Không thể tải giao dịch của bạn',
+                          style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
+                        ),
+                        if (state.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: Text(
+                              state.errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            print('Retrying my transactions fetch');
+                            context.read<TransactionBloc>().add(RefreshTransactions());
+                          },
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Thử lại'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            textStyle: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
-                    if (state.errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  ),
+                );
+              } else if (state.transactions.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text('Bạn chưa có giao dịch nào'),
+                  ),
+                );
+              }
+              
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: state.transactions.length,
+                itemBuilder: (context, index) {
+                  final transaction = state.transactions[index];
+                  final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+                  final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+                  final DateFormat formatter = DateFormat('dd/MM/yyyy');
+                  
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: iconColor,
+                        size: 24,
+                      ),
+                    ),
+                    title: Text(
+                      '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          transaction.collectionPointName,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          formatter.format(transaction.transactionDate),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    trailing: Container(
+                      constraints: const BoxConstraints(maxWidth: 80),
+                      child: transaction.status == 'completed'
+                          ? const Text(
+                        '+12',  // Replace with actual points when available in API
+                        style: TextStyle(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      )
+                          : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(transaction.status).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                         child: Text(
-                          state.errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                          _getStatusText(transaction.status),
+                          style: TextStyle(
+                            color: _getStatusColor(transaction.status),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        print('Retrying my transactions fetch');
-                        context.read<TransactionBloc>().add(RefreshTransactions());
-                      },
-                      icon: const Icon(Icons.refresh, size: 16),
-                      label: const Text('Thử lại'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryGreen,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          } else if (state.transactions.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('Bạn chưa có giao dịch nào'),
-              ),
-            );
-          }
-          
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: state.transactions.length,
-            itemBuilder: (context, index) {
-              final transaction = state.transactions[index];
-              final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
-              final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
-              final DateFormat formatter = DateFormat('dd/MM/yyyy');
-              
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 24,
-                  ),
-                ),
-                title: Text(
-                  '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      transaction.collectionPointName,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      formatter.format(transaction.transactionDate),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-                trailing: Container(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: transaction.status == 'completed'
-                      ? const Text(
-                    '+12',  // Replace with actual points when available in API
-                    style: TextStyle(
-                      color: AppColors.primaryGreen,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  )
-                      : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(transaction.status).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      _getStatusText(transaction.status),
-                      style: TextStyle(
-                        color: _getStatusColor(transaction.status),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
