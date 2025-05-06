@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _buildWasteTypeList(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Giao dịch gần đây'),
+            _buildSectionTitle('Quản lý giao dịch'),
             const SizedBox(height: 16),
             _buildRecentTransactionsList(),
             const SizedBox(height: 16),
