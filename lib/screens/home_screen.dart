@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
   late AuthService _authService;
 
   @override
@@ -31,9 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index){
-    setState(() {
-      _selectedIndex = index;
-    });
+    // Navigation functionality would go here
+    // For example: switch to a different screen based on index
+    // Currently not implemented in the UI
   }
 
   Widget _buildImageSourceOption({
