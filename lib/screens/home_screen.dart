@@ -10,6 +10,7 @@ import 'package:wasteanmagement/models/transaction.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
+import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/app_colors.dart';
 
@@ -22,6 +23,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  bool _isAdmin = false;
+  late AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService();
+    _checkAdminStatus();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isAdmin();
+    setState(() {
+      _isAdmin = isAdmin;
+    });
+  }
 
   void _onItemTapped(int index){
     setState(() {
@@ -94,9 +111,15 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _buildWasteTypeList(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Quản lý giao dịch'),
-            const SizedBox(height: 16),
-            _buildRecentTransactionsList(),
+            if (_isAdmin) ...[
+              _buildSectionTitle('Quản lý giao dịch'),
+              const SizedBox(height: 16),
+              _buildAllTransactionsList(),
+            ] else ...[
+              _buildSectionTitle('Giao dịch của bạn'),
+              const SizedBox(height: 16),
+              _buildMyTransactionsList(),
+            ],
             const SizedBox(height: 16),
             _buildQuickActions(height: 16),
             const SizedBox(height: 16),
@@ -704,12 +727,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRecentTransactionsList() {
+  Widget _buildAllTransactionsList() {
     return BlocProvider(
       create: (context) {
-        // Get the ApiClient from the context
         final apiClient = context.read<ApiClient>();
-        // Create a new TransactionRepository with the ApiClient
         final transactionRepository = TransactionRepository(apiClient: apiClient);
         
         return TransactionBloc(
@@ -753,6 +774,148 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Text('No recent transactions found'),
+              ),
+            );
+          }
+          
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.transactions.length,
+            itemBuilder: (context, index) {
+              final transaction = state.transactions[index];
+              final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+              final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+              final DateFormat formatter = DateFormat('dd/MM/yyyy');
+              
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 24,
+                  ),
+                ),
+                title: Text(
+                  '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.collectionPointName,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      formatter.format(transaction.transactionDate),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                trailing: Container(
+                  constraints: const BoxConstraints(maxWidth: 80),
+                  child: transaction.status == 'completed'
+                      ? const Text(
+                    '+12',  // Replace with actual points when available in API
+                    style: TextStyle(
+                      color: AppColors.primaryGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  )
+                      : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(transaction.status).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getStatusText(transaction.status),
+                      style: TextStyle(
+                        color: _getStatusColor(transaction.status),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMyTransactionsList() {
+    return BlocProvider(
+      create: (context) {
+        final apiClient = context.read<ApiClient>();
+        final transactionRepository = TransactionRepository(apiClient: apiClient);
+        
+        return TransactionBloc(
+          transactionRepository: transactionRepository,
+        )..add(FetchMyTransactions(limit: 5));
+      },
+      child: BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, state) {
+          if (state.status == TransactionStatus.initial || 
+              state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (state.status == TransactionStatus.failure) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Failed to load your transactions',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<TransactionBloc>().add(RefreshTransactions());
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (state.transactions.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Text('You have no transactions yet'),
               ),
             );
           }
@@ -984,6 +1147,4 @@ class _HomeScreenState extends State<HomeScreen> {
       splashColor: Colors.white24,
     );
   }
-
-
 }
