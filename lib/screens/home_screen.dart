@@ -248,7 +248,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            if (title == 'Quản lý giao dịch') {
+              Navigator.pushNamed(context, '/transactions');
+            }
+          },
           child: const Text(
             'Xem tất cả',
             style: TextStyle(
@@ -710,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> {
         
         return TransactionBloc(
           transactionRepository: transactionRepository,
-        )..add(FetchTransactions(limit: 3));
+        )..add(FetchTransactions(limit: 5));
       },
       child: BlocBuilder<TransactionBloc, TransactionState>(
         builder: (context, state) {
