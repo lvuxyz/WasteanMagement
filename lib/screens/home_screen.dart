@@ -6,7 +6,6 @@ import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
-import 'package:wasteanmagement/models/transaction.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
@@ -23,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  bool _isAdmin = false;
   late AuthService _authService;
 
   @override
@@ -1213,8 +1211,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNavItem(IconData icon, int index) {
-    final isSelected = _selectedIndex == index;
-
     return IconButton(
       onPressed: () => _onItemTapped(index),
       icon: Icon(
