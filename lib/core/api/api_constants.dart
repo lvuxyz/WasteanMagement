@@ -23,7 +23,7 @@ class ApiConstants {
   // Endpoint cho quản lý rác thải
   static String get wasteTypes => '$baseUrl/waste-types';
   static String get collectionPoints => '$baseUrl/waste/collection-points';
-  static String get transactions => '$baseUrl/waste/transactions';
+  static String get transactions => '$baseUrl/transactions';
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
 
