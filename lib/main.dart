@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:wasteanmagement/blocs/language/language_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/data/datasources/remote_data_source.dart';
+import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/repositories/collection_point_repository.dart';
@@ -48,6 +49,7 @@ Future<void> main() async {
   
   final wasteTypeRepository = WasteTypeRepository(apiClient: apiClient);
   final collectionPointRepository = CollectionPointRepository(apiClient: apiClient);
+  final transactionRepository = TransactionRepository(apiClient: apiClient);
 
   runApp(
     MultiProvider(
@@ -59,6 +61,7 @@ Future<void> main() async {
         RepositoryProvider<LanguageRepository>.value(value: languageRepository),
         RepositoryProvider<WasteTypeRepository>.value(value: wasteTypeRepository),
         RepositoryProvider<CollectionPointRepository>.value(value: collectionPointRepository),
+        RepositoryProvider<TransactionRepository>.value(value: transactionRepository),
       ],
       child: MultiBlocProvider(
         providers: [
