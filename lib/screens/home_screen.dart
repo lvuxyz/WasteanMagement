@@ -5,6 +5,7 @@ import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
+import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/models/transaction.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
@@ -701,9 +702,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildRecentTransactionsList() {
     return BlocProvider(
-      create: (context) => TransactionBloc(
-        transactionRepository: context.read<TransactionRepository>(),
-      )..add(FetchTransactions(limit: 3)),
+      create: (context) {
+        // Get the ApiClient from the context
+        final apiClient = context.read<ApiClient>();
+        // Create a new TransactionRepository with the ApiClient
+        final transactionRepository = TransactionRepository(apiClient: apiClient);
+        
+        return TransactionBloc(
+          transactionRepository: transactionRepository,
+        )..add(FetchTransactions(limit: 3));
+      },
       child: BlocBuilder<TransactionBloc, TransactionState>(
         builder: (context, state) {
           if (state.status == TransactionStatus.initial || 
