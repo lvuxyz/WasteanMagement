@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
+import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
+import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
+import 'package:wasteanmagement/models/transaction.dart';
+import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
+import 'package:intl/intl.dart';
 import '../utils/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -694,130 +700,204 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentTransactionsList() {
-    // Hiển thị từ bảng Transactions
-    List<Map<String, dynamic>> mockTransactions = [
-      {
-        'id': 1,
-        'type': 'Nhựa tái chế',
-        'quantity': 2.5,
-        'points': 12,
-        'collection_point': 'Điểm thu gom Nguyễn Trãi',
-        'date': '22/05/2023',
-        'status': 'completed',
-      },
-      {
-        'id': 2,
-        'type': 'Giấy, bìa carton',
-        'quantity': 3.7,
-        'points': 15,
-        'collection_point': 'Điểm thu gom Quận 1',
-        'date': '18/05/2023',
-        'status': 'completed',
-      },
-      {
-        'id': 3,
-        'type': 'Kim loại',
-        'quantity': 1.2,
-        'points': 8,
-        'collection_point': 'Điểm thu gom Quận 3',
-        'date': '15/05/2023',
-        'status': 'processing',
-      },
-    ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: mockTransactions.length,
-      itemBuilder: (context, index) {
-        final transaction = mockTransactions[index];
-        final IconData icon = transaction['type'] == 'Nhựa tái chế'
-            ? Icons.delete_outline
-            : transaction['type'] == 'Giấy, bìa carton'
-            ? Icons.description_outlined
-            : Icons.settings_outlined;
-        final Color iconColor = transaction['type'] == 'Nhựa tái chế'
-            ? Colors.blue
-            : transaction['type'] == 'Giấy, bìa carton'
-            ? Colors.amber
-            : Colors.grey;
-
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(vertical: 4),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 24,
-            ),
-          ),
-          title: Text(
-            '${transaction['quantity']} kg ${transaction['type']}',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                transaction['collection_point'],
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    return BlocProvider(
+      create: (context) => TransactionBloc(
+        transactionRepository: context.read<TransactionRepository>(),
+      )..add(FetchTransactions(limit: 3)),
+      child: BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, state) {
+          if (state.status == TransactionStatus.initial || 
+              state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: CircularProgressIndicator(),
               ),
-              Text(
-                transaction['date'],
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          trailing: Container(
-            constraints: const BoxConstraints(maxWidth: 80),
-            child: transaction['status'] == 'completed'
-                ? Text(
-              '+${transaction['points']}',
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            )
-                : Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text(
-                'Đang xử lý',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+            );
+          } else if (state.status == TransactionStatus.failure) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Failed to load transactions',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<TransactionBloc>().add(RefreshTransactions());
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          } else if (state.transactions.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Text('No recent transactions found'),
+              ),
+            );
+          }
+          
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.transactions.length,
+            itemBuilder: (context, index) {
+              final transaction = state.transactions[index];
+              final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+              final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+              final DateFormat formatter = DateFormat('dd/MM/yyyy');
+              
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 24,
+                  ),
+                ),
+                title: Text(
+                  '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.collectionPointName,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      formatter.format(transaction.transactionDate),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                trailing: Container(
+                  constraints: const BoxConstraints(maxWidth: 80),
+                  child: transaction.status == 'completed'
+                      ? const Text(
+                    '+12',  // Replace with actual points when available in API
+                    style: TextStyle(
+                      color: AppColors.primaryGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  )
+                      : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(transaction.status).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getStatusText(transaction.status),
+                      style: TextStyle(
+                        color: _getStatusColor(transaction.status),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
+  }
+
+  IconData _getWasteTypeIcon(String wasteType) {
+    if (wasteType.toLowerCase().contains('plastic')) {
+      return Icons.delete_outline;
+    } else if (wasteType.toLowerCase().contains('paper') || 
+               wasteType.toLowerCase().contains('cardboard')) {
+      return Icons.description_outlined;
+    } else if (wasteType.toLowerCase().contains('electronic')) {
+      return Icons.devices_outlined;
+    } else if (wasteType.toLowerCase().contains('metal')) {
+      return Icons.settings_outlined;
+    } else if (wasteType.toLowerCase().contains('glass')) {
+      return Icons.local_drink_outlined;
+    } else {
+      return Icons.delete_outline;
+    }
+  }
+
+  Color _getWasteTypeColor(String wasteType) {
+    if (wasteType.toLowerCase().contains('plastic')) {
+      return Colors.blue;
+    } else if (wasteType.toLowerCase().contains('paper') || 
+               wasteType.toLowerCase().contains('cardboard')) {
+      return Colors.amber;
+    } else if (wasteType.toLowerCase().contains('electronic')) {
+      return Colors.purple;
+    } else if (wasteType.toLowerCase().contains('metal')) {
+      return Colors.blueGrey;
+    } else if (wasteType.toLowerCase().contains('glass')) {
+      return Colors.teal;
+    } else {
+      return Colors.grey;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'processing':
+        return Colors.blue;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'Hoàn thành';
+      case 'pending':
+        return 'Chờ xử lý';
+      case 'processing':
+        return 'Đang xử lý';
+      case 'rejected':
+        return 'Từ chối';
+      default:
+        return status;
+    }
   }
 
   Widget _buildCollectionPointsPage() {
