@@ -733,6 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final apiClient = context.read<ApiClient>();
         final transactionRepository = TransactionRepository(apiClient: apiClient);
         
+        print('Building all transactions list for admin');
         return TransactionBloc(
           transactionRepository: transactionRepository,
         )..add(FetchTransactions(limit: 5));
@@ -755,15 +756,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Failed to load transactions',
-                      style: TextStyle(color: Colors.red[700]),
+                      'Không thể tải giao dịch',
+                      style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
                     ),
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          state.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                        ),
+                      ),
                     const SizedBox(height: 8),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: () {
+                        print('Retrying admin transactions fetch');
                         context.read<TransactionBloc>().add(RefreshTransactions());
                       },
-                      child: const Text('Retry'),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Thử lại'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ],
                 ),
@@ -773,7 +791,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('No recent transactions found'),
+                child: Text('Không có giao dịch nào'),
               ),
             );
           }
@@ -875,6 +893,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final apiClient = context.read<ApiClient>();
         final transactionRepository = TransactionRepository(apiClient: apiClient);
         
+        print('Building my transactions list for regular user');
         return TransactionBloc(
           transactionRepository: transactionRepository,
         )..add(FetchMyTransactions(limit: 5));
@@ -897,15 +916,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Failed to load your transactions',
-                      style: TextStyle(color: Colors.red[700]),
+                      'Không thể tải giao dịch của bạn',
+                      style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
                     ),
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          state.errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                        ),
+                      ),
                     const SizedBox(height: 8),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: () {
+                        print('Retrying my transactions fetch');
                         context.read<TransactionBloc>().add(RefreshTransactions());
                       },
-                      child: const Text('Retry'),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Thử lại'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ],
                 ),
@@ -915,7 +951,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('You have no transactions yet'),
+                child: Text('Bạn chưa có giao dịch nào'),
               ),
             );
           }
