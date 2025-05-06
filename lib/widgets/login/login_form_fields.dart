@@ -35,7 +35,7 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
       children: [
         // Username/Email field
         CustomTextField(
-          label: usernameLabel,
+          labelText: usernameLabel,
           hintText: usernameHint,
           controller: widget.usernameController,
           keyboardType: TextInputType.emailAddress,
@@ -50,7 +50,7 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
         
         // Password field
         CustomTextField(
-          label: passwordLabel,
+          labelText: passwordLabel,
           hintText: passwordHint,
           controller: widget.passwordController,
           obscureText: _obscurePassword,

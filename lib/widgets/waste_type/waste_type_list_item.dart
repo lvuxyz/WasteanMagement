@@ -9,6 +9,8 @@ class WasteTypeListItem extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onManageCollectionPoints;
+  final bool isDeleting;
+  final bool isUpdating;
 
   const WasteTypeListItem({
     Key? key,
@@ -17,6 +19,8 @@ class WasteTypeListItem extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onManageCollectionPoints,
+    this.isDeleting = false,
+    this.isUpdating = false,
   }) : super(key: key);
 
   @override
@@ -27,149 +31,223 @@ class WasteTypeListItem extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: InkWell(
-        onTap: onView,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          children: [
-            // Main content
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Icon container
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: wasteType.color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      wasteType.icon,
-                      color: wasteType.color,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: isDeleting || isUpdating ? null : onView,
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                // Main content
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Icon container
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: wasteType.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          wasteType.icon,
+                          color: wasteType.color,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
 
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          wasteType.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        
-                        // Recyclable badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: wasteType.recyclable 
-                              ? Colors.green.withOpacity(0.1) 
-                              : Colors.grey.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            wasteType.recyclable ? 'Tái chế được' : 'Không tái chế',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: wasteType.recyclable ? Colors.green : Colors.grey,
+                      // Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              wasteType.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            
+                            // Recyclable badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: wasteType.recyclable 
+                                  ? Colors.green.withOpacity(0.1) 
+                                  : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                wasteType.recyclable ? 'Tái chế được' : 'Không tái chế',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: wasteType.recyclable ? Colors.green : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 4),
+                            
+                            // Price information
+                            if (wasteType.unitPrice > 0)
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.monetization_on_outlined,
+                                    size: 14,
+                                    color: Colors.orange[700],
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${wasteType.unitPrice}đ/${wasteType.unit}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.orange[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
-                        
-                        const SizedBox(height: 4),
-                        
-                        // Price information
-                        if (wasteType.unitPrice > 0)
-                          Row(
+                      ),
+
+                      // Menu button
+                      if (!isDeleting && !isUpdating) _buildActionMenu(),
+                    ],
+                  ),
+                ),
+
+                // Description and handling instructions
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        wasteType.description,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (wasteType.handlingInstructions.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(
-                                Icons.monetization_on_outlined,
+                                Icons.info_outline,
                                 size: 14,
-                                color: Colors.orange[700],
+                                color: Colors.blue[700],
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                '${wasteType.unitPrice}đ/${wasteType.unit}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.orange[700],
+                              Expanded(
+                                child: Text(
+                                  wasteType.handlingInstructions,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.blue[700],
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
-
-                  // Menu button
-                  _buildActionMenu(),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+              ],
             ),
-
-            // Description and handling instructions
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    wasteType.description,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (wasteType.handlingInstructions.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: Colors.blue[700],
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              wasteType.handlingInstructions,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.blue[700],
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+          ),
+          
+          // Loading overlay when deleting
+          if (isDeleting)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                        ),
                       ),
-                    ),
-                ],
+                      SizedBox(height: 8),
+                      Text(
+                        'Đang xóa...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
-          ],
-        ),
+            
+          // Loading overlay when updating
+          if (isUpdating)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Đang cập nhật...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[700],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -162,7 +162,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     // Personal Information Form
                     CustomTextField(
-                      label: 'Họ và Tên',
+                      labelText: 'Họ và Tên',
                       hintText: 'Nhập họ và tên của bạn',
                       controller: _fullNameController,
                       validator: (value) {
@@ -175,7 +175,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 20),
 
                     CustomTextField(
-                      label: 'Email',
+                      labelText: 'Email',
                       hintText: 'Nhập địa chỉ email của bạn',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -192,7 +192,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 20),
 
                     CustomTextField(
-                      label: 'Số điện thoại',
+                      labelText: 'Số điện thoại',
                       hintText: 'Nhập số điện thoại của bạn',
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
@@ -208,7 +208,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 20),
 
                     CustomTextField(
-                      label: 'Địa chỉ',
+                      labelText: 'Địa chỉ',
                       hintText: 'Nhập địa chỉ của bạn',
                       controller: _addressController,
                     ),

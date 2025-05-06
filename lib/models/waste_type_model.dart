@@ -31,20 +31,65 @@ class WasteType extends Equatable {
   });
 
   factory WasteType.fromJson(Map<String, dynamic> json) {
+    // Parse the recyclable field correctly
+    final bool isRecyclable = json['recyclable'] == 1;
+    
+    // Determine category based on recyclable status
+    String category;
+    
+    // Nếu API đã trả về category, ưu tiên sử dụng
+    if (json['category'] != null && json['category'].toString().isNotEmpty) {
+      category = json['category'];
+      // Đảm bảo category phù hợp với các tùy chọn trong dropdown
+      if (category != 'Tái chế' && 
+          category != 'Hữu cơ' && 
+          category != 'Nguy hại' && 
+          category != 'Thường' && 
+          category != 'Không tái chế') {
+        // Nếu không khớp, sử dụng category dựa trên recyclable
+        category = isRecyclable ? 'Tái chế' : 'Không tái chế';
+      }
+    } else {
+      // Nếu API không trả về category, xác định dựa trên recyclable
+      category = isRecyclable ? 'Tái chế' : 'Không tái chế';
+    }
+    
+    // Set icon based on recyclable status
+    IconData iconData = isRecyclable ? Icons.recycling : Icons.delete_outline;
+    
+    // Set color based on recyclable status
+    Color color = isRecyclable ? Colors.green : Colors.red;
+    
     return WasteType(
       id: json['waste_type_id'],
-      name: json['name'],
-      description: json['description'],
-      recyclable: json['recyclable'] == 1,
-      handlingInstructions: json['handling_instructions'],
-      unitPrice: double.parse(json['unit_price'].toString()),
-      icon: Icons.delete_outline,
-      color: Colors.green,
-      category: json['recyclable'] == 1 ? 'Tái chế' : 'Thường',
-      examples: const [],
-      unit: 'kg',
-      recentPoints: '',
+      name: json['name'] ?? 'Unknown',
+      description: json['description'] ?? 'No description available',
+      recyclable: isRecyclable,
+      handlingInstructions: json['handling_instructions'] ?? 'No handling instructions available',
+      unitPrice: double.tryParse(json['unit_price']?.toString() ?? '0') ?? 0.0,
+      icon: iconData,
+      color: color,
+      category: category,
+      examples: json['examples'] != null 
+          ? List<String>.from(json['examples']) 
+          : [],
+      unit: json['unit'] ?? 'kg',
+      recentPoints: json['recent_points'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'recyclable': recyclable ? 1 : 0,
+      'handling_instructions': handlingInstructions,
+      'unit_price': unitPrice,
+      'unit': unit,
+      'examples': examples,
+      // We don't send icon, color, or category as they're derived from recyclable
+      // We don't send id as it's used in the URL path
+    };
   }
 
   @override

@@ -5,7 +5,7 @@ class ApiConstants {
   
   // URL cho các môi trường khác nhau
   static const String _emulatorBaseUrl = 'http://10.0.2.2:5000/api/v1'; // Localhost trên emulator
-  static const String _physicalDeviceBaseUrl = 'http://192.168.215.92:5000/api/v1'; // IP máy chủ trên mạng LAN
+  static const String _physicalDeviceBaseUrl = 'http://192.168.173.102:5000/api/v1'; // IP máy chủ trên mạng LAN
 
   // Chọn URL dựa trên môi trường
   static String get baseUrl => useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
@@ -23,7 +23,17 @@ class ApiConstants {
   // Endpoint cho quản lý rác thải
   static String get wasteTypes => '$baseUrl/waste-types';
   static String get collectionPoints => '$baseUrl/waste/collection-points';
-  static String get transactions => '$baseUrl/waste/transactions';
+  static String get transactions => '$baseUrl/transactions';
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
+
+  // Endpoint mới phát hiện trong quá trình rà soát
+  // Endpoint liên quan đến giao dịch
+  static String get myTransactions => '$baseUrl/transactions/my-transactions';
+  
+  // Endpoint liên quan đến điểm thu gom và loại rác
+  static String wasteTypeDetail(int id) => '$baseUrl/waste-types/$id';
+  static String collectionPointDetail(int id) => '$baseUrl/waste/collection-points/$id';
+  static String get wasteTypeCollectionPoint => '$baseUrl/waste-types/collection-point';
+  static String wasteTypesForCollectionPoint(int collectionPointId) => '$baseUrl/waste-types/collection-point/$collectionPointId';
 }

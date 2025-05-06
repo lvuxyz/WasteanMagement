@@ -100,12 +100,22 @@ class UnlinkCollectionPoint extends WasteTypeEvent {
 }
 
 class CreateWasteType extends WasteTypeEvent {
-  final WasteType wasteType;
+  final String name;
+  final String description;
+  final bool recyclable;
+  final String handlingInstructions;
+  final double unitPrice;
 
-  const CreateWasteType(this.wasteType);
+  const CreateWasteType({
+    required this.name,
+    required this.description,
+    required this.recyclable,
+    required this.handlingInstructions,
+    required this.unitPrice,
+  });
 
   @override
-  List<Object?> get props => [wasteType];
+  List<Object?> get props => [name, description, recyclable, handlingInstructions, unitPrice];
 }
 
 class UpdateWasteType extends WasteTypeEvent {
@@ -115,4 +125,27 @@ class UpdateWasteType extends WasteTypeEvent {
 
   @override
   List<Object?> get props => [wasteType];
+}
+
+class UpdateWasteTypeData extends WasteTypeEvent {
+  final int wasteTypeId;
+  final Map<String, dynamic> data;
+
+  const UpdateWasteTypeData(this.wasteTypeId, this.data);
+
+  @override
+  List<Object?> get props => [wasteTypeId, data];
+}
+
+class LoadWasteTypesForCollectionPoint extends WasteTypeEvent {
+  final int collectionPointId;
+  final String collectionPointName;
+
+  const LoadWasteTypesForCollectionPoint({
+    required this.collectionPointId,
+    required this.collectionPointName,
+  });
+
+  @override
+  List<Object?> get props => [collectionPointId, collectionPointName];
 }

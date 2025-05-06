@@ -19,7 +19,7 @@ class ForgotPasswordFormField extends StatelessWidget {
     final invalidEmail = l10n.invalidEmail;
 
     return CustomTextField(
-      label: emailLabel,
+      labelText: emailLabel,
       hintText: emailHint,
       controller: emailController,
       keyboardType: TextInputType.emailAddress,

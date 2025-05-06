@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../models/waste_type_model.dart';
 import '../models/collection_point_model.dart';
 import '../core/api/api_constants.dart';
@@ -54,32 +51,33 @@ class WasteTypeRepository {
   // Phương thức tìm WasteType theo ID
   Future<WasteType> getWasteTypeById(int wasteTypeId) async {
     try {
-      developer.log('Đang gọi API ${ApiConstants.wasteTypes}/$wasteTypeId');
+      developer.log('Fetching waste type details from API: ${ApiConstants.wasteTypes}/$wasteTypeId');
       
       final response = await apiClient.get('${ApiConstants.wasteTypes}/$wasteTypeId');
       
-      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      developer.log('API response status code: ${response.statusCode}');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = response.data;
         
-        developer.log('Dữ liệu phản hồi: $data');
+        developer.log('Response data: $data');
         
-        if (data['status'] == 'success') {
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
           final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
           return WasteType.fromJson(wasteTypeJson);
         } else {
-          developer.log('Lỗi API: ${data['message']}', error: data['message']);
-          throw Exception('API error: ${data['message']}');
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
         }
       } else {
-        developer.log('Lỗi khi tải chi tiết loại rác. Mã trạng thái: ${response.statusCode}',
-          error: 'Lỗi HTTP ${response.statusCode}');
-        throw Exception('Failed to load waste type. Status code: ${response.statusCode}');
+        final errorMessage = 'Failed to load waste type details. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      developer.log('Lỗi khi tải chi tiết loại rác: $e', error: e);
-      throw Exception('Failed to load waste type: $e');
+      developer.log('Error fetching waste type details: $e', error: e);
+      throw Exception('Failed to load waste type details: $e');
     }
   }
 
@@ -202,62 +200,215 @@ class WasteTypeRepository {
 
   // Phương thức xóa loại rác
   Future<bool> deleteWasteType(int wasteTypeId) async {
-    // Giả lập độ trễ khi xóa dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API xóa loại rác: ${ApiConstants.wasteTypes}/$wasteTypeId');
+      
+      final response = await apiClient.delete('${ApiConstants.wasteTypes}/$wasteTypeId');
+      
+      developer.log('Đang xử lý phản hồi với mã: ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        // For 204 No Content, the response will be empty
+        if (response.statusCode == 204) {
+          return true;
+        }
+        
+        // For other successful status codes, check the response data
+        final data = response.data;
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        // Consider 'success' status as successful
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to delete waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error deleting waste type: $e', error: e);
+      throw Exception('Failed to delete waste type: $e');
+    }
   }
 
   // Phương thức liên kết loại rác với điểm thu gom
   Future<bool> linkCollectionPoint(int wasteTypeId, int collectionPointId) async {
-    // Giả lập độ trễ khi thực hiện thao tác trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API liên kết loại rác với điểm thu gom: ${ApiConstants.baseUrl}/waste-types/collection-point');
+      
+      final Map<String, dynamic> requestBody = {
+        'waste_type_id': wasteTypeId,
+        'collection_point_id': collectionPointId,
+      };
+      
+      developer.log('Dữ liệu gửi đi: $requestBody');
+      
+      final response = await apiClient.post('${ApiConstants.baseUrl}/waste-types/collection-point', body: requestBody);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to link waste type with collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error linking waste type with collection point: $e', error: e);
+      throw Exception('Failed to link waste type with collection point: $e');
+    }
   }
 
   // Phương thức hủy liên kết loại rác với điểm thu gom
   Future<bool> unlinkCollectionPoint(int wasteTypeId, int collectionPointId) async {
-    // Giả lập độ trễ khi thực hiện thao tác trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, cần kiểm tra xem thao tác có thành công không
-    return true;
+    try {
+      developer.log('Đang gọi API hủy liên kết loại rác với điểm thu gom');
+      
+      // Chuẩn bị query params cho DELETE request
+      final url = '${ApiConstants.baseUrl}/waste-types/collection-point?waste_type_id=$wasteTypeId&collection_point_id=$collectionPointId';
+      
+      developer.log('URL yêu cầu: $url');
+      
+      final response = await apiClient.delete(url);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success') {
+          return true;
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to unlink waste type from collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error unlinking waste type from collection point: $e', error: e);
+      throw Exception('Failed to unlink waste type from collection point: $e');
+    }
   }
   
   // Phương thức tạo loại rác mới
-  Future<WasteType> createWasteType(WasteType wasteType) async {
-    // Giả lập độ trễ khi tạo dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Giả lập tạo ID mới
-    final newWasteType = WasteType(
-      id: DateTime.now().millisecondsSinceEpoch % 1000, // Tạo ID giả
-      name: wasteType.name,
-      category: wasteType.category,
-      description: wasteType.description,
-      icon: wasteType.icon,
-      color: wasteType.color,
-      handlingInstructions: wasteType.handlingInstructions,
-      examples: wasteType.examples,
-      unitPrice: wasteType.unitPrice,
-      unit: wasteType.unit,
-      recentPoints: wasteType.recentPoints,
-      recyclable: wasteType.recyclable,
-    );
-    
-    // Trong thực tế, sẽ lưu dữ liệu này xuống database hoặc gửi đến server
-    return newWasteType;
+  Future<WasteType> createWasteType(Map<String, dynamic> wasteTypeData) async {
+    try {
+      developer.log('Đang gọi API tạo loại rác mới: ${ApiConstants.wasteTypes}');
+      developer.log('Dữ liệu gửi đi: $wasteTypeData');
+      
+      final response = await apiClient.post(ApiConstants.wasteTypes, body: wasteTypeData);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
+          final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
+          return WasteType.fromJson(wasteTypeJson);
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to create waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error creating waste type: $e', error: e);
+      throw Exception('Failed to create waste type: $e');
+    }
   }
   
   // Phương thức cập nhật loại rác
-  Future<WasteType> updateWasteType(WasteType wasteType) async {
-    // Giả lập độ trễ khi cập nhật dữ liệu trên server
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Trong thực tế, sẽ cập nhật xuống database hoặc gửi đến server
-    return wasteType;
+  Future<WasteType> updateWasteType(int wasteTypeId, Map<String, dynamic> updateData) async {
+    try {
+      developer.log('Đang gọi API cập nhật loại rác: ${ApiConstants.wasteTypes}/$wasteTypeId');
+      developer.log('Dữ liệu gửi đi: $updateData');
+      
+      final response = await apiClient.patch('${ApiConstants.wasteTypes}/$wasteTypeId', body: updateData);
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteType'] != null) {
+          final Map<String, dynamic> wasteTypeJson = data['data']['wasteType'];
+          return WasteType.fromJson(wasteTypeJson);
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to update waste type. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error updating waste type: $e', error: e);
+      throw Exception('Failed to update waste type: $e');
+    }
+  }
+
+  Future<List<WasteType>> getWasteTypesForCollectionPoint(int collectionPointId) async {
+    try {
+      developer.log('Đang gọi API lấy loại rác cho điểm thu gom: ${ApiConstants.baseUrl}/waste-types/collection-point/$collectionPointId');
+      
+      final response = await apiClient.get('${ApiConstants.baseUrl}/waste-types/collection-point/$collectionPointId');
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        if (data['status'] == 'success' && data['data'] != null && data['data']['wasteTypes'] != null) {
+          final List<dynamic> wasteTypesJson = data['data']['wasteTypes'];
+          return wasteTypesJson.map((json) => WasteType.fromJson(json)).toList();
+        } else {
+          final errorMessage = data['message'] ?? 'Unknown API error';
+          developer.log('API error: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        final errorMessage = 'Failed to load waste types for collection point. Status code: ${response.statusCode}';
+        developer.log(errorMessage, error: 'HTTP Error ${response.statusCode}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log('Error fetching waste types for collection point: $e', error: e);
+      throw Exception('Failed to load waste types for collection point: $e');
+    }
   }
 }

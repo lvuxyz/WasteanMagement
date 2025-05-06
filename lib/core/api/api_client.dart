@@ -130,6 +130,56 @@ class ApiClient {
     }
   }
 
+  // PATCH request
+  Future<ApiResponse> patch(String url, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+    try {
+      developer.log('Đang gửi PATCH request đến: $url');
+      developer.log('Body: ${body != null ? json.encode(body) : 'null'}');
+      
+      final token = await secureStorage.getToken();
+      
+      if (token != null) {
+        developer.log('Auth token được sử dụng: ${token.substring(0, math.min(10, token.length))}...');
+      } else {
+        developer.log('Không có token xác thực');
+      }
+      
+      final requestHeaders = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+        ...?headers,
+      };
+
+      developer.log('Headers: $requestHeaders');
+
+      final response = await client.patch(
+        Uri.parse(url),
+        body: body != null ? json.encode(body) : null,
+        headers: requestHeaders,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          developer.log('Timeout khi kết nối tới $url', error: 'Request timeout');
+          throw NetworkException('Kết nối tới máy chủ quá thời gian. Vui lòng thử lại sau.');
+        },
+      );
+
+      developer.log('Đã nhận phản hồi từ $url với mã: ${response.statusCode}');
+      
+      if (response.statusCode >= 200 && response.statusCode < 400) {
+        developer.log('Phản hồi thành công, độ dài nội dung: ${response.body.length}');
+      } else {
+        developer.log('Phản hồi lỗi: ${response.statusCode} - ${response.body}', error: 'API Error');
+      }
+
+      return _processResponse(response);
+    } catch (e) {
+      developer.log('Lỗi kết nối: ${e.toString()}', error: e);
+      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
+    }
+  }
+
   // Xử lý phản hồi
   ApiResponse _processResponse(http.Response response) {
     developer.log('Đang xử lý phản hồi với mã: ${response.statusCode}');

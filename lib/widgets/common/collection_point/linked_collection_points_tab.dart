@@ -1,7 +1,6 @@
 // widgets/collection_point/linked_collection_points_tab.dart
 import 'package:flutter/material.dart';
 import '../../../models/collection_point_model.dart';
-import '../../../utils/app_colors.dart';
 
 class LinkedCollectionPointsTab extends StatelessWidget {
   final List<CollectionPoint> linkedCollectionPoints;
@@ -42,11 +41,11 @@ class LinkedCollectionPointsTab extends StatelessWidget {
                 child: ListTile(
                   contentPadding: EdgeInsets.all(16),
                   title: Text(
-                    collectionPoint?.name ?? 'Unknown',
+                    collectionPoint.name,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    collectionPoint?.address ?? 'No address',
+                    collectionPoint.address,
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   trailing: ElevatedButton.icon(
