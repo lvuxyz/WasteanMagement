@@ -217,8 +217,8 @@ class WasteTypeRepository {
         final data = response.data;
         developer.log('Dữ liệu phản hồi: $data');
         
-        // Consider both 'success' status and empty response as successful
-        if (data == null || data['status'] == 'success') {
+        // Consider 'success' status as successful
+        if (data['status'] == 'success') {
           return true;
         } else {
           final errorMessage = data['message'] ?? 'Unknown API error';
