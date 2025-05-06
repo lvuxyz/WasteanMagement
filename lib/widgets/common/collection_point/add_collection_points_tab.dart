@@ -66,11 +66,11 @@ class _AddCollectionPointsTabState extends State<AddCollectionPointsTab> {
                       child: ListTile(
                         contentPadding: EdgeInsets.all(16),
                         title: Text(
-                          collectionPoint?.name ?? 'Unknown',
+                          collectionPoint.name,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          collectionPoint?.address ?? 'No address',
+                          collectionPoint.address,
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                         trailing: ElevatedButton.icon(

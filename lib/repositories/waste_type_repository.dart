@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import '../models/waste_type_model.dart';
 import '../models/collection_point_model.dart';
 import '../core/api/api_constants.dart';
