@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wasteanmagement/screens/create_transaction_screen.dart';
-import 'package:wasteanmagement/screens/transactions_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
@@ -36,7 +36,7 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case transactions:
-        return MaterialPageRoute(builder: (_) => const TransactionsScreen());
+        return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
       case createTransaction:
         return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
       case wasteTypeManagement:
