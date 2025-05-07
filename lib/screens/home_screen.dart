@@ -275,8 +275,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         TextButton(
           onPressed: () {
-            if (title == 'Quản lý giao dịch') {
+            if (title == 'Quản lý giao dịch' || title == 'Giao dịch của bạn') {
               Navigator.pushNamed(context, '/transactions');
+            } else if (title == 'Điểm thu gom gần bạn') {
+              Navigator.pushNamed(context, '/collection-points');
+            } else if (title == 'Loại rác được thu gom') {
+              Navigator.pushNamed(context, '/waste-type');
             }
           },
           child: const Text(
@@ -745,7 +749,7 @@ class _HomeScreenState extends State<HomeScreen> {
         
         final isAdmin = snapshot.data ?? false;
         if (!isAdmin) {
-          print('Not an admin, but trying to build admin transaction list');
+          print('Regular user, but trying to build admin transaction list');
         }
         
         return BlocProvider(
@@ -753,10 +757,10 @@ class _HomeScreenState extends State<HomeScreen> {
             final apiClient = context.read<ApiClient>();
             final transactionRepository = TransactionRepository(apiClient: apiClient);
             
-            print('Building all transactions list for admin: $isAdmin');
+            print('Building all transactions list for admin. Admin status: $isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
-            )..add(FetchTransactions(limit: 5));
+            )..add(FetchTransactions(limit: 3)); // Reduced limit to 3 for home screen
           },
           child: BlocBuilder<TransactionBloc, TransactionState>(
             builder: (context, state) {
@@ -776,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Không thể tải giao dịch',
+                          'Không thể tải danh sách giao dịch',
                           style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
                         ),
                         if (state.errorMessage != null)
@@ -791,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: () {
-                            print('Retrying admin transactions fetch');
+                            print('Retrying all transactions fetch');
                             context.read<TransactionBloc>().add(RefreshTransactions());
                           },
                           icon: const Icon(Icons.refresh, size: 16),
@@ -808,99 +812,185 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               } else if (state.transactions.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text('Không có giao dịch nào'),
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.receipt_long_outlined,
+                          color: AppColors.primaryGreen,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Không có giao dịch nào',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Chưa có giao dịch nào được tạo trong hệ thống',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
               
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = state.transactions[index];
-                  final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
-                  final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
-                  final DateFormat formatter = DateFormat('dd/MM/yyyy');
-                  
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: iconColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: iconColor,
-                        size: 24,
-                      ),
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
                     ),
-                    title: Text(
-                      '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: state.transactions.length,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1,
+                        color: Colors.grey[200],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          transaction.collectionPointName,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
+                      itemBuilder: (context, index) {
+                        final transaction = state.transactions[index];
+                        final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+                        final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+                        final DateFormat formatter = DateFormat('dd/MM/yyyy');
+                        
+                        return InkWell(
+                          onTap: () {
+                            // Navigate to full transactions screen when clicking on a transaction
+                            Navigator.pushNamed(context, '/transactions');
+                          },
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: iconColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                icon,
+                                color: iconColor,
+                                size: 24,
+                              ),
+                            ),
+                            title: Text(
+                              '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  transaction.collectionPointName,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  formatter.format(transaction.transactionDate),
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                            trailing: Container(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: transaction.status == 'completed'
+                                  ? const Text(
+                                '+12',  // Replace with actual points when available in API
+                                style: TextStyle(
+                                  color: AppColors.primaryGreen,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              )
+                                  : Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(transaction.status).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  _getStatusText(transaction.status),
+                                  style: TextStyle(
+                                    color: _getStatusColor(transaction.status),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          formatter.format(transaction.transactionDate),
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                    trailing: Container(
-                      constraints: const BoxConstraints(maxWidth: 80),
-                      child: transaction.status == 'completed'
-                          ? const Text(
-                        '+12',  // Replace with actual points when available in API
-                        style: TextStyle(
-                          color: AppColors.primaryGreen,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      )
-                          : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _getStatusText(transaction.status),
-                          style: TextStyle(
-                            color: _getStatusColor(transaction.status),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                    if (state.hasReachedMax == false || state.totalPages > 1)
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/transactions');
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: const BorderRadius.vertical(
+                              bottom: Radius.circular(12),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Xem tất cả giao dịch',
+                              style: TextStyle(
+                                color: AppColors.primaryGreen,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                  ],
+                ),
               );
             },
           ),
@@ -935,7 +1025,7 @@ class _HomeScreenState extends State<HomeScreen> {
             print('Building my transactions list for regular user. Admin status: $isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
-            )..add(FetchMyTransactions(limit: 5));
+            )..add(FetchMyTransactions(limit: 3)); // Reduced limit to 3 for home screen
           },
           child: BlocBuilder<TransactionBloc, TransactionState>(
             builder: (context, state) {
@@ -987,99 +1077,185 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               } else if (state.transactions.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text('Bạn chưa có giao dịch nào'),
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.receipt_long_outlined,
+                          color: AppColors.primaryGreen,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Bạn chưa có giao dịch nào',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Hãy tạo giao dịch mới để xem lịch sử tại đây',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
               
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.transactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = state.transactions[index];
-                  final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
-                  final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
-                  final DateFormat formatter = DateFormat('dd/MM/yyyy');
-                  
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: iconColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: iconColor,
-                        size: 24,
-                      ),
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
                     ),
-                    title: Text(
-                      '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: state.transactions.length,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1,
+                        color: Colors.grey[200],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          transaction.collectionPointName,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
+                      itemBuilder: (context, index) {
+                        final transaction = state.transactions[index];
+                        final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+                        final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+                        final DateFormat formatter = DateFormat('dd/MM/yyyy');
+                        
+                        return InkWell(
+                          onTap: () {
+                            // Navigate to full transactions screen when clicking on a transaction
+                            Navigator.pushNamed(context, '/transactions');
+                          },
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: iconColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                icon,
+                                color: iconColor,
+                                size: 24,
+                              ),
+                            ),
+                            title: Text(
+                              '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  transaction.collectionPointName,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  formatter.format(transaction.transactionDate),
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                            trailing: Container(
+                              constraints: const BoxConstraints(maxWidth: 80),
+                              child: transaction.status == 'completed'
+                                  ? const Text(
+                                '+12',  // Replace with actual points when available in API
+                                style: TextStyle(
+                                  color: AppColors.primaryGreen,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              )
+                                  : Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(transaction.status).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  _getStatusText(transaction.status),
+                                  style: TextStyle(
+                                    color: _getStatusColor(transaction.status),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          formatter.format(transaction.transactionDate),
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                    trailing: Container(
-                      constraints: const BoxConstraints(maxWidth: 80),
-                      child: transaction.status == 'completed'
-                          ? const Text(
-                        '+12',  // Replace with actual points when available in API
-                        style: TextStyle(
-                          color: AppColors.primaryGreen,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      )
-                          : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _getStatusText(transaction.status),
-                          style: TextStyle(
-                            color: _getStatusColor(transaction.status),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                    if (state.hasReachedMax == false || state.totalPages > 1)
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/transactions');
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: const BorderRadius.vertical(
+                              bottom: Radius.circular(12),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Xem tất cả giao dịch',
+                              style: TextStyle(
+                                color: AppColors.primaryGreen,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                  ],
+                ),
               );
             },
           ),
