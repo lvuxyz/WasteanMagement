@@ -78,19 +78,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<bool>(
-        future: _authService.isAdmin(),
-        builder: (context, snapshot) {
-          final isAdmin = snapshot.data ?? false;
-          
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Still loading admin status, show loading indicator
-            return const Center(child: CircularProgressIndicator());
+          future: _authService.isAdmin(),
+          builder: (context, snapshot) {
+            final isAdmin = snapshot.data ?? false;
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // Still loading admin status, show loading indicator
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // Admin status is now available
+            print('Home screen - User is admin: $isAdmin');
+            return _buildHomePage(isAdmin);
           }
-          
-          // Admin status is now available
-          print('Home screen - User is admin: $isAdmin');
-          return _buildHomePage(isAdmin);
-        }
       ),
     );
   }
@@ -170,19 +170,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildUserSummaryCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.primaryGreen, AppColors.secondaryGreen],
+          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryGreen.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -261,37 +261,69 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
   Widget _buildSectionTitle(String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            if (title == 'Quản lý giao dịch' || title == 'Giao dịch của bạn') {
-              Navigator.pushNamed(context, '/transactions');
-            } else if (title == 'Điểm thu gom gần bạn') {
-              Navigator.pushNamed(context, '/collection-points');
-            } else if (title == 'Loại rác được thu gom') {
-              Navigator.pushNamed(context, '/waste-type');
-            }
-          },
-          child: const Text(
-            'Xem tất cả',
-            style: TextStyle(
-              color: AppColors.primaryGreen,
-              fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          TextButton(
+            onPressed: () {
+              if (title == 'Quản lý giao dịch' || title == 'Giao dịch của bạn') {
+                Navigator.pushNamed(context, '/transactions');
+              } else if (title == 'Điểm thu gom gần bạn') {
+                Navigator.pushNamed(context, '/collection-points');
+              } else if (title == 'Loại rác được thu gom') {
+                Navigator.pushNamed(context, '/waste-type');
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Xem tất cả',
+                  style: TextStyle(
+                    color: AppColors.primaryGreen,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.primaryGreen,
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -746,17 +778,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
-        
+
         final isAdmin = snapshot.data ?? false;
         if (!isAdmin) {
           print('Regular user, but trying to build admin transaction list');
         }
-        
+
         return BlocProvider(
           create: (context) {
             final apiClient = context.read<ApiClient>();
             final transactionRepository = TransactionRepository(apiClient: apiClient);
-            
+
             print('Building all transactions list for admin. Admin status: $isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
@@ -764,7 +796,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: BlocBuilder<TransactionBloc, TransactionState>(
             builder: (context, state) {
-              if (state.status == TransactionStatus.initial || 
+              if (state.status == TransactionStatus.initial ||
                   state.status == TransactionStatus.loading && state.transactions.isEmpty) {
                 return const Center(
                   child: Padding(
@@ -853,7 +885,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               }
-              
+
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -882,7 +914,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
                         final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
                         final DateFormat formatter = DateFormat('dd/MM/yyyy');
-                        
+
                         return InkWell(
                           onTap: () {
                             // Navigate to full transactions screen when clicking on a transaction
@@ -976,15 +1008,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.grey[50],
                             borderRadius: const BorderRadius.vertical(
                               bottom: Radius.circular(12),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Xem tất cả giao dịch',
-                              style: TextStyle(
-                                color: AppColors.primaryGreen,
-                                fontWeight: FontWeight.bold,
-                              ),
                             ),
                           ),
                         ),
@@ -1000,166 +1023,149 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMyTransactionsList() {
-    return FutureBuilder<bool>(
-      future: _authService.isAdmin(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        
-        final isAdmin = snapshot.data ?? false;
-        if (isAdmin) {
-          print('Admin user, but trying to build regular user transaction list');
-        }
-        
-        return BlocProvider(
-          create: (context) {
-            final apiClient = context.read<ApiClient>();
-            final transactionRepository = TransactionRepository(apiClient: apiClient);
-            
-            print('Building my transactions list for regular user. Admin status: $isAdmin');
-            return TransactionBloc(
-              transactionRepository: transactionRepository,
-            )..add(FetchMyTransactions(limit: 3)); // Reduced limit to 3 for home screen
-          },
-          child: BlocBuilder<TransactionBloc, TransactionState>(
-            builder: (context, state) {
-              if (state.status == TransactionStatus.initial || 
-                  state.status == TransactionStatus.loading && state.transactions.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              } else if (state.status == TransactionStatus.failure) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Không thể tải giao dịch của bạn',
-                          style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
-                        ),
-                        if (state.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            child: Text(
-                              state.errorMessage!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                            ),
-                          ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            print('Retrying my transactions fetch');
-                            context.read<TransactionBloc>().add(RefreshTransactions());
-                          },
-                          icon: const Icon(Icons.refresh, size: 16),
-                          label: const Text('Thử lại'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryGreen,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            textStyle: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
+    return BlocProvider(
+      create: (context) {
+        final apiClient = context.read<ApiClient>();
+        final transactionRepository = TransactionRepository(apiClient: apiClient);
+
+        return TransactionBloc(
+          transactionRepository: transactionRepository,
+        )..add(FetchMyTransactions(limit: 3)); // Use the correct event for user's transactions
+      },
+      child: BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, state) {
+          if (state.status == TransactionStatus.initial ||
+              state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (state.status == TransactionStatus.failure) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Không thể tải danh sách giao dịch',
+                      style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
                     ),
-                  ),
-                );
-              } else if (state.transactions.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.receipt_long_outlined,
-                          color: AppColors.primaryGreen,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Bạn chưa có giao dịch nào',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Hãy tạo giao dịch mới để xem lịch sử tại đây',
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          state.errorMessage!,
                           textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[700], fontSize: 12),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
+                      ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        context.read<TransactionBloc>().add(RefreshTransactions());
+                      },
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Thử lại'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ],
                 ),
+              ),
+            );
+          } else if (state.transactions.isEmpty) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Center(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: state.transactions.length,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        color: Colors.grey[200],
+                    const Icon(
+                      Icons.receipt_long_outlined,
+                      color: AppColors.primaryGreen,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Không có giao dịch nào',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                      itemBuilder: (context, index) {
-                        final transaction = state.transactions[index];
-                        final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
-                        final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
-                        final DateFormat formatter = DateFormat('dd/MM/yyyy');
-                        
-                        return InkWell(
-                          onTap: () {
-                            // Navigate to full transactions screen when clicking on a transaction
-                            Navigator.pushNamed(context, '/transactions');
-                          },
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Bạn chưa thực hiện giao dịch nào',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.transactions.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: Colors.grey[200],
+                  ),
+                  itemBuilder: (context, index) {
+                    final transaction = state.transactions[index];
+                    final IconData icon = _getWasteTypeIcon(transaction.wasteTypeName);
+                    final Color iconColor = _getWasteTypeColor(transaction.wasteTypeName);
+                    final DateFormat formatter = DateFormat('dd/MM/yyyy');
+
+                    return InkWell(
+                      onTap: () {
+                        // Điều hướng đến màn hình giao dịch đầy đủ khi nhấp vào giao dịch
+                        Navigator.pushNamed(context, '/transactions');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 color: iconColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
                                 icon,
@@ -1167,108 +1173,127 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 24,
                               ),
                             ),
-                            title: Text(
-                              '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    transaction.collectionPointName,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    formatter.format(transaction.transactionDate),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  transaction.collectionPointName,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
+                            transaction.status == 'completed'
+                                ? Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGreen.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.eco_outlined,
+                                    color: AppColors.primaryGreen,
+                                    size: 14,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  formatter.format(transaction.transactionDate),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
+                                  const SizedBox(width: 4),
+                                  const Text(
+                                    '+12',  // Thay thế bằng điểm thực tế khi có sẵn
+                                    style: TextStyle(
+                                      color: AppColors.primaryGreen,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                            trailing: Container(
-                              constraints: const BoxConstraints(maxWidth: 80),
-                              child: transaction.status == 'completed'
-                                  ? const Text(
-                                '+12',  // Replace with actual points when available in API
+                                ],
+                              ),
+                            )
+                                : Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(transaction.status).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                _getStatusText(transaction.status),
                                 style: TextStyle(
-                                  color: AppColors.primaryGreen,
+                                  color: _getStatusColor(transaction.status),
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              )
-                                  : Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(transaction.status).withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  _getStatusText(transaction.status),
-                                  style: TextStyle(
-                                    color: _getStatusColor(transaction.status),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (state.hasReachedMax == false || state.totalPages > 1)
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/transactions');
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: const BorderRadius.vertical(
-                              bottom: Radius.circular(12),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Xem tất cả giao dịch',
-                              style: TextStyle(
-                                color: AppColors.primaryGreen,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                if (state.hasReachedMax == false || state.totalPages > 1)
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/transactions');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(12),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Xem tất cả giao dịch',
+                          style: TextStyle(
+                            color: AppColors.primaryGreen,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   IconData _getWasteTypeIcon(String wasteType) {
     if (wasteType.toLowerCase().contains('plastic')) {
       return Icons.delete_outline;
-    } else if (wasteType.toLowerCase().contains('paper') || 
-               wasteType.toLowerCase().contains('cardboard')) {
+    } else if (wasteType.toLowerCase().contains('paper') ||
+        wasteType.toLowerCase().contains('cardboard')) {
       return Icons.description_outlined;
     } else if (wasteType.toLowerCase().contains('electronic')) {
       return Icons.devices_outlined;
@@ -1284,8 +1309,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Color _getWasteTypeColor(String wasteType) {
     if (wasteType.toLowerCase().contains('plastic')) {
       return Colors.blue;
-    } else if (wasteType.toLowerCase().contains('paper') || 
-               wasteType.toLowerCase().contains('cardboard')) {
+    } else if (wasteType.toLowerCase().contains('paper') ||
+        wasteType.toLowerCase().contains('cardboard')) {
       return Colors.amber;
     } else if (wasteType.toLowerCase().contains('electronic')) {
       return Colors.purple;
