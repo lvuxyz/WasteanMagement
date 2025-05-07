@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wasteanmagement/screens/create_transaction_screen.dart';
 import 'package:wasteanmagement/screens/transactions_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -30,11 +31,14 @@ class AppRoutes {
   static const String collectionPointsList = '/collection-points';
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
   static const String transactions = '/transactions';
+  static const String createTransaction = '/create-transaction';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case transactions:
         return MaterialPageRoute(builder: (_) => const TransactionsScreen());
+      case createTransaction:
+        return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
       case wasteTypeAdd:
