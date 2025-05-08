@@ -31,6 +31,9 @@ class ApiConstants {
   // Endpoint liên quan đến giao dịch
   static String get myTransactions => '$baseUrl/transactions/my-transactions';
   
+  // Endpoint for file uploads
+  static String get upload => '$baseUrl/upload';
+  
   // Endpoint liên quan đến điểm thu gom và loại rác
   static String wasteTypeDetail(int id) => '$baseUrl/waste-types/$id';
   static String collectionPointDetail(int id) => '$baseUrl/waste/collection-points/$id';
