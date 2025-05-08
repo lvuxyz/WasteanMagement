@@ -119,7 +119,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       
       if (isAdmin) {
         print('Fetching all transactions as admin');
-        final response = await transactionRepository.getTransactions(page: 1, limit: 4);
+        final response = await transactionRepository.getTransactions(page: 1, limit: 10);
         
         if (!response.success) {
           throw Exception(response.message);
@@ -134,7 +134,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         ));
       } else {
         print('Fetching my transactions as regular user');
-        final response = await transactionRepository.getMyTransactions(page: 1, limit: 4);
+        final response = await transactionRepository.getMyTransactions(page: 1, limit: 10);
         
         if (!response.success) {
           throw Exception(response.message);
