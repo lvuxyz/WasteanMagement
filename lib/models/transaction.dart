@@ -46,10 +46,10 @@ class Transaction {
         transactionDate: DateTime.parse(json['transaction_date']),
         status: json['status'],
         proofImageUrl: json['proof_image_url'],
-        userName: json['user_name'], // Can be null
-        username: json['username'], // Can be null
-        collectionPointName: json['collection_point_name'],
-        wasteTypeName: json['waste_type_name'],
+        userName: json['user_name'] ?? json['user_full_name'], // Handle different field names
+        username: json['username'], 
+        collectionPointName: json['collection_point_name'] ?? 'Không xác định',
+        wasteTypeName: json['waste_type_name'] ?? 'Không xác định',
       );
     } catch (e) {
       print('Error parsing Transaction: $e');

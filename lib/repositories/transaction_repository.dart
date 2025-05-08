@@ -9,7 +9,7 @@ class TransactionRepository {
 
   Future<TransactionResponse> getTransactions({
     int page = 1,
-    int limit = 5,
+    int limit = 10,
     String? status,
   }) async {
     final Map<String, String> queryParams = {
@@ -48,7 +48,7 @@ class TransactionRepository {
 
   Future<TransactionResponse> getMyTransactions({
     int page = 1,
-    int limit = 5,
+    int limit = 10,
     String? status,
     int? collectionPointId,
     int? wasteTypeId,
