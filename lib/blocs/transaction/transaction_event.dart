@@ -12,7 +12,7 @@ class FetchTransactions extends TransactionEvent {
 
   FetchTransactions({
     this.page = 1,
-    this.limit = 4,
+    this.limit = 10,
     this.status,
   });
 
@@ -31,7 +31,7 @@ class FetchMyTransactions extends TransactionEvent {
 
   FetchMyTransactions({
     this.page = 1,
-    this.limit = 4,
+    this.limit = 10,
     this.status,
     this.collectionPointId,
     this.wasteTypeId,

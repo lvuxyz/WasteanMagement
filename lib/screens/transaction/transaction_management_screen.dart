@@ -50,30 +50,52 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
 
   void _onScroll() {
     if (_isBottom) {
-      // Using Builder here to get the correct BlocProvider context
-      Builder(
-        builder: (context) {
-          final bloc = context.read<TransactionBloc>();
-          final state = bloc.state;
-          
-          if (!state.hasReachedMax) {
-            if (_isAdmin) {
-              bloc.add(FetchTransactions(
-                page: state.currentPage + 1,
-                limit: 10,
-                status: _selectedFilterOption == 'all' ? null : _selectedFilterOption,
-              ));
-            } else {
-              bloc.add(FetchMyTransactions(
-                page: state.currentPage + 1,
-                limit: 10,
-                status: _selectedFilterOption == 'all' ? null : _selectedFilterOption,
-              ));
+      // Sử dụng widget Builder để lấy context chứa BlocProvider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final builderWidget = Builder(
+          builder: (context) {
+            try {
+              final bloc = context.read<TransactionBloc>();
+              final state = bloc.state;
+              
+              if (!state.hasReachedMax) {
+                if (_isAdmin) {
+                  bloc.add(FetchTransactions(
+                    page: state.currentPage + 1,
+                    limit: 10,
+                    status: _selectedFilterOption == 'all' ? null : _selectedFilterOption,
+                  ));
+                } else {
+                  bloc.add(FetchMyTransactions(
+                    page: state.currentPage + 1,
+                    limit: 10,
+                    status: _selectedFilterOption == 'all' ? null : _selectedFilterOption,
+                  ));
+                }
+              }
+            } catch (e) {
+              print('Error in onScroll: $e');
             }
+            return const SizedBox.shrink();
           }
-          return const SizedBox.shrink();
-        }
-      );
+        );
+        
+        // Chèn builder widget vào widget tree tạm thời để nó được rendered
+        // và có thể sử dụng BlocProvider
+        final overlay = Overlay.of(context);
+        final entry = OverlayEntry(
+          builder: (context) => Positioned(
+            child: builderWidget,
+          ),
+        );
+        
+        overlay.insert(entry);
+        
+        // Xóa sau khi đã thực hiện
+        Future.microtask(() {
+          entry.remove();
+        });
+      });
     }
   }
 
@@ -151,23 +173,40 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
       _updatingItems[transactionId] = true;
     });
     
-    // Tạo widget Builder để lấy context chứa BlocProvider
-    Builder(
-      builder: (innerContext) {
-        try {
-          // Gửi sự kiện cập nhật qua BlocProvider
-          innerContext.read<TransactionBloc>().add(
-            UpdateTransactionStatus(
-              transactionId: transactionId,
-              status: status,
-            ),
-          );
-        } catch (e) {
-          print("Error sending update status event: $e");
+    // Sử dụng widget Builder để lấy context chứa BlocProvider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final builderWidget = Builder(
+        builder: (innerContext) {
+          try {
+            // Gửi sự kiện cập nhật qua BlocProvider
+            innerContext.read<TransactionBloc>().add(
+              UpdateTransactionStatus(
+                transactionId: transactionId,
+                status: status,
+              ),
+            );
+          } catch (e) {
+            print("Error sending update status event: $e");
+          }
+          return const SizedBox.shrink();
         }
-        return const SizedBox.shrink();
-      }
-    );
+      );
+      
+      // Chèn builder widget vào widget tree tạm thời
+      final overlay = Overlay.of(context);
+      final entry = OverlayEntry(
+        builder: (context) => Positioned(
+          child: builderWidget,
+        ),
+      );
+      
+      overlay.insert(entry);
+      
+      // Xóa sau khi đã thực hiện
+      Future.microtask(() {
+        entry.remove();
+      });
+    });
     
     // Xóa trạng thái loading sau 2 giây
     Future.delayed(const Duration(seconds: 2), () {
@@ -264,43 +303,65 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   Widget _buildFilterTab(String value, String label) {
     final bool isSelected = _selectedFilterOption == value;
     
-    return Builder(
-      builder: (context) {
-        return InkWell(
-          onTap: () {
-            setState(() {
-              _selectedFilterOption = value;
-            });
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedFilterOption = value;
+        });
             
-            // Refresh transactions with the new filter
-            if (_isAdmin) {
-              context.read<TransactionBloc>().add(FetchTransactions(
-                status: value == 'all' ? null : value,
-              ));
-            } else {
-              context.read<TransactionBloc>().add(FetchMyTransactions(
-                status: value == 'all' ? null : value,
-              ));
+        // Thêm sự kiện FetchTransactions hoặc FetchMyTransactions
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final builderWidget = Builder(
+            builder: (context) {
+              try {
+                if (_isAdmin) {
+                  context.read<TransactionBloc>().add(FetchTransactions(
+                    status: value == 'all' ? null : value,
+                  ));
+                } else {
+                  context.read<TransactionBloc>().add(FetchMyTransactions(
+                    status: value == 'all' ? null : value,
+                  ));
+                }
+              } catch (e) {
+                print('Error in filter tab: $e');
+              }
+              return const SizedBox.shrink();
             }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryGreen : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
+          );
+          
+          // Chèn builder widget vào widget tree
+          final overlay = Overlay.of(context);
+          final entry = OverlayEntry(
+            builder: (context) => Positioned(
+              child: builderWidget,
             ),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 14,
-              ),
-            ),
+          );
+          
+          overlay.insert(entry);
+          
+          // Xóa sau khi đã thực hiện
+          Future.microtask(() {
+            entry.remove();
+          });
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
           ),
-        );
-      }
+        ),
+      ),
     );
   }
 
