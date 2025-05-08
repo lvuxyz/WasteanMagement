@@ -14,6 +14,9 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<FetchMyTransactions>(_onFetchMyTransactions);
     on<RefreshTransactions>(_onRefreshTransactions);
     on<CreateTransaction>(_onCreateTransaction);
+    on<UpdateTransactionStatus>(_onUpdateTransactionStatus);
+    on<DeleteTransaction>(_onDeleteTransaction);
+    on<SearchTransactions>(_onSearchTransactions);
   }
 
   Future<void> _onFetchTransactions(
@@ -183,4 +186,99 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       ));
     }
   }
-} 
+
+  Future<void> _onUpdateTransactionStatus(
+    UpdateTransactionStatus event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // This would be the actual API call in a real app
+      // await transactionRepository.updateTransactionStatus(
+      //   transactionId: event.transactionId,
+      //   status: event.status,
+      // );
+
+      // For now, just simulate the API call
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Update the transaction in the current state
+      final updatedTransactions = state.transactions.map((transaction) {
+        if (transaction.transactionId == event.transactionId) {
+          // In a real app, you'd create a copy of the transaction with the updated status
+          // For now, we'll just simulate a successful update
+          return transaction; // This would be replaced with an updated transaction
+        }
+        return transaction;
+      }).toList();
+
+      emit(state.copyWith(
+        status: TransactionStatus.success,
+        transactions: updatedTransactions,
+      ));
+
+      // After updating, refresh the list to get the latest data
+      add(RefreshTransactions());
+    } catch (e) {
+      print('Error updating transaction status: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onDeleteTransaction(
+    DeleteTransaction event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // This would be the actual API call in a real app
+      // await transactionRepository.deleteTransaction(event.transactionId);
+
+      // For now, just simulate the API call
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Remove the transaction from the current state
+      final updatedTransactions = state.transactions
+          .where((transaction) => transaction.transactionId != event.transactionId)
+          .toList();
+
+      emit(state.copyWith(
+        status: TransactionStatus.success,
+        transactions: updatedTransactions,
+      ));
+
+      // After deleting, refresh the list to get the latest data
+      add(RefreshTransactions());
+    } catch (e) {
+      print('Error deleting transaction: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+  
+  Future<void> _onSearchTransactions(
+    SearchTransactions event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+      
+      // This would be implemented with actual API search
+      // For now, just refresh transactions
+      add(RefreshTransactions());
+    } catch (e) {
+      print('Error searching transactions: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+}

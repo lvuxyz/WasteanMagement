@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/screens/create_transaction_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
+import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
+import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -32,6 +37,8 @@ class AppRoutes {
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
   static const String transactions = '/transactions';
   static const String createTransaction = '/create-transaction';
+  static const String transactionDetails = '/transaction-details';
+  static const String editTransaction = '/edit-transaction';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -39,6 +46,16 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
       case createTransaction:
         return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
+      case transactionDetails:
+        final transactionId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => TransactionDetailsScreen(transactionId: transactionId),
+        );
+      case editTransaction:
+        final transactionId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => TransactionEditScreen(transactionId: transactionId),
+        );
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
       case wasteTypeAdd:

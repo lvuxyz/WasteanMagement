@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
+import '../../blocs/transaction/transaction_bloc.dart';
+import '../../blocs/transaction/transaction_event.dart';
+import '../../blocs/transaction/transaction_state.dart';
+import '../../models/transaction.dart';
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
@@ -15,438 +20,350 @@ class TransactionEditScreen extends StatefulWidget {
 }
 
 class _TransactionEditScreenState extends State<TransactionEditScreen> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController _usernameController;
-  late TextEditingController _quantityController;
-  late TextEditingController _notesController;
-  
-  String? _selectedWasteType;
-  String? _selectedCollectionPoint;
-  String? _selectedStatus;
-  
-  final List<Map<String, dynamic>> _wasteTypes = [
-    {'id': 1, 'name': 'Chai nhựa', 'unit': 'kg', 'unitPrice': 2000},
-    {'id': 2, 'name': 'Giấy vụn', 'unit': 'kg', 'unitPrice': 1500},
-    {'id': 3, 'name': 'Pin điện', 'unit': 'kg', 'unitPrice': 3000},
-    {'id': 4, 'name': 'Lon kim loại', 'unit': 'kg', 'unitPrice': 4000},
-    {'id': 5, 'name': 'Thủy tinh', 'unit': 'kg', 'unitPrice': 1000},
-  ];
-  
-  final List<Map<String, dynamic>> _collectionPoints = [
-    {'id': 1, 'name': 'Điểm thu gom An Phú', 'address': '123 Phạm Văn Đồng, P. An Phú, Q.2, TP.HCM'},
-    {'id': 2, 'name': 'Điểm thu gom Thảo Điền', 'address': '45 Xuân Thủy, P. Thảo Điền, Q.2, TP.HCM'},
-    {'id': 3, 'name': 'Điểm thu gom Bình Thạnh', 'address': '78 Điện Biên Phủ, P.15, Q. Bình Thạnh, TP.HCM'},
-  ];
-  
-  final List<Map<String, dynamic>> _statusOptions = [
-    {'value': 'pending', 'label': 'Chờ xử lý', 'color': Colors.orange, 'icon': Icons.pending_outlined},
-    {'value': 'processing', 'label': 'Đang xử lý', 'color': Colors.blue, 'icon': Icons.hourglass_top},
-    {'value': 'completed', 'label': 'Hoàn thành', 'color': Colors.green, 'icon': Icons.check_circle_outline},
-    {'value': 'rejected', 'label': 'Đã hủy', 'color': Colors.red, 'icon': Icons.cancel_outlined},
-  ];
-  
-  String _unit = 'kg';
-  double _unitPrice = 0;
+  Transaction? _transaction;
   bool _isLoading = true;
   bool _isSaving = false;
-  late Map<String, dynamic> _transaction;
+  String? _errorMessage;
+  final _formKey = GlobalKey<FormState>();
+  final _quantityController = TextEditingController();
+  String _selectedStatus = 'pending';
 
   @override
   void initState() {
     super.initState();
-    _usernameController = TextEditingController();
-    _quantityController = TextEditingController();
-    _notesController = TextEditingController();
-    _loadTransactionData();
-  }
-
-  void _loadTransactionData() {
-    // In a real app, this would fetch data from the backend
-    // For now, we'll simulate with a delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      // Mock transaction data for the given ID
-      _transaction = _getDummyTransaction(widget.transactionId);
-      
-      // Populate form fields
-      _usernameController.text = _transaction['username'];
-      _quantityController.text = _transaction['quantity'].toString();
-      _notesController.text = _transaction['notes'] ?? '';
-      
-      setState(() {
-        _selectedWasteType = _transaction['wasteTypeId'].toString();
-        _selectedCollectionPoint = _transaction['collectionPointId'].toString();
-        _selectedStatus = _transaction['status'];
-        _updateWasteTypeInfo();
-        _isLoading = false;
-      });
-    });
-  }
-
-  void _updateWasteTypeInfo() {
-    if (_selectedWasteType != null) {
-      final wasteType = _wasteTypes.firstWhere(
-        (type) => type['id'].toString() == _selectedWasteType,
-        orElse: () => {'unit': 'kg', 'unitPrice': 0},
-      );
-      
-      setState(() {
-        _unit = wasteType['unit'];
-        _unitPrice = wasteType['unitPrice'].toDouble();
-      });
-    }
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSaving = true;
-      });
-      
-      // In a real app, this would send data to the backend
-      // Simulate API call with a delay
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          _isSaving = false;
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Giao dịch đã được cập nhật thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        Navigator.pop(context, true);
-      });
-    }
+    _loadTransactionDetails();
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
     _quantityController.dispose();
-    _notesController.dispose();
     super.dispose();
+  }
+
+  void _loadTransactionDetails() {
+    // In a real app, you would make an API call to fetch transaction details
+    // For now, let's just use the transactions already in the bloc state
+    final transactions = context.read<TransactionBloc>().state.transactions;
+    try {
+      final transaction = transactions.firstWhere(
+        (t) => t.transactionId == widget.transactionId,
+        orElse: () => throw Exception('Transaction not found'),
+      );
+      
+      setState(() {
+        _transaction = transaction;
+        _quantityController.text = transaction.quantity.toString();
+        _selectedStatus = transaction.status;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Could not find transaction: ${e.toString()}';
+      });
+    }
+  }
+
+  void _saveTransaction() {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    // Get the updated quantity
+    final double quantity = double.parse(_quantityController.text);
+    
+    // Use the UpdateTransactionStatus event to update through the bloc
+    context.read<TransactionBloc>().add(
+      UpdateTransactionStatus(
+        transactionId: widget.transactionId,
+        status: _selectedStatus,
+      ),
+    );
+
+    // Add a delay to simulate API call completion
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cập nhật giao dịch thành công'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Chỉnh sửa giao dịch'),
-          backgroundColor: AppColors.primaryGreen,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chỉnh sửa giao dịch #${widget.transactionId}'),
+        title: const Text('Chỉnh sửa giao dịch'),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
-      ),
-      body: _isSaving
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildSectionTitle('Thông tin giao dịch'),
-                    _buildCard([
-                      // Status dropdown
-                      DropdownButtonFormField<String>(
-                        value: _selectedStatus,
-                        decoration: const InputDecoration(
-                          labelText: 'Trạng thái',
-                          hintText: 'Chọn trạng thái',
-                          prefixIcon: Icon(Icons.pending_actions),
-                        ),
-                        items: _statusOptions.map((status) {
-                          return DropdownMenuItem<String>(
-                            value: status['value'],
-                            child: Row(
-                              children: [
-                                Icon(status['icon'], color: status['color'], size: 18),
-                                const SizedBox(width: 8),
-                                Text(status['label']),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedStatus = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng chọn trạng thái';
-                          }
-                          return null;
-                        },
-                      ),
-                    ]),
-                    
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Thông tin người dùng'),
-                    _buildCard([
-                      TextFormField(
-                        controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Tên người dùng hoặc email',
-                          hintText: 'Nhập tên người dùng hoặc email',
-                          prefixIcon: Icon(Icons.person),
-                        ),
-                        readOnly: true,  // Can't change user
-                        enabled: false,
-                      ),
-                    ]),
-                    
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Chi tiết rác thải'),
-                    _buildCard([
-                      DropdownButtonFormField<String>(
-                        value: _selectedWasteType,
-                        decoration: const InputDecoration(
-                          labelText: 'Loại rác thải',
-                          hintText: 'Chọn loại rác thải',
-                          prefixIcon: Icon(Icons.delete_outline),
-                        ),
-                        items: _wasteTypes.map((wasteType) {
-                          return DropdownMenuItem<String>(
-                            value: wasteType['id'].toString(),
-                            child: Text(wasteType['name']),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedWasteType = value;
-                          });
-                          _updateWasteTypeInfo();
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng chọn loại rác thải';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _quantityController,
-                        decoration: InputDecoration(
-                          labelText: 'Số lượng',
-                          hintText: 'Nhập số lượng',
-                          prefixIcon: const Icon(Icons.scale),
-                          suffixText: _unit,
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập số lượng';
-                          }
-                          final number = double.tryParse(value);
-                          if (number == null || number <= 0) {
-                            return 'Số lượng phải lớn hơn 0';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      // Display unit price (read only)
-                      TextFormField(
-                        initialValue: '$_unitPrice',
-                        decoration: InputDecoration(
-                          labelText: 'Đơn giá',
-                          prefixIcon: const Icon(Icons.monetization_on_outlined),
-                          suffixText: 'đ/${_unit}',
-                        ),
-                        readOnly: true,
-                        enabled: false,
-                      ),
-                      const SizedBox(height: 16),
-                      // Calculate total price
-                      if (_selectedWasteType != null)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Tổng giá trị:',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                '${_calculateTotal()} đ',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.primaryGreen,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ]),
-                    
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Địa điểm thu gom'),
-                    _buildCard([
-                      DropdownButtonFormField<String>(
-                        value: _selectedCollectionPoint,
-                        decoration: const InputDecoration(
-                          labelText: 'Điểm thu gom',
-                          hintText: 'Chọn điểm thu gom',
-                          prefixIcon: Icon(Icons.location_on_outlined),
-                        ),
-                        items: _collectionPoints.map((point) {
-                          return DropdownMenuItem<String>(
-                            value: point['id'].toString(),
-                            child: Text(point['name']),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedCollectionPoint = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng chọn điểm thu gom';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      if (_selectedCollectionPoint != null)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey[300]!),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.info_outline, color: Colors.grey),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _getCollectionPointAddress() ?? 'Không có địa chỉ',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ]),
-                    
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Ghi chú'),
-                    _buildCard([
-                      TextFormField(
-                        controller: _notesController,
-                        decoration: const InputDecoration(
-                          labelText: 'Ghi chú',
-                          hintText: 'Nhập ghi chú hoặc hướng dẫn bổ sung',
-                          prefixIcon: Icon(Icons.note_outlined),
-                        ),
-                        maxLines: 3,
-                      ),
-                    ]),
-                    
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: const BorderSide(color: AppColors.primaryGreen),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Hủy',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.primaryGreen,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _submitForm,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryGreen,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Lưu thay đổi',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
+        actions: [
+          if (!_isLoading && !_isSaving)
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _saveTransaction,
             ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? _buildErrorState()
+              : _buildEditForm(),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 4,
-            height: 20,
-            decoration: BoxDecoration(
-              color: AppColors.primaryGreen,
-              borderRadius: BorderRadius.circular(2),
+          const Icon(
+            Icons.error_outline,
+            color: Colors.red,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _errorMessage ?? 'Đã xảy ra lỗi khi tải thông tin giao dịch',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[700],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryGreen,
+            ),
+            child: const Text('Quay lại'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditForm() {
+    if (_transaction == null) {
+      return const Center(
+        child: Text('Không tìm thấy thông tin giao dịch'),
+      );
+    }
+
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildTransactionInfoSection(),
+          const SizedBox(height: 24),
+          _buildEditableFields(),
+          const SizedBox(height: 24),
+          _buildSaveButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionInfoSection() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Thông tin giao dịch',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const Divider(),
+            const SizedBox(height: 8),
+            _buildInfoRow('Mã giao dịch', '#${_transaction!.transactionId}'),
+            _buildInfoRow('Người dùng', _transaction!.username ?? _transaction!.userName ?? 'Không xác định'),
+            _buildInfoRow('Loại rác', _transaction!.wasteTypeName),
+            _buildInfoRow('Điểm thu gom', _transaction!.collectionPointName),
+            _buildInfoRow('Ngày tạo', _formatDate(_transaction!.transactionDate)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditableFields() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Chỉnh sửa thông tin',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const Divider(),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _quantityController,
+              decoration: const InputDecoration(
+                labelText: 'Số lượng',
+                border: OutlineInputBorder(),
+                suffixText: 'kg',
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng nhập số lượng';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Vui lòng nhập số hợp lệ';
+                }
+                if (double.parse(value) <= 0) {
+                  return 'Số lượng phải lớn hơn 0';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Trạng thái giao dịch',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildStatusSelector(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        children: [
+          _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
+          const Divider(height: 1),
+          _buildStatusOption('processing', 'Đang xử lý', Colors.blue),
+          const Divider(height: 1),
+          _buildStatusOption('completed', 'Hoàn thành', Colors.green),
+          const Divider(height: 1),
+          _buildStatusOption('rejected', 'Đã hủy', Colors.red),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusOption(String value, String label, Color color) {
+    return RadioListTile<String>(
+      title: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: _selectedStatus == value ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      value: value,
+      groupValue: _selectedStatus,
+      activeColor: color,
+      onChanged: (newValue) {
+        setState(() {
+          _selectedStatus = newValue!;
+        });
+      },
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return ElevatedButton(
+      onPressed: _isSaving ? null : _saveTransaction,
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primaryGreen,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: _isSaving
+          ? const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text('Đang lưu...'),
+              ],
+            )
+          : const Text('LƯU THAY ĐỔI'),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -454,55 +371,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     );
   }
 
-  Widget _buildCard(List<Widget> children) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
-  }
-
-  String _calculateTotal() {
-    final quantity = double.tryParse(_quantityController.text) ?? 0;
-    return (quantity * _unitPrice).toStringAsFixed(0);
-  }
-
-  String? _getCollectionPointAddress() {
-    if (_selectedCollectionPoint == null) return null;
-    
-    final point = _collectionPoints.firstWhere(
-      (point) => point['id'].toString() == _selectedCollectionPoint,
-      orElse: () => {'address': null},
-    );
-    
-    return point['address'];
-  }
-
-  Map<String, dynamic> _getDummyTransaction(int id) {
-    // Dummy data for UI mockup
-    return {
-      'id': id,
-      'username': 'user123',
-      'wasteTypeId': 1,
-      'wasteType': 'Chai nhựa',
-      'quantity': 5.0,
-      'unit': 'kg',
-      'unitPrice': 2000,
-      'status': 'completed',
-      'date': '15/11/2023',
-      'points': 10,
-      'collectionPointId': 1,
-      'collectionPoint': 'Điểm thu gom An Phú',
-      'address': '123 Đường Phạm Văn Đồng, Phường An Phú, Quận 2, TP.HCM',
-      'notes': 'Khách hàng sẽ giao rác vào buổi sáng từ 7h-9h. Vui lòng liên hệ trước khi đến.',
-    };
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
   }
 } 
