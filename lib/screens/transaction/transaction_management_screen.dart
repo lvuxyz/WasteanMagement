@@ -538,7 +538,14 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Người dùng: ${transaction.username ?? transaction.userName ?? "Không xác định"}',
+                'Người dùng: ${transaction.userName ?? transaction.username ?? "Không xác định"}',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                'Điểm thu gom: ${transaction.collectionPointName}',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 14,
@@ -682,6 +689,10 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
       case 'completed':
         return 'Hoàn thành';
       case 'rejected':
+        return 'Đã hủy';
+      case 'approved':
+        return 'Đã xác nhận';
+      case 'cancelled':
         return 'Đã hủy';
       default:
         return 'Không xác định';
