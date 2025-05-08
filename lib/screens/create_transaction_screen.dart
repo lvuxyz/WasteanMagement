@@ -96,9 +96,14 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     setState(() {
       _collectionPoints = _mockCollectionPoints.map((item) => 
         CollectionPoint(
-          id: item['id'], 
+          collectionPointId: item['id'], 
           name: item['name'], 
           address: item['address'],
+          latitude: 0.0,
+          longitude: 0.0,
+          operatingHours: '8:00-17:00',
+          capacity: 1000,
+          status: 'active',
         )).toList();
       
       _wasteTypes = _mockWasteTypes.map((item) => 
@@ -163,7 +168,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       // Create the transaction
       context.read<TransactionBloc>().add(
         CreateTransaction(
-          collectionPointId: _selectedCollectionPoint!.id,
+          collectionPointId: _selectedCollectionPoint!.collectionPointId,
           wasteTypeId: _selectedWasteType!.id,
           quantity: double.parse(_quantityController.text),
           unit: _selectedUnit,

@@ -21,7 +21,7 @@ class CollectionPointItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final capacityPercentage = 
-        (collectionPoint.current_load / collectionPoint.capacity * 100).toInt();
+        ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -131,7 +131,7 @@ class CollectionPointItem extends StatelessWidget {
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            collectionPoint.operating_hours,
+                            collectionPoint.operatingHours,
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[700],

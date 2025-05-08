@@ -364,7 +364,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                       onActionPressed: () {
                         _showUnlinkConfirmation(
                           context,
-                          int.parse(collectionPoint.id),
+                          collectionPoint.collectionPointId,
                           collectionPoint.name,
                         );
                       },
@@ -493,7 +493,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                         context.read<WasteTypeBloc>().add(
                           LinkCollectionPoint(
                             wasteTypeId: widget.wasteTypeId,
-                            collectionPointId: int.parse(collectionPoint.id),
+                            collectionPointId: collectionPoint.collectionPointId,
                           ),
                         );
                       },
