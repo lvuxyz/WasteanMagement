@@ -62,4 +62,35 @@ class CreateTransaction extends TransactionEvent {
 
   @override
   List<Object?> get props => [collectionPointId, wasteTypeId, quantity, unit, proofImageUrl];
+}
+
+class UpdateTransactionStatus extends TransactionEvent {
+  final int transactionId;
+  final String status;
+
+  UpdateTransactionStatus({
+    required this.transactionId,
+    required this.status,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, status];
+}
+
+class DeleteTransaction extends TransactionEvent {
+  final int transactionId;
+
+  DeleteTransaction({required this.transactionId});
+
+  @override
+  List<Object?> get props => [transactionId];
+}
+
+class SearchTransactions extends TransactionEvent {
+  final String query;
+
+  SearchTransactions(this.query);
+
+  @override
+  List<Object?> get props => [query];
 } 
