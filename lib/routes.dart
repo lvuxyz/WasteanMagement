@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/screens/create_transaction_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_add_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_edit_screen.dart';
@@ -37,6 +38,7 @@ class AppRoutes {
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
   static const String transactions = '/transactions';
   static const String createTransaction = '/create-transaction';
+  static const String addTransaction = '/add-transaction';
   static const String transactionDetails = '/transaction-details';
   static const String editTransaction = '/edit-transaction';
 
@@ -46,6 +48,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
       case createTransaction:
         return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
+      case addTransaction:
+        return MaterialPageRoute(builder: (_) => const TransactionAddScreen());
       case transactionDetails:
         final transactionId = settings.arguments as int;
         return MaterialPageRoute(
