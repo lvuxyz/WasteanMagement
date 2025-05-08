@@ -9,7 +9,9 @@ import '../../blocs/transaction/transaction_bloc.dart';
 import '../../blocs/transaction/transaction_event.dart';
 import '../../blocs/transaction/transaction_state.dart';
 import '../../repositories/transaction_repository.dart';
+import '../../repositories/collection_point_repository.dart';
 import '../../services/upload_service.dart';
+import '../../models/collection_point.dart';
 
 class TransactionAddScreen extends StatefulWidget {
   const TransactionAddScreen({Key? key}) : super(key: key);
@@ -36,15 +38,41 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     {'id': 5, 'name': 'Thủy tinh', 'unit': 'kg', 'unitPrice': 1000},
   ];
   
-  final List<Map<String, dynamic>> _collectionPoints = [
-    {'id': 1, 'name': 'Điểm thu gom An Phú', 'address': '123 Phạm Văn Đồng, P. An Phú, Q.2, TP.HCM'},
-    {'id': 2, 'name': 'Điểm thu gom Thảo Điền', 'address': '45 Xuân Thủy, P. Thảo Điền, Q.2, TP.HCM'},
-    {'id': 3, 'name': 'Điểm thu gom Bình Thạnh', 'address': '78 Điện Biên Phủ, P.15, Q. Bình Thạnh, TP.HCM'},
-  ];
+  List<CollectionPoint> _collectionPoints = [];
+  bool _isLoadingCollectionPoints = true;
+  String _loadingError = '';
   
   String _unit = 'kg';
   double _unitPrice = 0;
   bool _isUploadingImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCollectionPoints();
+  }
+
+  Future<void> _fetchCollectionPoints() async {
+    setState(() {
+      _isLoadingCollectionPoints = true;
+      _loadingError = '';
+    });
+
+    try {
+      final collectionPointRepository = Provider.of<CollectionPointRepository>(context, listen: false);
+      final collectionPoints = await collectionPointRepository.getAllCollectionPoints();
+      
+      setState(() {
+        _collectionPoints = collectionPoints;
+        _isLoadingCollectionPoints = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loadingError = 'Không thể tải danh sách điểm thu gom: $e';
+        _isLoadingCollectionPoints = false;
+      });
+    }
+  }
 
   void _updateWasteTypeInfo() {
     if (_selectedWasteType != null) {
@@ -161,7 +189,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy TransactionRepository từ Provider
+    // Lấy repository từ Provider
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
     
     return BlocProvider(
@@ -333,58 +361,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             
                             const SizedBox(height: 24),
                             _buildSectionTitle('Địa điểm thu gom'),
-                            _buildCard([
-                              DropdownButtonFormField<String>(
-                                value: _selectedCollectionPoint,
-                                decoration: const InputDecoration(
-                                  labelText: 'Điểm thu gom',
-                                  hintText: 'Chọn điểm thu gom',
-                                  prefixIcon: Icon(Icons.location_on_outlined),
-                                ),
-                                items: _collectionPoints.map((point) {
-                                  return DropdownMenuItem<String>(
-                                    value: point['id'].toString(),
-                                    child: Text(point['name']),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedCollectionPoint = value;
-                                  });
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Vui lòng chọn điểm thu gom';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              if (_selectedCollectionPoint != null)
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.grey[300]!),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.info_outline, color: Colors.grey),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _getCollectionPointAddress() ?? 'Không có địa chỉ',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ]),
+                            _buildCollectionPointsSection(),
                             
                             const SizedBox(height: 24),
                             _buildSectionTitle('Ghi chú (tùy chọn)'),
@@ -429,6 +406,204 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildCollectionPointsSection() {
+    if (_isLoadingCollectionPoints) {
+      return _buildCard([
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Đang tải danh sách điểm thu gom...'),
+              ],
+            ),
+          ),
+        ),
+      ]);
+    } else if (_loadingError.isNotEmpty) {
+      return _buildCard([
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(_loadingError),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchCollectionPoints,
+                child: const Text('Thử lại'),
+              ),
+            ],
+          ),
+        ),
+      ]);
+    } else if (_collectionPoints.isEmpty) {
+      return _buildCard([
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: Text('Không có điểm thu gom nào'),
+          ),
+        ),
+      ]);
+    } else {
+      return _buildCard([
+        DropdownButtonFormField<String>(
+          value: _selectedCollectionPoint,
+          decoration: const InputDecoration(
+            labelText: 'Điểm thu gom',
+            hintText: 'Chọn điểm thu gom',
+            prefixIcon: Icon(Icons.location_on_outlined),
+          ),
+          items: _collectionPoints.map((point) {
+            return DropdownMenuItem<String>(
+              value: point.collectionPointId.toString(),
+              child: Text(point.name),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedCollectionPoint = value;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Vui lòng chọn điểm thu gom';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        if (_selectedCollectionPoint != null)
+          _buildCollectionPointDetails(),
+      ]);
+    }
+  }
+
+  Widget _buildCollectionPointDetails() {
+    final selectedPoint = _collectionPoints.firstWhere(
+      (point) => point.collectionPointId.toString() == _selectedCollectionPoint,
+      orElse: () => _collectionPoints.first,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on, color: AppColors.primaryGreen),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      selectedPoint.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      selectedPoint.address,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(color: Colors.grey[300]),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.access_time, color: Colors.grey, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Giờ hoạt động: ${selectedPoint.operatingHours}',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.info_outline, color: Colors.grey, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Trạng thái: ${_formatStatus(selectedPoint.status)}',
+                style: TextStyle(
+                  color: _getStatusColor(selectedPoint.status),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.storage, color: Colors.grey, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Công suất: ${selectedPoint.capacity} kg',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Hoạt động';
+      case 'inactive':
+        return 'Ngừng hoạt động';
+      case 'maintenance':
+        return 'Bảo trì';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'inactive':
+        return Colors.red;
+      case 'maintenance':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -483,10 +658,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (_selectedCollectionPoint == null) return null;
     
     final point = _collectionPoints.firstWhere(
-      (point) => point['id'].toString() == _selectedCollectionPoint,
-      orElse: () => {'address': null},
+      (point) => point.collectionPointId.toString() == _selectedCollectionPoint,
+      orElse: () => _collectionPoints.first,
     );
     
-    return point['address'];
+    return point.address;
   }
 } 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../models/collection_point_model.dart';
+import '../../models/collection_point.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common/search_field.dart';
 import '../../widgets/common/loading_view.dart';
@@ -73,7 +73,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
       context,
       '/collection-point/waste-types',
       arguments: {
-        'collectionPointId': int.parse(collectionPoint.id),
+        'collectionPointId': collectionPoint.collectionPointId,
         'collectionPointName': collectionPoint.name,
       },
     );
@@ -214,8 +214,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   }
 
   Widget _buildCollectionPointItem(BuildContext context, CollectionPoint collectionPoint) {
+    // Use currentLoad with a fallback to 0 if it's null
+    final currentLoad = collectionPoint.currentLoad ?? 0;
     final capacityPercentage = 
-        (collectionPoint.current_load / collectionPoint.capacity * 100).toInt();
+        ((currentLoad / collectionPoint.capacity) * 100).toInt();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -325,7 +327,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            collectionPoint.operating_hours,
+                            collectionPoint.operatingHours,
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[700],
