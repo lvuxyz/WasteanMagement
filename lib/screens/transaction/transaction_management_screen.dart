@@ -602,6 +602,68 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                       ),
                     ],
                   ),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    onSelected: (String value) {
+                      if (value == 'view') {
+                        Navigator.pushNamed(
+                          context,
+                          '/transaction-details',
+                          arguments: transaction.transactionId,
+                        );
+                      } else if (value == 'edit') {
+                        Navigator.pushNamed(
+                          context,
+                          '/edit-transaction',
+                          arguments: transaction.transactionId,
+                        );
+                      } else if (value == 'delete' && _isAdmin) {
+                        _showDeleteConfirmation(innerContext, transaction.transactionId);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      final List<PopupMenuEntry<String>> menuItems = [
+                        const PopupMenuItem<String>(
+                          value: 'view',
+                          child: Row(
+                            children: [
+                              Icon(Icons.visibility, color: AppColors.primaryGreen),
+                              SizedBox(width: 8),
+                              Text('Xem chi tiết'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, color: AppColors.primaryGreen),
+                              SizedBox(width: 8),
+                              Text('Chỉnh sửa'),
+                            ],
+                          ),
+                        ),
+                      ];
+                      
+                      // Only add delete option for admin
+                      if (_isAdmin) {
+                        menuItems.add(
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Xóa giao dịch'),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      return menuItems;
+                    },
+                  ),
                 ),
                 if (_isAdmin)
                   Padding(

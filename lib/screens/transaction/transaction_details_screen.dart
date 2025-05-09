@@ -6,6 +6,9 @@ import '../../blocs/transaction/transaction_bloc.dart';
 // import '../../blocs/transaction/transaction_event.dart';
 // import '../../blocs/transaction/transaction_state.dart';
 import '../../models/transaction.dart';
+import '../../repositories/transaction_repository.dart';
+import '../../services/auth_service.dart';
+import '../../core/api/api_constants.dart';
 
 class TransactionDetailsScreen extends StatefulWidget {
   final int transactionId;
@@ -23,25 +26,132 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   Transaction? _transaction;
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isAdmin = false;
+  bool _isUpdatingStatus = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
+    _checkIsAdmin();
     _loadTransactionDetails();
   }
 
-  void _loadTransactionDetails() {
-    // This is a placeholder for actual API implementation
-    // In a real app, you would make an API call to fetch transaction details
-    // For now, let's just use the transactions already in the bloc state
-    final transactions = context.read<TransactionBloc>().state.transactions;
+  Future<void> _checkIsAdmin() async {
+    final isAdmin = await _authService.isAdmin();
     setState(() {
-      _transaction = transactions.firstWhere(
-        (t) => t.transactionId == widget.transactionId,
-        orElse: () => throw Exception('Transaction not found'),
-      );
-      _isLoading = false;
+      _isAdmin = isAdmin;
     });
+  }
+
+  Future<void> _loadTransactionDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // First try to load transaction from bloc state
+      final transactions = context.read<TransactionBloc>().state.transactions;
+      if (transactions.isNotEmpty) {
+        try {
+          _transaction = transactions.firstWhere(
+            (t) => t.transactionId == widget.transactionId,
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        } catch (e) {
+          // Transaction not found in bloc state, will fetch from API instead
+          print('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+        }
+      }
+
+      // If not found in bloc state, fetch directly
+      final repository = Provider.of<TransactionRepository>(context, listen: false);
+      final url = '${ApiConstants.transactions}/${widget.transactionId}';
+      print('Fetching transaction details from API: $url');
+      
+      final response = await repository.apiClient.get(url);
+      
+      if (response.statusCode >= 200 && response.statusCode < 300 && 
+          response.data != null && response.data['data'] != null) {
+        final transactionData = response.data['data'];
+        _transaction = Transaction.fromJson(transactionData);
+        setState(() {
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Could not find transaction details');
+      }
+    } catch (e) {
+      print('Error loading transaction details: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _updateTransactionStatus(String status) async {
+    if (!_isAdmin) return;
+    
+    setState(() {
+      _isUpdatingStatus = true;
+    });
+    
+    try {
+      final repository = Provider.of<TransactionRepository>(context, listen: false);
+      final result = await repository.updateTransactionStatus(
+        transactionId: widget.transactionId,
+        status: status,
+      );
+      
+      if (result['success']) {
+        // Update local transaction status
+        setState(() {
+          if (_transaction != null) {
+            _transaction = Transaction(
+              transactionId: _transaction!.transactionId,
+              userId: _transaction!.userId,
+              collectionPointId: _transaction!.collectionPointId,
+              wasteTypeId: _transaction!.wasteTypeId,
+              quantity: _transaction!.quantity,
+              unit: _transaction!.unit,
+              transactionDate: _transaction!.transactionDate,
+              status: status,
+              proofImageUrl: _transaction!.proofImageUrl,
+              userName: _transaction!.userName,
+              username: _transaction!.username,
+              collectionPointName: _transaction!.collectionPointName,
+              wasteTypeName: _transaction!.wasteTypeName,
+            );
+          }
+          _isUpdatingStatus = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Trạng thái giao dịch đã được cập nhật thành: ${_getStatusText(status)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception(result['message']);
+      }
+    } catch (e) {
+      setState(() {
+        _isUpdatingStatus = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -132,9 +242,14 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
             _buildInfoRow('Mã điểm thu gom', '#${_transaction!.collectionPointId}'),
             _buildInfoRow('Tên điểm thu gom', _transaction!.collectionPointName),
           ]),
-          const SizedBox(height: 24),
-          if (_transaction!.proofImageUrl != null)
+          if (_transaction!.proofImageUrl != null) ...[
+            const SizedBox(height: 24),
             _buildImageSection('HÌNH ẢNH MINH CHỨNG', _transaction!.proofImageUrl!),
+          ],
+          if (_isAdmin) ...[
+            const SizedBox(height: 24),
+            _buildAdminStatusControls(),
+          ],
           const SizedBox(height: 32),
         ],
       ),
@@ -317,6 +432,90 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAdminStatusControls() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'QUẢN LÝ TRẠNG THÁI (ADMIN)',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cập nhật trạng thái giao dịch',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[800],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _isUpdatingStatus 
+                ? const Center(child: CircularProgressIndicator())
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStatusButton('pending', 'Chờ xử lý'),
+                      _buildStatusButton('verified', 'Xác nhận'),
+                      _buildStatusButton('completed', 'Hoàn thành'),
+                      _buildStatusButton('rejected', 'Hủy bỏ'),
+                    ],
+                  ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusButton(String status, String label) {
+    final bool isCurrentStatus = _transaction?.status == status;
+    final Color statusColor = _getStatusColor(status);
+    
+    return ElevatedButton(
+      onPressed: isCurrentStatus ? null : () => _updateTransactionStatus(status),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isCurrentStatus ? statusColor : statusColor.withOpacity(0.1),
+        foregroundColor: isCurrentStatus ? Colors.white : statusColor,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        disabledBackgroundColor: statusColor,
+        disabledForegroundColor: Colors.white,
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
