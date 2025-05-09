@@ -223,14 +223,15 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
     
     return BlocProvider<TransactionBloc>(
-      create: (context) => TransactionBloc(transactionRepository: transactionRepository),
+      create: (context) {
+        // Create a new TransactionBloc
+        final bloc = TransactionBloc(transactionRepository: transactionRepository);
+        // Immediately load transactions
+        bloc.add(RefreshTransactions());
+        return bloc;
+      },
       child: Builder(
         builder: (context) {
-          // Gọi load transactions tự động khi BlocProvider được tạo
-          Future.microtask(() => 
-            context.read<TransactionBloc>().add(RefreshTransactions())
-          );
-          
           return Scaffold(
             appBar: AppBar(
               title: const Text('Quản lý giao dịch'),

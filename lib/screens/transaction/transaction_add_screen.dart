@@ -12,7 +12,6 @@ import '../../blocs/transaction/transaction_event.dart';
 import '../../blocs/transaction/transaction_state.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../repositories/collection_point_repository.dart';
-import '../../repositories/waste_type_repository.dart';
 import '../../services/upload_service.dart';
 import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';

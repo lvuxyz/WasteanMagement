@@ -156,17 +156,20 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chi tiết giao dịch'),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
+    return BlocProvider.value(
+      value: BlocProvider.of<TransactionBloc>(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Chi tiết giao dịch'),
+          backgroundColor: AppColors.primaryGreen,
+          foregroundColor: Colors.white,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? _buildErrorState()
+                : _buildTransactionDetails(),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? _buildErrorState()
-              : _buildTransactionDetails(),
     );
   }
 

@@ -8,6 +8,7 @@ import '../../models/transaction.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
@@ -162,24 +163,27 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chỉnh sửa giao dịch'),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
-        actions: [
-          if (!_isLoading && !_isSaving)
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _saveTransaction,
-            ),
-        ],
+    return BlocProvider.value(
+      value: BlocProvider.of<TransactionBloc>(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Chỉnh sửa giao dịch'),
+          backgroundColor: AppColors.primaryGreen,
+          foregroundColor: Colors.white,
+          actions: [
+            if (!_isLoading && !_isSaving)
+              IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: _saveTransaction,
+              ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? _buildErrorState()
+                : _buildEditForm(),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? _buildErrorState()
-              : _buildEditForm(),
     );
   }
 

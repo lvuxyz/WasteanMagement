@@ -54,12 +54,12 @@ class AppRoutes {
       case transactionDetails:
         final transactionId = settings.arguments as int;
         return MaterialPageRoute(
-          builder: (_) => TransactionDetailsScreen(transactionId: transactionId),
+          builder: (context) => TransactionDetailsScreen(transactionId: transactionId),
         );
       case editTransaction:
         final transactionId = settings.arguments as int;
         return MaterialPageRoute(
-          builder: (_) => TransactionEditScreen(transactionId: transactionId),
+          builder: (context) => TransactionEditScreen(transactionId: transactionId),
         );
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
