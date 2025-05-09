@@ -80,7 +80,7 @@ class CollectionPointCard extends StatelessWidget {
                         _buildStatusIndicator(collectionPoint.status),
                         const SizedBox(width: 12),
                         _buildCapacityIndicator(
-                          collectionPoint.current_load / collectionPoint.capacity
+                          (collectionPoint.currentLoad ?? 0) / collectionPoint.capacity
                         ),
                       ],
                     ),
@@ -92,7 +92,7 @@ class CollectionPointCard extends StatelessWidget {
                         const Icon(Icons.access_time, size: 16, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
-                          collectionPoint.operating_hours,
+                          collectionPoint.operatingHours,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[700],

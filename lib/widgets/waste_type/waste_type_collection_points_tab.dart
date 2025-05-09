@@ -28,7 +28,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final collectionPoint = collectionPoints[index];
         final capacityPercentage = 
-          (collectionPoint.current_load / collectionPoint.capacity * 100).toInt();
+          ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt();
 
         return _buildCollectionPointCard(collectionPoint, capacityPercentage, context);
       },
@@ -225,7 +225,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                 
                 _buildInfoRow(
                   icon: Icons.access_time_outlined,
-                  text: point.operating_hours,
+                  text: point.operatingHours,
                   color: Colors.orange,
                 ),
                 
@@ -260,7 +260,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
-                        value: point.current_load / point.capacity,
+                        value: (point.currentLoad ?? 0) / point.capacity,
                         backgroundColor: Colors.grey[200],
                         minHeight: 8,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -270,7 +270,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${point.current_load}/${point.capacity} kg hiện đang lưu trữ',
+                      '${point.currentLoad ?? 0}/${point.capacity} kg hiện đang lưu trữ',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[600],

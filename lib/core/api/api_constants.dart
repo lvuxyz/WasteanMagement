@@ -1,14 +1,20 @@
 class ApiConstants {
   // Base URL cho toàn bộ hệ thống
-  // Đổi thành true để sử dụng localhost cho emulator
+// Đổi thành true để sử dụng localhost cho emulator
   static const bool useEmulator = false;
-  
+  // // Đổi thành true để sử dụng localhost
+  // static const bool useLocalhost = true;
+
   // URL cho các môi trường khác nhau
   static const String _emulatorBaseUrl = 'http://10.0.2.2:5000/api/v1'; // Localhost trên emulator
   static const String _physicalDeviceBaseUrl = 'http://192.168.173.102:5000/api/v1'; // IP máy chủ trên mạng LAN
+  //static const String _localhostBaseUrl = 'http://localhost:5000/api/v1'; // Localhost trực tiếp
 
-  // Chọn URL dựa trên môi trường
   static String get baseUrl => useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
+  // Chọn URL dựa trên môi trường
+  // static String get baseUrl => useLocalhost
+  //     ? _localhostBaseUrl
+  //     : (useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl);
 
   // Các endpoint cụ thể
   static String get login => '$baseUrl/auth/login';
@@ -22,7 +28,7 @@ class ApiConstants {
 
   // Endpoint cho quản lý rác thải
   static String get wasteTypes => '$baseUrl/waste-types';
-  static String get collectionPoints => '$baseUrl/waste/collection-points';
+  static String get collectionPoints => '$baseUrl/collection-points';
   static String get transactions => '$baseUrl/transactions';
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
@@ -30,6 +36,9 @@ class ApiConstants {
   // Endpoint mới phát hiện trong quá trình rà soát
   // Endpoint liên quan đến giao dịch
   static String get myTransactions => '$baseUrl/transactions/my-transactions';
+  
+  // Endpoint for file uploads
+  static String get upload => '$baseUrl/upload';
   
   // Endpoint liên quan đến điểm thu gom và loại rác
   static String wasteTypeDetail(int id) => '$baseUrl/waste-types/$id';
