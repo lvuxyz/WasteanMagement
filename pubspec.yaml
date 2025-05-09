@@ -36,9 +36,12 @@ dependencies:
   rxdart: ^0.27.7
   email_validator: ^2.1.17
   http: ^1.1.2
+  http_parser: ^4.0.2
   flutter_secure_storage: ^9.0.0
   internet_connection_checker: ^0.0.1+4
   cupertino_icons: ^1.0.8
+  image_picker: ^1.0.7
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:

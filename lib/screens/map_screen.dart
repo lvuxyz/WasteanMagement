@@ -26,6 +26,14 @@ class _MapScreenState extends State<MapScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    
+    // MapBox initialization is handled later when the widget is built
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -79,38 +87,105 @@ class _MapScreenState extends State<MapScreen> {
                     SizedBox(
                       width: screenSize.width,
                       height: screenSize.height,
-                      child: MapWidget(
-                        key: const ValueKey('mapWidget'),
-                        styleUri: MapboxStyles.MAPBOX_STREETS,
-                        cameraOptions: CameraOptions(
-                          center: Point(
-                            coordinates: Position(106.6880, 10.7731), // TP.HCM
-                          ),
-                          zoom: 13.0,
-                        ),
-                        onMapCreated: (MapboxMap controller) {
-                          setState(() {
-                            _mapController = controller;
-                            _currentZoom = 13.0;
-                          });
-                          
-                          // Cấu hình nâng cao cho gesture
-                          controller.gestures.updateSettings(GesturesSettings(
-                            rotateEnabled: true,
-                            scrollEnabled: true,
-                            scrollMode: ScrollMode.HORIZONTAL_AND_VERTICAL,
-                            pinchToZoomEnabled: true,
-                            doubleTapToZoomInEnabled: true,
-                            doubleTouchToZoomOutEnabled: true,
-                            quickZoomEnabled: true,
-                            simultaneousRotateAndPinchToZoomEnabled: true,
-                            pitchEnabled: true,
-                            scrollDecelerationEnabled: true,
-                            increaseRotateThresholdWhenPinchingToZoom: true,
-                            increasePinchToZoomThresholdWhenRotating: true,
-                          ));
-                          
-                          context.read<MapBloc>().add(MapInitialized(controller));
+                      child: Builder(
+                        builder: (context) {
+                          try {
+                            return FutureBuilder<bool>(
+                              // Delay initialization slightly to allow resources to load
+                              future: Future.delayed(const Duration(milliseconds: 500), () => true),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                                
+                                return MapWidget(
+                                  key: const ValueKey('mapWidget'),
+                                  styleUri: MapboxStyles.MAPBOX_STREETS,
+                                  cameraOptions: CameraOptions(
+                                    center: Point(
+                                      coordinates: Position(106.6880, 10.7731), // TP.HCM
+                                    ),
+                                    zoom: 13.0,
+                                  ),
+                                  onMapCreated: (MapboxMap controller) {
+                                    setState(() {
+                                      _mapController = controller;
+                                      _currentZoom = 13.0;
+                                    });
+                                    
+                                    // Configure gesture settings after a small delay to ensure map is ready
+                                    Future.delayed(const Duration(milliseconds: 300), () {
+                                      try {
+                                        controller.gestures.updateSettings(GesturesSettings(
+                                          rotateEnabled: true,
+                                          scrollEnabled: true,
+                                          scrollMode: ScrollMode.HORIZONTAL_AND_VERTICAL,
+                                          pinchToZoomEnabled: true,
+                                          doubleTapToZoomInEnabled: true,
+                                          doubleTouchToZoomOutEnabled: true,
+                                          quickZoomEnabled: true,
+                                          simultaneousRotateAndPinchToZoomEnabled: true,
+                                          pitchEnabled: true,
+                                          scrollDecelerationEnabled: true,
+                                          increaseRotateThresholdWhenPinchingToZoom: true,
+                                          increasePinchToZoomThresholdWhenRotating: true,
+                                        ));
+                                      } catch (e) {
+                                        print('Error updating gesture settings: $e');
+                                      }
+                                      
+                                      context.read<MapBloc>().add(MapInitialized(controller));
+                                    });
+                                  },
+                                );
+                              }
+                            );
+                          } catch (e) {
+                            print('Error creating MapWidget: $e');
+                            // Fallback widget when MapBox fails to load
+                            return Container(
+                              color: Colors.grey[200],
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.map_outlined, 
+                                      color: AppColors.primaryGreen,
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Không thể tải bản đồ',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Vui lòng thử lại sau',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {});  // Force rebuild
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primaryGreen,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('Tải lại'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
