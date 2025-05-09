@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
         <meta-data android:name="com.mapbox.token"
-            android:value="YOUR_MAPBOX_TOKEN_HERE" />
+            android:value="@string/mapbox_access_token" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_API_KEY"/>
