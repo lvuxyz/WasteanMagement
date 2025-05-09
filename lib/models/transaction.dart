@@ -34,14 +34,26 @@ class Transaction {
       // Print the transaction data for debugging
       print('Parsing transaction: ${json['transaction_id']}');
       
+      // Handle quantity that can be int, double, or string
+      double parseQuantity() {
+        final quantity = json['quantity'];
+        if (quantity is int) {
+          return quantity.toDouble();
+        } else if (quantity is double) {
+          return quantity;
+        } else if (quantity is String) {
+          return double.parse(quantity);
+        } else {
+          return 0.0; // Default value
+        }
+      }
+      
       return Transaction(
         transactionId: json['transaction_id'],
         userId: json['user_id'],
         collectionPointId: json['collection_point_id'],
         wasteTypeId: json['waste_type_id'],
-        quantity: json['quantity'] is int 
-            ? json['quantity'].toDouble() 
-            : json['quantity'],
+        quantity: parseQuantity(),
         unit: json['unit'],
         transactionDate: DateTime.parse(json['transaction_date']),
         status: json['status'],
