@@ -33,7 +33,6 @@ class UploadService {
 
       // Get file extension
       final fileExtension = imageFile.path.split('.').last.toLowerCase();
-      final mimeType = _getMimeType(fileExtension);
 
       // Create multipart request
       final request = http.MultipartRequest(
@@ -50,10 +49,7 @@ class UploadService {
       request.files.add(await http.MultipartFile.fromPath(
         'file',
         imageFile.path,
-        contentType: MediaType(
-          _getMediaType(fileExtension),
-          fileExtension,
-        ),
+        contentType: MediaType.parse(_getMimeType(fileExtension)),
       ));
 
       // Send request
