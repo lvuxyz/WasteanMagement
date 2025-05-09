@@ -5,6 +5,9 @@ import '../../utils/app_colors.dart';
 import '../../blocs/transaction/transaction_bloc.dart';
 import '../../blocs/transaction/transaction_event.dart';
 import '../../models/transaction.dart';
+import '../../repositories/transaction_repository.dart';
+import '../../services/auth_service.dart';
+import '../../core/api/api_constants.dart';
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
@@ -26,11 +29,21 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   String _selectedStatus = 'pending';
+  final AuthService _authService = AuthService();
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
+    _checkIsAdmin();
     _loadTransactionDetails();
+  }
+
+  Future<void> _checkIsAdmin() async {
+    final isAdmin = await _authService.isAdmin();
+    setState(() {
+      _isAdmin = isAdmin;
+    });
   }
 
   @override
@@ -39,50 +52,85 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     super.dispose();
   }
 
-  void _loadTransactionDetails() {
-    // In a real app, you would make an API call to fetch transaction details
-    // For now, let's just use the transactions already in the bloc state
-    final transactions = context.read<TransactionBloc>().state.transactions;
+  Future<void> _loadTransactionDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
-      final transaction = transactions.firstWhere(
-        (t) => t.transactionId == widget.transactionId,
-        orElse: () => throw Exception('Transaction not found'),
-      );
+      // First try to load transaction from bloc state
+      final transactions = context.read<TransactionBloc>().state.transactions;
+      if (transactions.isNotEmpty) {
+        try {
+          _transaction = transactions.firstWhere(
+            (t) => t.transactionId == widget.transactionId,
+          );
+          _setupFormFields();
+          return;
+        } catch (e) {
+          // Transaction not found in bloc state, will fetch from API instead
+          print('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+        }
+      }
+
+      // If not found in bloc state, fetch directly
+      final repository = Provider.of<TransactionRepository>(context, listen: false);
+      final url = '${ApiConstants.transactions}/${widget.transactionId}';
+      print('Fetching transaction details from API: $url');
       
-      setState(() {
-        _transaction = transaction;
-        _quantityController.text = transaction.quantity.toString();
-        _selectedStatus = transaction.status;
-        _isLoading = false;
-      });
+      final response = await repository.apiClient.get(url);
+      
+      if (response.statusCode >= 200 && response.statusCode < 300 && 
+          response.data != null && response.data['data'] != null) {
+        final transactionData = response.data['data'];
+        _transaction = Transaction.fromJson(transactionData);
+        _setupFormFields();
+      } else {
+        throw Exception('Could not find transaction details');
+      }
     } catch (e) {
+      print('Error loading transaction details: $e');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Could not find transaction: ${e.toString()}';
+        _errorMessage = e.toString();
       });
     }
   }
 
-  void _saveTransaction() {
+  void _setupFormFields() {
+    setState(() {
+      _quantityController.text = _transaction!.quantity.toString();
+      _selectedStatus = _transaction!.status;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveTransaction() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isSaving = true;
     });
 
-    // Get the updated quantity
-    final double quantity = double.parse(_quantityController.text);
-    
-    // Use the UpdateTransactionStatus event to update through the bloc
-    context.read<TransactionBloc>().add(
-      UpdateTransactionStatus(
-        transactionId: widget.transactionId,
-        status: _selectedStatus,
-      ),
-    );
-
-    // Add a delay to simulate API call completion
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      // Get the updated quantity
+      final double quantity = double.parse(_quantityController.text);
+      
+      // Using the repository to update transaction
+      final repository = Provider.of<TransactionRepository>(context, listen: false);
+      
+      // First update the status if needed and user is admin
+      if (_isAdmin && _selectedStatus != _transaction!.status) {
+        await repository.updateTransactionStatus(
+          transactionId: widget.transactionId,
+          status: _selectedStatus,
+        );
+      }
+      
+      // Then update other transaction details (would need a proper updateTransaction method)
+      // This would be implemented based on your API
+      
       setState(() {
         _isSaving = false;
       });
@@ -94,8 +142,22 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         ),
       );
 
+      // Refresh the transactions list
+      context.read<TransactionBloc>().add(RefreshTransactions());
+      
       Navigator.pop(context, true);
-    });
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -253,16 +315,19 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Trạng thái giao dịch',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+            if (_isAdmin) ...[
+              const SizedBox(height: 24),
+              Text(
+                'Trạng thái giao dịch (Chỉ dành cho Admin)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _buildStatusSelector(),
+              const SizedBox(height: 8),
+              _buildStatusSelector(),
+            ],
           ],
         ),
       ),
