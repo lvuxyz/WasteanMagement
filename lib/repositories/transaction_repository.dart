@@ -140,4 +140,54 @@ class TransactionRepository {
       throw Exception('Failed to create transaction: $e');
     }
   }
+  
+  Future<Map<String, dynamic>> updateTransactionStatus({
+    required int transactionId,
+    required String status,
+  }) async {
+    try {
+      final String url = '${ApiConstants.transactions}/$transactionId/status';
+      print('Updating transaction status: $url with status: $status');
+      
+      final Map<String, dynamic> data = {
+        'status': status,
+      };
+      
+      final response = await apiClient.patch(url, body: data);
+      
+      // Convert response to expected format
+      final bool isSuccess = response.isSuccess;
+      final String message = response.message;
+      
+      return {
+        'success': isSuccess,
+        'message': message,
+        'data': response.data['data']
+      };
+    } catch (e) {
+      print('Exception in updateTransactionStatus: $e');
+      throw Exception('Failed to update transaction status: $e');
+    }
+  }
+  
+  Future<Map<String, dynamic>> deleteTransaction(int transactionId) async {
+    try {
+      final String url = '${ApiConstants.transactions}/$transactionId';
+      print('Deleting transaction: $url');
+      
+      final response = await apiClient.delete(url);
+      
+      // Convert response to expected format
+      final bool isSuccess = response.isSuccess;
+      final String message = response.message;
+      
+      return {
+        'success': isSuccess,
+        'message': message,
+      };
+    } catch (e) {
+      print('Exception in deleteTransaction: $e');
+      throw Exception('Failed to delete transaction: $e');
+    }
+  }
 }

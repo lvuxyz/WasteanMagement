@@ -290,6 +290,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
           children: [
             _buildFilterTab('all', 'Tất cả'),
             _buildFilterTab('pending', 'Chờ xử lý'),
+            _buildFilterTab('verified', 'Đã xác nhận'),
             _buildFilterTab('processing', 'Đang xử lý'),
             _buildFilterTab('completed', 'Hoàn thành'),
             _buildFilterTab('rejected', 'Đã hủy'),
@@ -490,161 +491,193 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     
     return Builder(
       builder: (innerContext) {
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _getWasteTypeIcon(transaction.wasteTypeName),
-              color: AppColors.primaryGreen,
-              size: 20,
-            ),
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(transaction.status).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getStatusText(transaction.status),
-                  style: TextStyle(
-                    color: _getStatusColor(transaction.status),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Người dùng: ${transaction.userName ?? transaction.username ?? "Không xác định"}',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              Text(
-                'Điểm thu gom: ${transaction.collectionPointName}',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${transaction.transactionDate.day}/${transaction.transactionDate.month}/${transaction.transactionDate.year}',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 12,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/transaction-details',
+                arguments: transaction.transactionId,
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _getWasteTypeIcon(transaction.wasteTypeName),
+                      color: AppColors.primaryGreen,
+                      size: 20,
                     ),
                   ),
-                  if (transaction.status == 'completed')
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.eco_outlined,
-                          color: AppColors.primaryGreen,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          '+10 điểm', // Points will be implemented based on API data
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${transaction.quantity} ${transaction.unit} ${transaction.wasteTypeName}',
                           style: const TextStyle(
-                            color: AppColors.primaryGreen,
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(transaction.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _getStatusText(transaction.status),
+                          style: TextStyle(
+                            color: _getStatusColor(transaction.status),
                             fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Người dùng: ${transaction.userName ?? transaction.username ?? "Không xác định"}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Điểm thu gom: ${transaction.collectionPointName}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${transaction.transactionDate.day}/${transaction.transactionDate.month}/${transaction.transactionDate.year}',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
+                          if (transaction.status == 'completed')
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.eco_outlined,
+                                  color: AppColors.primaryGreen,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '+10 điểm', // Points will be implemented based on API data
+                                  style: const TextStyle(
+                                    color: AppColors.primaryGreen,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (_isAdmin)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (isUpdating)
+                          const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        else 
+                          Row(
+                            children: [
+                              _buildStatusButton(innerContext, transaction, 'pending', 'Chờ xử lý'),
+                              const SizedBox(width: 8),
+                              _buildStatusButton(innerContext, transaction, 'verified', 'Xác nhận'),
+                              const SizedBox(width: 8),
+                              _buildStatusButton(innerContext, transaction, 'completed', 'Hoàn thành'),
+                              const SizedBox(width: 8),
+                              _buildStatusButton(innerContext, transaction, 'rejected', 'Hủy bỏ'),
+                            ],
+                          ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showDeleteConfirmation(innerContext, transaction.transactionId),
+                          icon: const Icon(Icons.delete_outline, size: 16),
+                          label: const Text('Xóa'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade50,
+                            foregroundColor: Colors.red,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                ],
-              ),
-            ],
+                  ),
+              ],
+            ),
           ),
-          trailing: isUpdating 
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  onSelected: (String value) {
-                    if (value == 'view') {
-                      Navigator.pushNamed(
-                        context,
-                        '/transaction-details',
-                        arguments: transaction.transactionId,
-                      );
-                    } else if (value == 'edit') {
-                      Navigator.pushNamed(
-                        context,
-                        '/edit-transaction',
-                        arguments: transaction.transactionId,
-                      );
-                    } else if (value == 'delete') {
-                      _showDeleteConfirmation(innerContext, transaction.transactionId);
-                    } else if (value.startsWith('status_')) {
-                      final status = value.substring(7);
-                      _updateTransactionStatus(transaction.transactionId, status);
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'view',
-                      child: Text('Xem chi tiết'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Text('Chỉnh sửa'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'status_pending',
-                      child: Text('Đặt trạng thái: Chờ xử lý'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'status_processing',
-                      child: Text('Đặt trạng thái: Đang xử lý'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'status_completed',
-                      child: Text('Đặt trạng thái: Hoàn thành'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'status_rejected',
-                      child: Text('Đặt trạng thái: Đã hủy'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Text('Xóa giao dịch'),
-                    ),
-                  ],
-                ),
         );
       }
+    );
+  }
+
+  Widget _buildStatusButton(BuildContext context, Transaction transaction, String status, String label) {
+    final bool isCurrentStatus = transaction.status == status;
+    final Color statusColor = _getStatusColor(status);
+    
+    return ElevatedButton(
+      onPressed: isCurrentStatus 
+          ? null 
+          : () => _updateTransactionStatus(transaction.transactionId, status),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isCurrentStatus ? statusColor : statusColor.withOpacity(0.1),
+        foregroundColor: isCurrentStatus ? Colors.white : statusColor,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        disabledBackgroundColor: statusColor,
+        disabledForegroundColor: Colors.white,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -668,8 +701,10 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     switch (status) {
       case 'pending':
         return Colors.orange;
-      case 'processing':
+      case 'verified':
         return Colors.blue;
+      case 'processing':
+        return Colors.blue.shade700;
       case 'completed':
         return Colors.green;
       case 'rejected':
@@ -683,6 +718,8 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     switch (status) {
       case 'pending':
         return 'Chờ xử lý';
+      case 'verified':
+        return 'Đã xác nhận';
       case 'processing':
         return 'Đang xử lý';
       case 'completed':
