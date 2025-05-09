@@ -194,31 +194,17 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     try {
       emit(state.copyWith(status: TransactionStatus.loading));
 
-      // This would be the actual API call in a real app
-      // await transactionRepository.updateTransactionStatus(
-      //   transactionId: event.transactionId,
-      //   status: event.status,
-      // );
+      // Call the actual API endpoint
+      final result = await transactionRepository.updateTransactionStatus(
+        transactionId: event.transactionId,
+        status: event.status,
+      );
 
-      // For now, just simulate the API call
-      await Future.delayed(const Duration(seconds: 1));
+      if (!result['success']) {
+        throw Exception(result['message']);
+      }
 
-      // Update the transaction in the current state
-      final updatedTransactions = state.transactions.map((transaction) {
-        if (transaction.transactionId == event.transactionId) {
-          // In a real app, you'd create a copy of the transaction with the updated status
-          // For now, we'll just simulate a successful update
-          return transaction; // This would be replaced with an updated transaction
-        }
-        return transaction;
-      }).toList();
-
-      emit(state.copyWith(
-        status: TransactionStatus.success,
-        transactions: updatedTransactions,
-      ));
-
-      // After updating, refresh the list to get the latest data
+      // After updating successfully, refresh the list to get the latest data
       add(RefreshTransactions());
     } catch (e) {
       print('Error updating transaction status: $e');
@@ -236,23 +222,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     try {
       emit(state.copyWith(status: TransactionStatus.loading));
 
-      // This would be the actual API call in a real app
-      // await transactionRepository.deleteTransaction(event.transactionId);
+      // Call the actual API endpoint
+      final result = await transactionRepository.deleteTransaction(event.transactionId);
 
-      // For now, just simulate the API call
-      await Future.delayed(const Duration(seconds: 1));
+      if (!result['success']) {
+        throw Exception(result['message']);
+      }
 
-      // Remove the transaction from the current state
-      final updatedTransactions = state.transactions
-          .where((transaction) => transaction.transactionId != event.transactionId)
-          .toList();
-
-      emit(state.copyWith(
-        status: TransactionStatus.success,
-        transactions: updatedTransactions,
-      ));
-
-      // After deleting, refresh the list to get the latest data
+      // After deleting successfully, refresh the list to get the latest data
       add(RefreshTransactions());
     } catch (e) {
       print('Error deleting transaction: $e');

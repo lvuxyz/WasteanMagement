@@ -279,7 +279,9 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         children: [
           _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
           const Divider(height: 1),
-          _buildStatusOption('processing', 'Đang xử lý', Colors.blue),
+          _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
+          const Divider(height: 1),
+          _buildStatusOption('processing', 'Đang xử lý', Colors.blue.shade700),
           const Divider(height: 1),
           _buildStatusOption('completed', 'Hoàn thành', Colors.green),
           const Divider(height: 1),

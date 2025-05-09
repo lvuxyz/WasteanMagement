@@ -344,8 +344,10 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     switch (status) {
       case 'pending':
         return Colors.orange;
-      case 'processing':
+      case 'verified':
         return Colors.blue;
+      case 'processing':
+        return Colors.blue.shade700;
       case 'completed':
         return Colors.green;
       case 'rejected':
@@ -359,6 +361,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     switch (status) {
       case 'pending':
         return 'Chờ xử lý';
+      case 'verified':
+        return 'Đã xác nhận';
       case 'processing':
         return 'Đang xử lý';
       case 'completed':
