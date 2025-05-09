@@ -15,25 +15,28 @@ import '../../repositories/collection_point_repository.dart';
 import '../../repositories/waste_type_repository.dart';
 import '../../services/upload_service.dart';
 import '../../models/collection_point.dart';
+import '../../models/waste_type_model.dart';
 import '../../core/api/api_constants.dart';
 import '../../services/auth_service.dart';
 import 'package:intl/intl.dart';
 
-class WasteType {
+// This class will be used only for the transaction screen
+// It's simpler than the full WasteType model
+class TransactionWasteType {
   final int id;
   final String name;
   final String unit;
   final double? unitPrice;
 
-  WasteType({
+  TransactionWasteType({
     required this.id,
     required this.name,
     required this.unit,
     this.unitPrice,
   });
 
-  factory WasteType.fromJson(Map<String, dynamic> json) {
-    return WasteType(
+  factory TransactionWasteType.fromJson(Map<String, dynamic> json) {
+    return TransactionWasteType(
       id: json['waste_type_id'],
       name: json['name'],
       unit: json['unit'] ?? 'kg',
@@ -42,6 +45,16 @@ class WasteType {
             ? json['unit_price'] 
             : double.tryParse(json['unit_price'].toString())) 
         : null,
+    );
+  }
+  
+  // Create from WasteType model
+  factory TransactionWasteType.fromWasteType(WasteType wasteType) {
+    return TransactionWasteType(
+      id: wasteType.id,
+      name: wasteType.name,
+      unit: wasteType.unit,
+      unitPrice: wasteType.unitPrice,
     );
   }
 }
@@ -63,7 +76,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   File? _proofImage;
   String? _proofImageUrl;
   
-  List<WasteType> _wasteTypes = [];
+  List<TransactionWasteType> _wasteTypes = [];
   bool _isLoadingWasteTypes = true;
   String _wasteTypesError = '';
   
@@ -92,69 +105,73 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     });
 
     try {
-      // Temporary fallback data in case API fails
-      List<WasteType> fallbackData = [
-        WasteType(id: 1, name: 'Chai nhựa', unit: 'kg', unitPrice: 2000),
-        WasteType(id: 2, name: 'Giấy vụn', unit: 'kg', unitPrice: 1500),
-        WasteType(id: 3, name: 'Pin điện', unit: 'kg', unitPrice: 3000),
-        WasteType(id: 4, name: 'Lon kim loại', unit: 'kg', unitPrice: 4000),
-        WasteType(id: 5, name: 'Thủy tinh', unit: 'kg', unitPrice: 1000),
-        WasteType(id: 8, name: 'Rác Thải Điện Tử', unit: 'kg', unitPrice: 5000),
-      ];
-
-      try {
-        final String? token = await _authService.getToken();
+      final url = ApiConstants.wasteTypes;
+      print('Đang gọi API trực tiếp: $url');
+      
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      print('Phản hồi từ API: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Dữ liệu phản hồi: $data');
         
-        if (token == null || token.isEmpty) {
-          print('No authentication token available. Using fallback data.');
+        List<dynamic> wasteTypesJson = [];
+        
+        // Support multiple API response formats
+        if (data['status'] == 'success' && data['data'] != null) {
+          if (data['data'] is List) {
+            wasteTypesJson = data['data'];
+          } else if (data['data'] is Map && data['data']['wasteTypes'] != null) {
+            wasteTypesJson = data['data']['wasteTypes'];
+          }
+        }
+        
+        if (wasteTypesJson.isNotEmpty) {
+          final wasteTypes = wasteTypesJson.map((json) => TransactionWasteType(
+            id: json['waste_type_id'],
+            name: json['name'],
+            unit: json['unit'] ?? 'kg',
+            unitPrice: json['unit_price'] != null 
+              ? (double.tryParse(json['unit_price'].toString()) ?? 0.0) 
+              : 0.0,
+          )).toList();
+          
           setState(() {
-            _wasteTypes = fallbackData;
+            _wasteTypes = wasteTypes;
             _isLoadingWasteTypes = false;
           });
           return;
         }
-
-        final response = await http.get(
-          Uri.parse(ApiConstants.wasteTypes),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['success'] == true && data['data'] != null) {
-            final List<dynamic> wasteTypesJson = data['data'];
-            final wasteTypes = wasteTypesJson.map((json) => WasteType.fromJson(json)).toList();
-            
-            setState(() {
-              _wasteTypes = wasteTypes;
-              _isLoadingWasteTypes = false;
-            });
-          } else {
-            throw Exception(data['message'] ?? 'Không thể tải danh sách loại rác');
-          }
-        } else if (response.statusCode == 401) {
-          print('Auth token expired or invalid. Using fallback data.');
-          setState(() {
-            _wasteTypes = fallbackData;
-            _isLoadingWasteTypes = false;
-          });
-        } else {
-          throw Exception('Lỗi API: ${response.statusCode}');
-        }
-      } catch (apiError) {
-        print('API error: $apiError. Using fallback data.');
-        setState(() {
-          _wasteTypes = fallbackData;
-          _isLoadingWasteTypes = false;
-        });
       }
+      
+      // If API call fails or data format is unexpected, use fallback data
+      setState(() {
+        _wasteTypesError = 'Không thể tải danh sách loại rác từ API';
+        _isLoadingWasteTypes = false;
+        
+        // Fallback data for testing/development
+        _wasteTypes = [
+          TransactionWasteType(id: 1, name: 'Nhựa', unit: 'kg', unitPrice: 5000),
+          TransactionWasteType(id: 2, name: 'Giấy', unit: 'kg', unitPrice: 3000),
+          TransactionWasteType(id: 3, name: 'Kim loại', unit: 'kg', unitPrice: 15000),
+        ];
+      });
     } catch (e) {
+      print('Lỗi khi tải danh sách loại rác: $e');
       setState(() {
         _wasteTypesError = 'Không thể tải danh sách loại rác: $e';
         _isLoadingWasteTypes = false;
+        
+        // Fallback data for testing/development
+        _wasteTypes = [
+          TransactionWasteType(id: 1, name: 'Nhựa', unit: 'kg', unitPrice: 5000),
+          TransactionWasteType(id: 2, name: 'Giấy', unit: 'kg', unitPrice: 3000),
+          TransactionWasteType(id: 3, name: 'Kim loại', unit: 'kg', unitPrice: 15000),
+        ];
       });
     }
   }
@@ -185,7 +202,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (_selectedWasteTypeId != null) {
       final wasteType = _wasteTypes.firstWhere(
         (type) => type.id.toString() == _selectedWasteTypeId,
-        orElse: () => WasteType(id: 0, name: '', unit: 'kg', unitPrice: 0),
+        orElse: () => TransactionWasteType(id: 0, name: '', unit: 'kg', unitPrice: 0),
       );
       
       setState(() {
