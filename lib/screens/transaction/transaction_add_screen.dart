@@ -12,6 +12,7 @@ import '../../repositories/transaction_repository.dart';
 import '../../repositories/collection_point_repository.dart';
 import '../../services/upload_service.dart';
 import '../../models/collection_point.dart';
+import 'package:intl/intl.dart';
 
 class TransactionAddScreen extends StatefulWidget {
   const TransactionAddScreen({Key? key}) : super(key: key);
@@ -30,13 +31,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   File? _proofImage;
   String? _proofImageUrl;
   
-  final List<Map<String, dynamic>> _wasteTypes = [
-    {'id': 1, 'name': 'Chai nhựa', 'unit': 'kg', 'unitPrice': 2000},
-    {'id': 2, 'name': 'Giấy vụn', 'unit': 'kg', 'unitPrice': 1500},
-    {'id': 3, 'name': 'Pin điện', 'unit': 'kg', 'unitPrice': 3000},
-    {'id': 4, 'name': 'Lon kim loại', 'unit': 'kg', 'unitPrice': 4000},
-    {'id': 5, 'name': 'Thủy tinh', 'unit': 'kg', 'unitPrice': 1000},
-  ];
+  List<Map<String, dynamic>> _wasteTypes = [];
+  bool _isLoadingWasteTypes = true;
   
   List<CollectionPoint> _collectionPoints = [];
   bool _isLoadingCollectionPoints = true;
@@ -45,11 +41,39 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   String _unit = 'kg';
   double _unitPrice = 0;
   bool _isUploadingImage = false;
+  DateTime _transactionDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _fetchCollectionPoints();
+    _fetchWasteTypes();
+  }
+
+  Future<void> _fetchWasteTypes() async {
+    setState(() {
+      _isLoadingWasteTypes = true;
+    });
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      setState(() {
+        _wasteTypes = [
+          {'id': 1, 'name': 'Chai nhựa', 'unit': 'kg', 'unitPrice': 2000},
+          {'id': 2, 'name': 'Giấy vụn', 'unit': 'kg', 'unitPrice': 1500},
+          {'id': 3, 'name': 'Pin điện', 'unit': 'kg', 'unitPrice': 3000},
+          {'id': 4, 'name': 'Lon kim loại', 'unit': 'kg', 'unitPrice': 4000},
+          {'id': 5, 'name': 'Thủy tinh', 'unit': 'kg', 'unitPrice': 1000},
+          {'id': 8, 'name': 'Rác Thải Điện Tử', 'unit': 'kg', 'unitPrice': 5000},
+        ];
+        _isLoadingWasteTypes = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingWasteTypes = false;
+      });
+    }
   }
 
   Future<void> _fetchCollectionPoints() async {
@@ -102,7 +126,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       });
 
       try {
-        // Upload the image to your server
         final uploadService = UploadService();
         final uploadResult = await uploadService.uploadImage(_proofImage!);
         
@@ -123,6 +146,30 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           _isUploadingImage = false;
         });
       }
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _transactionDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primaryGreen,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _transactionDate) {
+      setState(() {
+        _transactionDate = picked;
+      });
     }
   }
 
@@ -148,12 +195,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       }
 
       try {
-        // Chuyển đổi chuỗi sang số
         final quantity = double.parse(_quantityController.text);
         final collectionPointId = int.parse(_selectedCollectionPoint!);
         final wasteTypeId = int.parse(_selectedWasteType!);
         
-        // Gửi sự kiện tạo giao dịch
         context.read<TransactionBloc>().add(
           CreateTransaction(
             collectionPointId: collectionPointId,
@@ -164,7 +209,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           ),
         );
         
-        // Hiển thị thông báo thành công
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đang tạo giao dịch...'),
@@ -172,7 +216,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           ),
         );
         
-        // Quay lại màn hình trước
         Navigator.pop(context, true);
       } catch (e) {
         _showErrorSnackBar('Lỗi: $e');
@@ -189,7 +232,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy repository từ Provider
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
     
     return BlocProvider(
@@ -217,35 +259,46 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildSectionTitle('Chi tiết rác thải'),
+                            _buildSectionTitle('Thông tin rác thải'),
                             _buildCard([
-                              DropdownButtonFormField<String>(
-                                value: _selectedWasteType,
-                                decoration: const InputDecoration(
-                                  labelText: 'Loại rác thải',
-                                  hintText: 'Chọn loại rác thải',
-                                  prefixIcon: Icon(Icons.delete_outline),
+                              _isLoadingWasteTypes 
+                                ? const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : DropdownButtonFormField<String>(
+                                  value: _selectedWasteType,
+                                  decoration: InputDecoration(
+                                    labelText: 'Loại rác thải',
+                                    hintText: 'Chọn loại rác thải',
+                                    prefixIcon: const Icon(Icons.delete_outline),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  ),
+                                  items: _wasteTypes.map((wasteType) {
+                                    return DropdownMenuItem<String>(
+                                      value: wasteType['id'].toString(),
+                                      child: Text(wasteType['name']),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedWasteType = value;
+                                    });
+                                    _updateWasteTypeInfo();
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Vui lòng chọn loại rác thải';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                items: _wasteTypes.map((wasteType) {
-                                  return DropdownMenuItem<String>(
-                                    value: wasteType['id'].toString(),
-                                    child: Text(wasteType['name']),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedWasteType = value;
-                                  });
-                                  _updateWasteTypeInfo();
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Vui lòng chọn loại rác thải';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               TextFormField(
                                 controller: _quantityController,
                                 decoration: InputDecoration(
@@ -253,6 +306,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                   hintText: 'Nhập số lượng',
                                   prefixIcon: const Icon(Icons.scale),
                                   suffixText: _unit,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                 ),
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 inputFormatters: [
@@ -269,43 +326,74 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              // Display unit price (read only)
+                              const SizedBox(height: 20),
                               TextFormField(
                                 initialValue: '$_unitPrice',
                                 decoration: InputDecoration(
                                   labelText: 'Đơn giá',
                                   prefixIcon: const Icon(Icons.monetization_on_outlined),
                                   suffixText: 'đ/${_unit}',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
                                 ),
                                 readOnly: true,
                                 enabled: false,
                               ),
-                              const SizedBox(height: 16),
-                              // Calculate total price
+                              const SizedBox(height: 20),
+                              InkWell(
+                                onTap: () => _selectDate(context),
+                                child: InputDecorator(
+                                  decoration: InputDecoration(
+                                    labelText: 'Ngày giao dịch',
+                                    prefixIcon: const Icon(Icons.calendar_today),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  ),
+                                  child: Text(
+                                    DateFormat('dd/MM/yyyy').format(_transactionDate),
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
                               if (_selectedWasteType != null)
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: AppColors.primaryGreen.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  child: Column(
                                     children: [
                                       const Text(
-                                        'Tổng giá trị:',
+                                        'Tổng giá trị ước tính',
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                          fontSize: 14,
+                                          color: Colors.black54,
                                         ),
                                       ),
+                                      const SizedBox(height: 8),
                                       Text(
                                         '${_calculateTotal()} đ',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                          fontSize: 24,
                                           color: AppColors.primaryGreen,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Cho ${_quantityController.text.isEmpty ? "0" : _quantityController.text} $_unit',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black54,
                                         ),
                                       ),
                                     ],
@@ -316,25 +404,54 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             const SizedBox(height: 24),
                             _buildSectionTitle('Hình ảnh chứng minh'),
                             _buildCard([
+                              Text(
+                                'Vui lòng tải lên ảnh chứng minh về rác thải của bạn',
+                                style: TextStyle(
+                                  color: Colors.grey[700],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
                               InkWell(
                                 onTap: _pickImage,
                                 child: Container(
-                                  height: 150,
+                                  height: 200,
                                   decoration: BoxDecoration(
                                     color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                     border: Border.all(color: Colors.grey[300]!),
                                   ),
                                   child: _isUploadingImage 
                                     ? const Center(child: CircularProgressIndicator())
                                     : _proofImage != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Image.file(
-                                            _proofImage!,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                          ),
+                                      ? Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Image.file(
+                                                _proofImage!,
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 8,
+                                              right: 8,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primaryGreen,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.edit,
+                                                  color: Colors.white,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            )
+                                          ],
                                         )
                                       : Center(
                                           child: Column(
@@ -342,15 +459,26 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                             children: [
                                               Icon(
                                                 Icons.add_photo_alternate_outlined,
-                                                color: Colors.grey[400],
-                                                size: 48,
+                                                color: Colors.grey[500],
+                                                size: 64,
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Text(
+                                                'Chọn ảnh từ thư viện',
+                                                style: TextStyle(
+                                                  color: Colors.grey[700],
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                               const SizedBox(height: 8),
                                               Text(
-                                                'Tải lên ảnh chứng minh',
+                                                'Hình ảnh phải rõ ràng và hiển thị đầy đủ rác thải',
                                                 style: TextStyle(
                                                   color: Colors.grey[600],
+                                                  fontSize: 12,
                                                 ),
+                                                textAlign: TextAlign.center,
                                               ),
                                             ],
                                           ),
@@ -368,10 +496,14 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             _buildCard([
                               TextFormField(
                                 controller: _notesController,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'Ghi chú',
                                   hintText: 'Nhập ghi chú hoặc hướng dẫn bổ sung',
-                                  prefixIcon: Icon(Icons.note_outlined),
+                                  prefixIcon: const Icon(Icons.note_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                 ),
                                 maxLines: 3,
                               ),
@@ -383,17 +515,25 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primaryGreen,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(vertical: 18),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
+                                elevation: 2,
                               ),
-                              child: const Text(
-                                'Tạo giao dịch',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.check_circle_outline, size: 22),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Xác nhận tạo giao dịch',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -436,6 +576,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _fetchCollectionPoints,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                ),
                 child: const Text('Thử lại'),
               ),
             ],
@@ -455,10 +598,14 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       return _buildCard([
         DropdownButtonFormField<String>(
           value: _selectedCollectionPoint,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Điểm thu gom',
             hintText: 'Chọn điểm thu gom',
-            prefixIcon: Icon(Icons.location_on_outlined),
+            prefixIcon: const Icon(Icons.location_on_outlined),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           items: _collectionPoints.map((point) {
             return DropdownMenuItem<String>(
@@ -478,7 +625,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             return null;
           },
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         if (_selectedCollectionPoint != null)
           _buildCollectionPointDetails(),
       ]);
@@ -492,10 +639,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     );
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Column(
@@ -504,8 +651,15 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.location_on, color: AppColors.primaryGreen),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.location_on, color: AppColors.primaryGreen),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,50 +684,72 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildInfoItem(
+                Icons.access_time, 
+                'Giờ hoạt động', 
+                selectedPoint.operatingHours
+              ),
+              const SizedBox(width: 16),
+              _buildInfoItem(
+                Icons.info_outline, 
+                'Trạng thái', 
+                _formatStatus(selectedPoint.status),
+                textColor: _getStatusColor(selectedPoint.status)
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
-          Divider(color: Colors.grey[300]),
-          const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.access_time, color: Colors.grey, size: 16),
-              const SizedBox(width: 8),
+              _buildInfoItem(
+                Icons.storage, 
+                'Công suất', 
+                '${selectedPoint.capacity} kg'
+              ),
+              const SizedBox(width: 16),
+              _buildInfoItem(
+                Icons.phone_outlined, 
+                'Liên hệ', 
+                selectedPoint.phone ?? 'Chưa có thông tin'
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(IconData icon, String label, String value, {Color? textColor}) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.grey[600], size: 16),
+              const SizedBox(width: 6),
               Text(
-                'Giờ hoạt động: ${selectedPoint.operatingHours}',
+                label,
                 style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontSize: 12,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.info_outline, color: Colors.grey, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Trạng thái: ${_formatStatus(selectedPoint.status)}',
-                style: TextStyle(
-                  color: _getStatusColor(selectedPoint.status),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.storage, color: Colors.grey, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Công suất: ${selectedPoint.capacity} kg',
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14,
-                ),
-              ),
-            ],
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: textColor ?? Colors.grey[800],
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -635,9 +811,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   Widget _buildCard(List<Widget> children) {
     return Card(
-      elevation: 1,
+      elevation: 0.5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey[200]!),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -652,16 +829,5 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   String _calculateTotal() {
     final quantity = double.tryParse(_quantityController.text) ?? 0;
     return (quantity * _unitPrice).toStringAsFixed(0);
-  }
-
-  String? _getCollectionPointAddress() {
-    if (_selectedCollectionPoint == null) return null;
-    
-    final point = _collectionPoints.firstWhere(
-      (point) => point.collectionPointId.toString() == _selectedCollectionPoint,
-      orElse: () => _collectionPoints.first,
-    );
-    
-    return point.address;
   }
 } 
