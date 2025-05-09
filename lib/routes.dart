@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/screens/create_transaction_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_add_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
-import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
-import 'package:wasteanmagement/repositories/transaction_repository.dart';
-import 'package:wasteanmagement/repositories/collection_point_repository.dart';
-import 'package:provider/provider.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';

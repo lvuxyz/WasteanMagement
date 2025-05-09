@@ -8,7 +8,6 @@ import '../../blocs/transaction/transaction_state.dart';
 import '../../models/transaction.dart';
 import '../../services/auth_service.dart';
 import '../../repositories/transaction_repository.dart';
-import '../../core/api/api_client.dart';
 
 class TransactionManagementScreen extends StatefulWidget {
   const TransactionManagementScreen({Key? key}) : super(key: key);

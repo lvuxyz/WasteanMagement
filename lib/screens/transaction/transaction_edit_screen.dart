@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../blocs/transaction/transaction_bloc.dart';
 import '../../blocs/transaction/transaction_event.dart';
-import '../../blocs/transaction/transaction_state.dart';
 import '../../models/transaction.dart';
 
 class TransactionEditScreen extends StatefulWidget {
