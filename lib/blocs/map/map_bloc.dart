@@ -33,38 +33,48 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       final location = await mapboxService.getCurrentLocation();
 
       if (location != null && state.controller != null) {
-        // Tạo cameraOptions cho API mới
-        final cameraOptions = CameraOptions(
-          center: Point(
-            coordinates: Position(
-              location.longitude!,
-              location.latitude!,
-            ),
-          ),
-          zoom: 15.0,
-        );
-
-        // Sử dụng flyTo với đúng tham số
-        await state.controller!.flyTo(cameraOptions, null);  // Thêm tham số thứ hai là null
-
-        // Thêm marker cho vị trí người dùng
-        final pointAnnotationManager = await state.controller!.annotations.createPointAnnotationManager();
-
-        // Tạo hình ảnh biểu tượng cho marker
-        final Uint8List markerIcon = await _createCustomMarkerIcon(Colors.blue, 24);
-
-        await pointAnnotationManager.create(
-          PointAnnotationOptions(
-            geometry: Point(
+        try {
+          // Tạo cameraOptions cho API mới
+          final cameraOptions = CameraOptions(
+            center: Point(
               coordinates: Position(
                 location.longitude!,
                 location.latitude!,
               ),
             ),
-            image: markerIcon,
-            iconSize: 0.5,
-          ),
-        );
+            zoom: 15.0,
+          );
+
+          // Sử dụng flyTo với đúng tham số
+          await state.controller!.flyTo(cameraOptions, null);  // Thêm tham số thứ hai là null
+
+          // Thêm marker cho vị trí người dùng
+          try {
+            final pointAnnotationManager = await state.controller!.annotations.createPointAnnotationManager();
+
+            // Tạo hình ảnh biểu tượng cho marker
+            final Uint8List markerIcon = await _createCustomMarkerIcon(Colors.blue, 24);
+
+            await pointAnnotationManager.create(
+              PointAnnotationOptions(
+                geometry: Point(
+                  coordinates: Position(
+                    location.longitude!,
+                    location.latitude!,
+                  ),
+                ),
+                image: markerIcon,
+                iconSize: 0.5,
+              ),
+            );
+          } catch (annotationError) {
+            developer.log('Lỗi khi tạo annotation marker: $annotationError', error: annotationError);
+            // Tiếp tục xử lý mà không hiển thị marker
+          }
+        } catch (mapError) {
+          developer.log('Lỗi khi cập nhật camera map: $mapError', error: mapError);
+          // Tiếp tục xử lý mà không di chuyển camera
+        }
       }
 
       emit(state.copyWith(
@@ -130,28 +140,33 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       // Thêm markers cho điểm thu gom
       if (state.controller != null) {
-        final pointAnnotationManager = await state.controller!.annotations.createPointAnnotationManager();
+        try {
+          final pointAnnotationManager = await state.controller!.annotations.createPointAnnotationManager();
 
-        // Tạo biểu tượng cho điểm thu gom
-        final Uint8List markerIcon = await _createCustomMarkerIcon(AppColors.primaryGreen, 32);
+          // Tạo biểu tượng cho điểm thu gom
+          final Uint8List markerIcon = await _createCustomMarkerIcon(AppColors.primaryGreen, 32);
 
-        for (final point in mockCollectionPoints) {
-          await pointAnnotationManager.create(
-            PointAnnotationOptions(
-              geometry: Point(
-                coordinates: Position(
-                  point['longitude'] as double,
-                  point['latitude'] as double,
+          for (final point in mockCollectionPoints) {
+            await pointAnnotationManager.create(
+              PointAnnotationOptions(
+                geometry: Point(
+                  coordinates: Position(
+                    point['longitude'] as double,
+                    point['latitude'] as double,
+                  ),
                 ),
+                textField: point['name'] as String,
+                textOffset: [0.0, 1.5],
+                textColor: Colors.black.value,
+                textSize: 12.0,
+                image: markerIcon, // sử dụng 'image' thay vì 'iconImage'
+                iconSize: 0.5,
               ),
-              textField: point['name'] as String,
-              textOffset: [0.0, 1.5],
-              textColor: Colors.black.value,
-              textSize: 12.0,
-              image: markerIcon, // sử dụng 'image' thay vì 'iconImage'
-              iconSize: 0.5,
-            ),
-          );
+            );
+          }
+        } catch (annotationError) {
+          developer.log('Lỗi khi tạo annotation cho điểm thu gom: $annotationError', error: annotationError);
+          // Tiếp tục xử lý mà không hiển thị marker
         }
       }
 

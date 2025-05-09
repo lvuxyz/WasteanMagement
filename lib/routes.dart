@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:wasteanmagement/screens/transactions_screen.dart';
+import 'package:wasteanmagement/screens/create_transaction_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_add_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
+import 'package:wasteanmagement/screens/transaction/transaction_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
@@ -30,11 +34,33 @@ class AppRoutes {
   static const String collectionPointsList = '/collection-points';
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
   static const String transactions = '/transactions';
+  static const String createTransaction = '/create-transaction';
+  static const String addTransaction = '/add-transaction';
+  static const String transactionDetails = '/transaction-details';
+  static const String editTransaction = '/edit-transaction';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case transactions:
-        return MaterialPageRoute(builder: (_) => const TransactionsScreen());
+        return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
+      case createTransaction:
+        return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
+      case addTransaction:
+        return MaterialPageRoute(
+          builder: (context) {
+            return const TransactionAddScreen();
+          }
+        );
+      case transactionDetails:
+        final transactionId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (context) => TransactionDetailsScreen(transactionId: transactionId),
+        );
+      case editTransaction:
+        final transactionId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (context) => TransactionEditScreen(transactionId: transactionId),
+        );
       case wasteTypeManagement:
         return MaterialPageRoute(builder: (_) => const WasteTypeManagementScreen());
       case wasteTypeAdd:

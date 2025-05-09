@@ -1,12 +1,16 @@
 import '../models/waste_type_model.dart';
-import '../models/collection_point_model.dart';
+import '../models/collection_point.dart';
 import '../core/api/api_constants.dart';
 import '../core/api/api_client.dart';
 import 'dart:developer' as developer;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../services/auth_service.dart';
 
 class WasteTypeRepository {
   final ApiClient apiClient;
   final String baseUrl = ApiConstants.baseUrl;
+  final AuthService _authService = AuthService();
   
   WasteTypeRepository({required this.apiClient});
 
@@ -90,7 +94,7 @@ class WasteTypeRepository {
     // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
     return [
       CollectionPoint(
-        id: '1',
+        collectionPointId: 1,
         name: 'Trung tâm Tái chế Hà Nội',
         address: '123 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',
         description: 'Trung tâm tái chế lớn nhất khu vực',
@@ -104,12 +108,12 @@ class WasteTypeRepository {
         createdAt: '2023-01-01',
         updatedAt: '2023-06-01',
         status: 'active',
-        current_load: 45.0,
-        capacity: 100.0,
-        operating_hours: '08:00 - 17:00, Thứ 2 - Thứ 7',
+        currentLoad: 45.0,
+        capacity: 100,
+        operatingHours: '08:00 - 17:00, Thứ 2 - Thứ 7',
       ),
       CollectionPoint(
-        id: '2',
+        collectionPointId: 2,
         name: 'Điểm thu gom Cầu Giấy',
         address: '45 Đường Cầu Giấy, Cầu Giấy, Hà Nội',
         description: 'Điểm thu gom chuyên nhựa và giấy',
@@ -123,9 +127,9 @@ class WasteTypeRepository {
         createdAt: '2023-02-15',
         updatedAt: '2023-05-20',
         status: 'active',
-        current_load: 30.0,
-        capacity: 80.0,
-        operating_hours: '07:30 - 16:30, Hàng ngày',
+        currentLoad: 30.0,
+        capacity: 80,
+        operatingHours: '07:30 - 16:30, Hàng ngày',
       ),
     ];
   }
@@ -139,7 +143,7 @@ class WasteTypeRepository {
     // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
     return [
       CollectionPoint(
-        id: '1',
+        collectionPointId: 1,
         name: 'Trung tâm Tái chế Hà Nội',
         address: '123 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',
         description: 'Trung tâm tái chế lớn nhất khu vực',
@@ -153,12 +157,12 @@ class WasteTypeRepository {
         createdAt: '2023-01-01',
         updatedAt: '2023-06-01',
         status: 'active',
-        current_load: 45.0,
-        capacity: 100.0,
-        operating_hours: '08:00 - 17:00, Thứ 2 - Thứ 7',
+        currentLoad: 45.0,
+        capacity: 100,
+        operatingHours: '08:00 - 17:00, Thứ 2 - Thứ 7',
       ),
       CollectionPoint(
-        id: '2',
+        collectionPointId: 2,
         name: 'Điểm thu gom Cầu Giấy',
         address: '45 Đường Cầu Giấy, Cầu Giấy, Hà Nội',
         description: 'Điểm thu gom chuyên nhựa và giấy',
@@ -172,12 +176,12 @@ class WasteTypeRepository {
         createdAt: '2023-02-15',
         updatedAt: '2023-05-20',
         status: 'active',
-        current_load: 30.0,
-        capacity: 80.0,
-        operating_hours: '07:30 - 16:30, Hàng ngày',
+        currentLoad: 30.0,
+        capacity: 80,
+        operatingHours: '07:30 - 16:30, Hàng ngày',
       ),
       CollectionPoint(
-        id: '3',
+        collectionPointId: 3,
         name: 'Điểm thu gom Thanh Xuân',
         address: '78 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',
         description: 'Điểm thu gom tất cả các loại rác tái chế',
@@ -191,9 +195,9 @@ class WasteTypeRepository {
         createdAt: '2023-03-10',
         updatedAt: '2023-05-15',
         status: 'active',
-        current_load: 65.0,
-        capacity: 120.0,
-        operating_hours: '08:00 - 18:00, Thứ 2 - Thứ 6',
+        currentLoad: 65.0,
+        capacity: 120,
+        operatingHours: '08:00 - 18:00, Thứ 2 - Thứ 6',
       ),
     ];
   }
@@ -409,6 +413,58 @@ class WasteTypeRepository {
     } catch (e) {
       developer.log('Error fetching waste types for collection point: $e', error: e);
       throw Exception('Failed to load waste types for collection point: $e');
+    }
+  }
+
+  Future<List<WasteType>> getAllWasteTypes() async {
+    try {
+      developer.log('Đang gọi API ${ApiConstants.wasteTypes}');
+      
+      // Bỏ qua phần xác thực token
+      final response = await http.get(
+        Uri.parse(ApiConstants.wasteTypes),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        developer.log('Dữ liệu phản hồi: $data');
+        
+        List<dynamic> wasteTypesJson;
+        
+        // Handle different API response formats
+        if (data['status'] == 'success' && data['data'] != null) {
+          if (data['data'] is List) {
+            wasteTypesJson = data['data'];
+          } else if (data['data'] is Map && data['data']['wasteTypes'] != null) {
+            wasteTypesJson = data['data']['wasteTypes'];
+          } else {
+            throw Exception('Unexpected data format from API');
+          }
+          
+          final wasteTypes = wasteTypesJson
+              .map((json) => WasteType.fromJson(json))
+              .toList();
+          
+          return wasteTypes;
+        } else {
+          final errorMessage = data['message'] ?? 'Không thể tải danh sách loại rác';
+          developer.log('Lỗi API: $errorMessage', error: errorMessage);
+          throw Exception('API error: $errorMessage');
+        }
+      } else {
+        developer.log('Lỗi khi tải loại rác. Mã trạng thái: ${response.statusCode}', 
+          error: 'Lỗi HTTP ${response.statusCode}');
+        throw Exception('Failed to load waste types. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      developer.log('Lỗi khi tải danh sách loại rác: $e', error: e);
+      throw Exception('Failed to load waste types: $e');
     }
   }
 }
