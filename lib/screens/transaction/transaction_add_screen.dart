@@ -276,11 +276,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      if (_proofImageUrl == null && _proofImage == null) {
-        _showErrorSnackBar('Vui lòng tải lên ảnh chứng minh');
-        return;
-      }
-
       if (_isUploadingImage) {
         _showErrorSnackBar('Vui lòng đợi cho đến khi hình ảnh được tải lên');
         return;
@@ -369,7 +364,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             
                             const SizedBox(height: 24),
                             // Hình ảnh section
-                            _buildSectionTitle('Hình ảnh chứng minh'),
+                            _buildSectionTitle('Hình ảnh chứng minh (tùy chọn)'),
                             _buildProofImageSection(),
                             
                             const SizedBox(height: 24),
@@ -619,7 +614,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   Widget _buildProofImageSection() {
     return _buildCard([
       Text(
-        'Vui lòng tải lên ảnh chứng minh về rác thải của bạn',
+        'Ảnh chứng minh về rác thải của bạn (tùy chọn)',
         style: TextStyle(
           color: Colors.grey[700],
           fontSize: 14,
@@ -678,7 +673,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Chọn ảnh từ thư viện',
+                        'Chọn ảnh từ thư viện (tùy chọn)',
                         style: TextStyle(
                           color: Colors.grey[700],
                           fontSize: 16,
@@ -687,7 +682,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Hình ảnh phải rõ ràng và hiển thị đầy đủ rác thải',
+                        'Tính năng xác minh ảnh đang được cập nhật',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
