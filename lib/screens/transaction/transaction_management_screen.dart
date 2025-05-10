@@ -110,61 +110,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     // context.read<TransactionBloc>().add(SearchTransactions(_searchController.text));
   }
 
-  void _showDeleteConfirmation(BuildContext context, int transactionId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return Builder(
-          builder: (innerContext) {
-            return AlertDialog(
-              title: const Text('Xác nhận xóa'),
-              content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('Hủy'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                    
-                    // Đánh dấu là đang xóa để hiển thị loading
-                    setState(() {
-                      _deletingItems[transactionId] = true;
-                    });
-                    
-                    // Thực hiện xóa qua BlocProvider
-                    try {
-                      innerContext.read<TransactionBloc>().add(
-                        DeleteTransaction(transactionId: transactionId)
-                      );
-                    } catch (e) {
-                      print("Error sending delete event: $e");
-                    }
-                    
-                    // Xóa trạng thái loading sau 2 giây
-                    Future.delayed(const Duration(seconds: 2), () {
-                      if (mounted) {
-                        setState(() {
-                          _deletingItems.remove(transactionId);
-                        });
-                      }
-                    });
-                  },
-                  child: const Text(
-                    'Xóa',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            );
-          }
-        );
-      },
-    );
-  }
 
   void _updateTransactionStatus(int transactionId, String status) {
     // Đánh dấu là đang cập nhật để hiển thị loading
@@ -624,8 +569,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                           '/edit-transaction',
                           arguments: transaction.transactionId,
                         );
-                      } else if (value == 'delete' && _isAdmin) {
-                        _showDeleteConfirmation(innerContext, transaction.transactionId);
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -651,23 +594,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                           ),
                         ),
                       ];
-                      
-                      // Only add delete option for admin
-                      if (_isAdmin) {
-                        menuItems.add(
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Xóa giao dịch'),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      
                       return menuItems;
                     },
                   ),
@@ -684,38 +610,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                             height: 24,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        else 
-                          Expanded(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _buildStatusButton(innerContext, transaction, 'pending', 'Chờ xử lý'),
-                                  const SizedBox(width: 8),
-                                  _buildStatusButton(innerContext, transaction, 'verified', 'Xác nhận'),
-                                  const SizedBox(width: 8),
-                                  _buildStatusButton(innerContext, transaction, 'completed', 'Hoàn thành'),
-                                  const SizedBox(width: 8),
-                                  _buildStatusButton(innerContext, transaction, 'rejected', 'Hủy bỏ'),
-                                ],
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: () => _showDeleteConfirmation(innerContext, transaction.transactionId),
-                          icon: const Icon(Icons.delete_outline, size: 16),
-                          label: const Text('Xóa'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade50,
-                            foregroundColor: Colors.red,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
