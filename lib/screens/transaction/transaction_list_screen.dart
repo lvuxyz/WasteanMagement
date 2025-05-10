@@ -501,7 +501,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               children: [
                                 Icon(Icons.edit, color: AppColors.primaryGreen),
                                 SizedBox(width: 8),
-                                Text('Chỉnh sửa'),
+                                Text('Chỉnh sửa trạng thái giao dịch'),
                               ],
                             ),
                           ),

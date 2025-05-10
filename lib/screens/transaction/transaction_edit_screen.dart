@@ -108,37 +108,17 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   }
 
   Future<void> _saveTransaction() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() {
       _isSaving = true;
     });
 
     try {
-      // Get the updated quantity
-      final double quantity = double.parse(_quantityController.text);
-      
-      // Using the bloc to update the transaction
-      if (_transaction != null) {
-        // First update the status if needed and user is admin
-        if (_isAdmin && _selectedStatus != _transaction!.status) {
-          context.read<TransactionBloc>().add(
-            UpdateTransactionStatus(
-              transactionId: widget.transactionId,
-              status: _selectedStatus,
-            ),
-          );
-        }
-        
-        // Then update the transaction details
+      // Chỉ cập nhật trạng thái giao dịch
+      if (_transaction != null && _isAdmin && _selectedStatus != _transaction!.status) {
         context.read<TransactionBloc>().add(
-          UpdateTransaction(
+          UpdateTransactionStatus(
             transactionId: widget.transactionId,
-            collectionPointId: _transaction!.collectionPointId,
-            wasteTypeId: _transaction!.wasteTypeId,
-            quantity: quantity,
-            unit: _transaction!.unit,
-            proofImageUrl: _transaction!.proofImageUrl,
+            status: _selectedStatus,
           ),
         );
       }
@@ -149,7 +129,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cập nhật giao dịch thành công'),
+          content: Text('Cập nhật trạng thái giao dịch thành công'),
           backgroundColor: Colors.green,
         ),
       );
@@ -176,7 +156,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       value: BlocProvider.of<TransactionBloc>(context),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Chỉnh sửa giao dịch'),
+          title: const Text('Chỉnh sửa trạng thái giao dịch'),
           backgroundColor: AppColors.primaryGreen,
           foregroundColor: Colors.white,
           actions: [
@@ -298,7 +278,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Chỉnh sửa thông tin',
+              'Chỉnh sửa trạng thái',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -307,39 +287,46 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
             ),
             const Divider(),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _quantityController,
-              decoration: const InputDecoration(
-                labelText: 'Số lượng',
-                border: OutlineInputBorder(),
-                suffixText: 'kg',
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập số lượng';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Vui lòng nhập số hợp lệ';
-                }
-                if (double.parse(value) <= 0) {
-                  return 'Số lượng phải lớn hơn 0';
-                }
-                return null;
-              },
-            ),
             if (_isAdmin) ...[
               const SizedBox(height: 24),
-              Text(
-                'Trạng thái giao dịch (Chỉ dành cho Admin)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          'Cập nhật trạng thái giao dịch (Admin)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Thay đổi trạng thái giao dịch sẽ gọi API: PATCH /api/v1/transactions/:id/status',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[700],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildStatusSelector(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              _buildStatusSelector(),
             ],
           ],
         ),
@@ -358,8 +345,6 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
           const Divider(height: 1),
           _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
-          const Divider(height: 1),
-          _buildStatusOption('processing', 'Đang xử lý', Colors.blue.shade700),
           const Divider(height: 1),
           _buildStatusOption('completed', 'Hoàn thành', Colors.green),
           const Divider(height: 1),
@@ -416,7 +401,17 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                 Text('Đang lưu...'),
               ],
             )
-          : const Text('LƯU THAY ĐỔI'),
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.save),
+                const SizedBox(width: 8),
+                const Text(
+                  'CẬP NHẬT TRẠNG THÁI',
+                  style: TextStyle(fontWeight: FontWeight.bold)
+                ),
+              ],
+            ),
     );
   }
 
