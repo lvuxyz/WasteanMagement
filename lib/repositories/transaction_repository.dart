@@ -213,4 +213,67 @@ class TransactionRepository {
       throw Exception('Failed to load transaction details: $e');
     }
   }
+
+  Future<Map<String, dynamic>> updateTransaction({
+    required int transactionId,
+    required int collectionPointId,
+    required int wasteTypeId,
+    required double quantity,
+    required String unit,
+    String? proofImageUrl,
+  }) async {
+    try {
+      final String url = '${ApiConstants.transactions}/$transactionId';
+      print('Updating transaction: $url');
+      
+      final Map<String, dynamic> data = {
+        'collection_point_id': collectionPointId,
+        'waste_type_id': wasteTypeId,
+        'quantity': quantity,
+        'unit': unit,
+      };
+      
+      if (proofImageUrl != null) {
+        data['proof_image_url'] = proofImageUrl;
+      }
+      
+      final response = await apiClient.put(url, body: data);
+      
+      // Convert response to expected format
+      final bool isSuccess = response.isSuccess;
+      final String message = response.message;
+      
+      return {
+        'success': isSuccess,
+        'message': message,
+        'data': response.data['data']
+      };
+    } catch (e) {
+      print('Exception in updateTransaction: $e');
+      throw Exception('Failed to update transaction: $e');
+    }
+  }
+  
+  Future<Map<String, dynamic>> getTransactionHistory(int transactionId) async {
+    try {
+      final String url = '${ApiConstants.transactions}/$transactionId/history';
+      print('Fetching transaction history: $url');
+      
+      final response = await apiClient.get(url);
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('Transaction history response: ${response.data}');
+        return {
+          'success': true,
+          'data': response.data['data'],
+        };
+      } else {
+        print('API error: Status ${response.statusCode}, ${response.data['message']}');
+        throw Exception('Failed to load transaction history: ${response.data['message']}');
+      }
+    } catch (e) {
+      print('Exception in getTransactionHistory: $e');
+      throw Exception('Failed to load transaction history: $e');
+    }
+  }
 }

@@ -83,7 +83,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       final response = await repository.apiClient.get(url);
       
       if (response.statusCode >= 200 && response.statusCode < 300 && 
-          response.data != null && response.data['data'] != null) {
+          response.data['data'] != null) {
         final transactionData = response.data['data'];
         _transaction = Transaction.fromJson(transactionData);
         _setupFormFields();
@@ -118,19 +118,30 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       // Get the updated quantity
       final double quantity = double.parse(_quantityController.text);
       
-      // Using the repository to update transaction
-      final repository = Provider.of<TransactionRepository>(context, listen: false);
-      
-      // First update the status if needed and user is admin
-      if (_isAdmin && _selectedStatus != _transaction!.status) {
-        await repository.updateTransactionStatus(
-          transactionId: widget.transactionId,
-          status: _selectedStatus,
+      // Using the bloc to update the transaction
+      if (_transaction != null) {
+        // First update the status if needed and user is admin
+        if (_isAdmin && _selectedStatus != _transaction!.status) {
+          context.read<TransactionBloc>().add(
+            UpdateTransactionStatus(
+              transactionId: widget.transactionId,
+              status: _selectedStatus,
+            ),
+          );
+        }
+        
+        // Then update the transaction details
+        context.read<TransactionBloc>().add(
+          UpdateTransaction(
+            transactionId: widget.transactionId,
+            collectionPointId: _transaction!.collectionPointId,
+            wasteTypeId: _transaction!.wasteTypeId,
+            quantity: quantity,
+            unit: _transaction!.unit,
+            proofImageUrl: _transaction!.proofImageUrl,
+          ),
         );
       }
-      
-      // Then update other transaction details (would need a proper updateTransaction method)
-      // This would be implemented based on your API
       
       setState(() {
         _isSaving = false;
@@ -143,9 +154,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         ),
       );
 
-      // Refresh the transactions list
-      context.read<TransactionBloc>().add(RefreshTransactions());
-      
+      // Navigate back
       Navigator.pop(context, true);
     } catch (e) {
       setState(() {

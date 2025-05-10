@@ -3,6 +3,7 @@ import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
+import 'package:wasteanmagement/models/transaction.dart';
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository transactionRepository;
@@ -17,6 +18,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<UpdateTransactionStatus>(_onUpdateTransactionStatus);
     on<DeleteTransaction>(_onDeleteTransaction);
     on<SearchTransactions>(_onSearchTransactions);
+    on<UpdateTransaction>(_onUpdateTransaction);
+    on<FetchTransactionHistory>(_onFetchTransactionHistory);
   }
 
   Future<void> _onFetchTransactions(
@@ -252,6 +255,72 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       add(RefreshTransactions());
     } catch (e) {
       print('Error searching transactions: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onUpdateTransaction(
+    UpdateTransaction event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // Call the actual API endpoint
+      final result = await transactionRepository.updateTransaction(
+        transactionId: event.transactionId,
+        collectionPointId: event.collectionPointId,
+        wasteTypeId: event.wasteTypeId,
+        quantity: event.quantity,
+        unit: event.unit,
+        proofImageUrl: event.proofImageUrl,
+      );
+
+      if (!result['success']) {
+        throw Exception(result['message']);
+      }
+
+      // After updating successfully, refresh the list to get the latest data
+      add(RefreshTransactions());
+    } catch (e) {
+      print('Error updating transaction: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onFetchTransactionHistory(
+    FetchTransactionHistory event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // Call the repository to get transaction history
+      final result = await transactionRepository.getTransactionHistory(
+        event.transactionId,
+      );
+
+      if (!result['success']) {
+        throw Exception('Failed to fetch transaction history');
+      }
+
+      final historyData = result['data'] as List<dynamic>;
+      final history = historyData
+          .map((item) => TransactionHistory.fromJson(item))
+          .toList();
+
+      emit(state.copyWith(
+        status: TransactionStatus.success,
+        transactionHistory: history,
+      ));
+    } catch (e) {
+      print('Error fetching transaction history: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
