@@ -5,12 +5,10 @@ import '../core/api/api_client.dart';
 import 'dart:developer' as developer;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../services/auth_service.dart';
 
 class WasteTypeRepository {
   final ApiClient apiClient;
   final String baseUrl = ApiConstants.baseUrl;
-  final AuthService _authService = AuthService();
   
   WasteTypeRepository({required this.apiClient});
 

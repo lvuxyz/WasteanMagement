@@ -10,6 +10,7 @@ class TransactionState extends Equatable {
   final String? errorMessage;
   final int currentPage;
   final int totalPages;
+  final List<TransactionHistory> transactionHistory;
 
   const TransactionState({
     this.status = TransactionStatus.initial,
@@ -18,6 +19,7 @@ class TransactionState extends Equatable {
     this.errorMessage,
     this.currentPage = 1,
     this.totalPages = 1,
+    this.transactionHistory = const [],
   });
 
   TransactionState copyWith({
@@ -27,6 +29,7 @@ class TransactionState extends Equatable {
     String? errorMessage,
     int? currentPage,
     int? totalPages,
+    List<TransactionHistory>? transactionHistory,
   }) {
     return TransactionState(
       status: status ?? this.status,
@@ -35,6 +38,7 @@ class TransactionState extends Equatable {
       errorMessage: errorMessage,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
+      transactionHistory: transactionHistory ?? this.transactionHistory,
     );
   }
 
@@ -45,6 +49,7 @@ class TransactionState extends Equatable {
     hasReachedMax, 
     errorMessage, 
     currentPage, 
-    totalPages
+    totalPages,
+    transactionHistory,
   ];
 } 

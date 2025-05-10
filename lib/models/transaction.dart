@@ -147,4 +147,70 @@ class TransactionResponse {
       rethrow;
     }
   }
+}
+
+class TransactionHistory {
+  final int historyId;
+  final int transactionId;
+  final String status;
+  final DateTime changedAt;
+  final String? changedBy;
+  final String? adminName;
+
+  TransactionHistory({
+    required this.historyId,
+    required this.transactionId,
+    required this.status,
+    required this.changedAt,
+    this.changedBy,
+    this.adminName,
+  });
+
+  factory TransactionHistory.fromJson(Map<String, dynamic> json) {
+    try {
+      return TransactionHistory(
+        historyId: json['history_id'],
+        transactionId: json['transaction_id'],
+        status: json['status'],
+        changedAt: DateTime.parse(json['changed_at']),
+        changedBy: json['changed_by'],
+        adminName: json['admin_name'],
+      );
+    } catch (e) {
+      print('Error parsing TransactionHistory: $e');
+      print('JSON: $json');
+      rethrow;
+    }
+  }
+}
+
+class TransactionHistoryResponse {
+  final bool success;
+  final String message;
+  final List<TransactionHistory> data;
+
+  TransactionHistoryResponse({
+    required this.success,
+    required this.message,
+    required this.data,
+  });
+
+  factory TransactionHistoryResponse.fromJson(Map<String, dynamic> json) {
+    try {
+      final List<dynamic> historyJson = json['data'] ?? [];
+      final List<TransactionHistory> history = historyJson
+          .map((item) => TransactionHistory.fromJson(item))
+          .toList();
+
+      return TransactionHistoryResponse(
+        success: json['success'] ?? false,
+        message: json['message'] ?? '',
+        data: history,
+      );
+    } catch (e) {
+      print('Error parsing TransactionHistoryResponse: $e');
+      print('JSON: $json');
+      rethrow;
+    }
+  }
 } 

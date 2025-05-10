@@ -93,4 +93,34 @@ class SearchTransactions extends TransactionEvent {
 
   @override
   List<Object?> get props => [query];
+}
+
+class UpdateTransaction extends TransactionEvent {
+  final int transactionId;
+  final int collectionPointId;
+  final int wasteTypeId;
+  final double quantity;
+  final String unit;
+  final String? proofImageUrl;
+
+  UpdateTransaction({
+    required this.transactionId,
+    required this.collectionPointId,
+    required this.wasteTypeId,
+    required this.quantity,
+    required this.unit,
+    this.proofImageUrl,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, collectionPointId, wasteTypeId, quantity, unit, proofImageUrl];
+}
+
+class FetchTransactionHistory extends TransactionEvent {
+  final int transactionId;
+
+  FetchTransactionHistory({required this.transactionId});
+
+  @override
+  List<Object?> get props => [transactionId];
 } 

@@ -88,7 +88,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   bool _isUploadingImage = false;
   bool _isSubmitting = false;
   DateTime _transactionDate = DateTime.now();
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
