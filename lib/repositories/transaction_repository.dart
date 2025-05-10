@@ -11,6 +11,7 @@ class TransactionRepository {
     int page = 1,
     int limit = 10,
     String? status,
+    bool isAdmin = false,
   }) async {
     final Map<String, String> queryParams = {
       'page': page.toString(),
@@ -21,7 +22,12 @@ class TransactionRepository {
       queryParams['status'] = status;
     }
 
-    String url = ApiConstants.transactions;
+    // Sử dụng URL chính xác cho admin
+    final String adminUrl = 'http://192.168.173.102:5000/api/v1/transactions';
+    String url = isAdmin 
+        ? adminUrl // Admin API endpoint chính xác
+        : ApiConstants.transactions; // Regular API endpoint
+    
     if (queryParams.isNotEmpty) {
       url += '?';
       url += queryParams.entries
@@ -30,7 +36,7 @@ class TransactionRepository {
     }
 
     try {
-      print('Fetching transactions from: $url');
+      print('Fetching transactions with isAdmin=$isAdmin from URL: $url');
       final response = await apiClient.get(url);
       
       if (response.statusCode >= 200 && response.statusCode < 300) {

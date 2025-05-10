@@ -37,6 +37,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         page: event.page,
         limit: event.limit,
         status: event.status,
+        isAdmin: event.isAdmin,
       );
 
       if (!response.success) {
@@ -117,12 +118,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(const TransactionState(status: TransactionStatus.loading));
     
     try {
+      // Lấy token để kiểm tra
+      final token = await _authService.getToken();
+      print('RefreshTransactions - checking token: ${token != null ? "Token found" : "No token"}');
+      
       final isAdmin = await _authService.isAdmin();
       print('RefreshTransactions - User is admin: $isAdmin');
       
       if (isAdmin) {
-        print('Fetching all transactions as admin');
-        final response = await transactionRepository.getTransactions(page: 1, limit: 10);
+        print('Fetching all transactions as admin with admin API endpoint');
+        final response = await transactionRepository.getTransactions(
+          page: 1, 
+          limit: 10,
+          isAdmin: true, // Đảm bảo đặt cờ isAdmin=true
+        );
         
         if (!response.success) {
           throw Exception(response.message);
@@ -136,7 +145,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           totalPages: response.pagination.pages,
         ));
       } else {
-        print('Fetching my transactions as regular user');
+        print('Fetching my transactions as regular user with my-transactions endpoint');
         final response = await transactionRepository.getMyTransactions(page: 1, limit: 10);
         
         if (!response.success) {
