@@ -9,15 +9,17 @@ class FetchTransactions extends TransactionEvent {
   final int page;
   final int limit;
   final String? status;
+  final bool isAdmin;
 
   FetchTransactions({
     this.page = 1,
     this.limit = 10,
     this.status,
+    this.isAdmin = false,
   });
 
   @override
-  List<Object?> get props => [page, limit, status];
+  List<Object?> get props => [page, limit, status, isAdmin];
 }
 
 class FetchMyTransactions extends TransactionEvent {

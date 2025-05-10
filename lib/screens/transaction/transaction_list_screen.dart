@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
+import '../../blocs/transaction/transaction_bloc.dart';
+import '../../blocs/transaction/transaction_event.dart';
+import '../../blocs/transaction/transaction_state.dart';
+import '../../repositories/transaction_repository.dart';
+import '../../services/auth_service.dart';
+import '../../models/transaction.dart';
+import '../../core/api/api_constants.dart';
 
 class TransactionListScreen extends StatefulWidget {
   const TransactionListScreen({Key? key}) : super(key: key);
@@ -12,67 +21,102 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _filterOption = 'all';
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _filteredTransactions = [];
-  
-  final List<Map<String, dynamic>> _dummyTransactions = [
-    {
-      'id': 1001,
-      'username': 'user123',
-      'wasteType': 'Chai nhựa',
-      'quantity': 5.0,
-      'unit': 'kg',
-      'status': 'completed',
-      'date': '15/11/2023',
-      'points': 10,
-    },
-    {
-      'id': 1002,
-      'username': 'greenuser',
-      'wasteType': 'Giấy vụn',
-      'quantity': 3.5,
-      'unit': 'kg',
-      'status': 'processing',
-      'date': '14/11/2023',
-      'points': 0,
-    },
-    {
-      'id': 1003,
-      'username': 'recycle_hero',
-      'wasteType': 'Pin điện',
-      'quantity': 0.5,
-      'unit': 'kg',
-      'status': 'pending',
-      'date': '13/11/2023',
-      'points': 0,
-    },
-    {
-      'id': 1004,
-      'username': 'eco_friendly',
-      'wasteType': 'Lon kim loại',
-      'quantity': 2.0,
-      'unit': 'kg',
-      'status': 'rejected',
-      'date': '12/11/2023',
-      'points': 0,
-    },
-    {
-      'id': 1005,
-      'username': 'earth_lover',
-      'wasteType': 'Thủy tinh',
-      'quantity': 4.0,
-      'unit': 'kg',
-      'status': 'completed',
-      'date': '11/11/2023',
-      'points': 8,
-    },
-  ];
+  bool _isAdmin = false;
+  final AuthService _authService = AuthService();
+  bool _isInitialized = false;
+  bool _didLoadInitialData = false;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    _filteredTransactions = List.from(_dummyTransactions);
+    _scrollController.addListener(_onScroll);
+    _printEndpointInfo();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    // Kiểm tra admin role trước tiên
+    await _checkIsAdmin();
+    
+    // Sau khi check admin role, chờ một khoảng thời gian ngắn để đảm bảo state đã update
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    // Sau đó load data
+    if (_isAdmin) {
+      print("READY TO LOAD ADMIN TRANSACTIONS - Using admin API endpoint");
+      if (mounted) {
+        setState(() {
+          _didLoadInitialData = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _checkIsAdmin() async {
+    try {
+      final token = await _authService.getToken();
+      print('TransactionListScreen._checkIsAdmin(): token is ${token != null ? "available" : "null"}');
+      
+      final isAdmin = await _authService.isAdmin();
+      print('TransactionListScreen: User is admin: $isAdmin'); // Debug output
+      
+      setState(() {
+        _isAdmin = isAdmin;
+        _isInitialized = true;
+        _didLoadInitialData = false; // Reset to ensure we load data after role check
+      });
+      
+      if (_isAdmin) {
+        print('ADMIN USER DETECTED: Will use admin API endpoint for transactions');
+      } else {
+        print('REGULAR USER DETECTED: Will use my-transactions API endpoint');
+      }
+    } catch (e) {
+      print('Error checking admin status: $e');
+      setState(() {
+        _isAdmin = false;
+        _isInitialized = true;
+      });
+    }
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Chỉ load khi đã khởi tạo biến admin và chưa load dữ liệu lần đầu
+    if (_isInitialized && _didLoadInitialData) {
+      print('didChangeDependencies: Loading transactions based on role. isAdmin=$_isAdmin');
+      _loadTransactionsBasedOnRole();
+    } else {
+      print('didChangeDependencies: Skipping load, waiting for initialization');
+    }
+  }
+
+  void _loadTransactionsBasedOnRole() {
+    try {
+      final bloc = context.read<TransactionBloc>();
+      
+      if (_isAdmin) {
+        print('Loading admin transactions with isAdmin flag set to true'); // Debug output
+        bloc.add(FetchTransactions(
+          status: _filterOption == 'all' ? null : _filterOption,
+          page: 1,
+          limit: 10,
+          isAdmin: true, // Đảm bảo cờ isAdmin được thiết lập đúng
+        ));
+      } else {
+        print('Loading user transactions'); // Debug output
+        bloc.add(FetchMyTransactions(
+          status: _filterOption == 'all' ? null : _filterOption,
+          page: 1,
+          limit: 10,
+        ));
+      }
+    } catch (e) {
+      print('Error loading transactions: $e');
+    }
   }
 
   @override
@@ -83,40 +127,50 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase().trim();
-    
-    setState(() {
-      if (query.isEmpty) {
-        _filteredTransactions = _filterTransactions(_dummyTransactions, _filterOption);
-      } else {
-        _filteredTransactions = _dummyTransactions.where((transaction) {
-          return transaction['username'].toLowerCase().contains(query) ||
-                 transaction['wasteType'].toLowerCase().contains(query) ||
-                 transaction['id'].toString().contains(query);
-        }).toList();
-        
-        _filteredTransactions = _filterTransactions(_filteredTransactions, _filterOption);
-      }
-    });
+    // Will be implemented to filter transactions by search term
+    // context.read<TransactionBloc>().add(SearchTransactions(_searchController.text));
   }
 
-  List<Map<String, dynamic>> _filterTransactions(List<Map<String, dynamic>> transactions, String filter) {
-    if (filter == 'all') {
-      return transactions;
+  void _onScroll() {
+    if (_isBottom) {
+      // Load more transactions when scrolled to bottom
+      final state = context.read<TransactionBloc>().state;
+      
+      if (!state.hasReachedMax) {
+        if (_isAdmin) {
+          print('Loading more admin transactions, page: ${state.currentPage + 1}, isAdmin: true'); // Debug
+          context.read<TransactionBloc>().add(FetchTransactions(
+            page: state.currentPage + 1,
+            limit: 10,
+            status: _filterOption == 'all' ? null : _filterOption,
+            isAdmin: true, // Flag to indicate this is an admin request
+          ));
+        } else {
+          print('Loading more user transactions, page: ${state.currentPage + 1}'); // Debug
+          context.read<TransactionBloc>().add(FetchMyTransactions(
+            page: state.currentPage + 1,
+            limit: 10,
+            status: _filterOption == 'all' ? null : _filterOption,
+          ));
+        }
+      }
     }
-    return transactions.where((transaction) => transaction['status'] == filter).toList();
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
   }
 
   void _onFilterChanged(String filter) {
     setState(() {
       _filterOption = filter;
-      _filteredTransactions = _filterTransactions(_dummyTransactions, filter);
-      
-      // Also apply any existing search filter
-      if (_searchController.text.isNotEmpty) {
-        _onSearchChanged();
-      }
     });
+    
+    // Refresh with new filter
+    _refreshTransactions();
   }
 
   void _navigateToDetails(int transactionId) {
@@ -126,7 +180,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       arguments: transactionId,
     ).then((_) {
       // Refresh the list when returning from details
-      // In a real app, this would fetch updated data from the backend
+      _refreshTransactions();
     });
   }
 
@@ -137,34 +191,31 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
       arguments: transactionId,
     ).then((_) {
       // Refresh the list when returning from edit
-      // In a real app, this would fetch updated data from the backend
+      _refreshTransactions();
     });
   }
 
   void _refreshTransactions() {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    // Simulate API call with a delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-        // Refresh the filtered transactions
-        _filteredTransactions = _filterTransactions(_dummyTransactions, _filterOption);
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Danh sách giao dịch đã được làm mới'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 1),
-        ),
-      );
-    });
+    // Reset to first page when refreshing
+    if (_isAdmin) {
+      print('Refreshing admin transactions with isAdmin=true'); // Debug output
+      context.read<TransactionBloc>().add(FetchTransactions(
+        status: _filterOption == 'all' ? null : _filterOption,
+        page: 1, // Explicitly request first page
+        limit: 10,
+        isAdmin: true, // Flag to indicate this is an admin request
+      ));
+    } else {
+      print('Refreshing user transactions'); // Debug output
+      context.read<TransactionBloc>().add(FetchMyTransactions(
+        status: _filterOption == 'all' ? null : _filterOption,
+        page: 1, // Explicitly request first page
+        limit: 10,
+      ));
+    }
   }
 
-  void _showDeleteConfirmation(int transactionId) {
+  void _showDeleteConfirmation(BuildContext context, int transactionId) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -193,76 +244,156 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
   }
 
   void _deleteTransaction(int transactionId) {
-    setState(() {
-      _isLoading = true;
-    });
+    context.read<TransactionBloc>().add(DeleteTransaction(transactionId: transactionId));
     
-    // Simulate API call with a delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _dummyTransactions.removeWhere((transaction) => transaction['id'] == transactionId);
-        _filteredTransactions = _filterTransactions(_dummyTransactions, _filterOption);
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Giao dịch đã được xóa thành công'),
-          backgroundColor: Colors.green,
-        ),
-      );
+    // After deleting, refresh the list
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _refreshTransactions();
     });
+  }
+
+  void _printEndpointInfo() {
+    print('===== API INFO =====');
+    print('Regular endpoint: ${ApiConstants.transactions}');
+    print('Admin endpoint: http://localhost:5000/api/v1/transactions');
+    print('====================');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Danh sách giao dịch'),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshTransactions,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          _buildFilterBar(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredTransactions.isEmpty
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          _refreshTransactions();
-                        },
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _filteredTransactions.length,
-                          itemBuilder: (context, index) {
-                            final transaction = _filteredTransactions[index];
-                            return _buildTransactionCard(transaction);
-                          },
-                        ),
-                      ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/add-transaction').then((_) {
-            // Refresh the list when returning from add
-            // In a real app, this would fetch updated data from the backend
-          });
+    // Get transaction repository from provider
+    final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
+    
+    return BlocProvider(
+      create: (context) {
+        // Create a new TransactionBloc
+        final bloc = TransactionBloc(transactionRepository: transactionRepository);
+        
+        // Only load transactions if we've already checked admin status
+        if (_isInitialized) {
+          print('TransactionListScreen build: isAdmin=$_isAdmin, initializing transactions');
+          _loadTransactionsBasedOnRole();
+        } else {
+          print('TransactionListScreen build: admin status not checked yet');
+        }
+        
+        return bloc;
+      },
+      child: BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, state) {
+          // Debugging
+          print('TransactionState: ${state.status}, transactions: ${state.transactions.length}, isAdmin: $_isAdmin');
+          
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(_isAdmin ? 'Tất cả giao dịch' : 'Giao dịch của tôi'),
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _refreshTransactions,
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                _buildSearchBar(),
+                _buildFilterBar(),
+                Expanded(
+                  child: _buildTransactionList(state),
+                ),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/add-transaction').then((_) {
+                  // Refresh the list when returning from add
+                  _refreshTransactions();
+                });
+              },
+              backgroundColor: AppColors.primaryGreen,
+              child: const Icon(Icons.add),
+            ),
+          );
         },
-        backgroundColor: AppColors.primaryGreen,
-        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildTransactionList(TransactionState state) {
+    if (!_isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (state.status == TransactionStatus.initial) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state.status == TransactionStatus.loading && state.transactions.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state.status == TransactionStatus.failure) {
+      return _buildErrorState(state.errorMessage);
+    }
+    
+    if (state.transactions.isEmpty) {
+      return _buildEmptyState();
+    }
+    
+    return RefreshIndicator(
+      onRefresh: () async {
+        _refreshTransactions();
+      },
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        itemCount: state.hasReachedMax
+            ? state.transactions.length
+            : state.transactions.length + 1,
+        itemBuilder: (context, index) {
+          if (index >= state.transactions.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return _buildTransactionCard(state.transactions[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String? errorMessage) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: Colors.red,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            errorMessage ?? 'Đã xảy ra lỗi khi tải danh sách giao dịch',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[700],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _refreshTransactions,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Thử lại'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -298,7 +429,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             const SizedBox(width: 8),
             _buildFilterChip('pending', 'Chờ xử lý'),
             const SizedBox(width: 8),
-            _buildFilterChip('processing', 'Đang xử lý'),
+            _buildFilterChip('verified', 'Đã xác nhận'),
             const SizedBox(width: 8),
             _buildFilterChip('completed', 'Hoàn thành'),
             const SizedBox(width: 8),
@@ -380,7 +511,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     );
   }
 
-  Widget _buildTransactionCard(Map<String, dynamic> transaction) {
+  Widget _buildTransactionCard(Transaction transaction) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -388,7 +519,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () => _navigateToDetails(transaction['id']),
+        onTap: () => _navigateToDetails(transaction.transactionId),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -402,12 +533,12 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(transaction['status']).withOpacity(0.1),
+                      color: _getStatusColor(transaction.status).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      _getStatusIcon(transaction['status']),
-                      color: _getStatusColor(transaction['status']),
+                      _getStatusIcon(transaction.status),
+                      color: _getStatusColor(transaction.status),
                       size: 28,
                     ),
                   ),
@@ -419,7 +550,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Mã: #${transaction['id']}',
+                          'Mã: #${transaction.transactionId}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -427,7 +558,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Người dùng: ${transaction['username']}',
+                          'Người dùng: ${transaction.userName ?? transaction.username ?? "Không xác định"}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -435,7 +566,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Loại rác: ${transaction['wasteType']}',
+                          'Loại rác: ${transaction.wasteTypeName}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -443,7 +574,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Số lượng: ${transaction['quantity']} ${transaction['unit']}',
+                          'Số lượng: ${transaction.quantity} ${transaction.unit}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -460,13 +591,13 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(transaction['status']).withOpacity(0.1),
+                          color: _getStatusColor(transaction.status).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          _getStatusText(transaction['status']),
+                          _getStatusText(transaction.status),
                           style: TextStyle(
-                            color: _getStatusColor(transaction['status']),
+                            color: _getStatusColor(transaction.status),
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -477,45 +608,54 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         icon: const Icon(Icons.more_vert),
                         onSelected: (String value) {
                           if (value == 'view') {
-                            _navigateToDetails(transaction['id']);
+                            _navigateToDetails(transaction.transactionId);
                           } else if (value == 'edit') {
-                            _navigateToEdit(transaction['id']);
+                            _navigateToEdit(transaction.transactionId);
                           } else if (value == 'delete') {
-                            _showDeleteConfirmation(transaction['id']);
+                            _showDeleteConfirmation(context, transaction.transactionId);
                           }
                         },
-                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'view',
-                            child: Row(
-                              children: [
-                                Icon(Icons.visibility, color: AppColors.primaryGreen),
-                                SizedBox(width: 8),
-                                Text('Xem chi tiết'),
-                              ],
+                        itemBuilder: (BuildContext context) {
+                          List<PopupMenuEntry<String>> items = [
+                            const PopupMenuItem<String>(
+                              value: 'view',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.visibility, color: AppColors.primaryGreen),
+                                  SizedBox(width: 8),
+                                  Text('Xem chi tiết'),
+                                ],
+                              ),
                             ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit, color: AppColors.primaryGreen),
-                                SizedBox(width: 8),
-                                Text('Chỉnh sửa trạng thái giao dịch'),
-                              ],
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, color: AppColors.primaryGreen),
+                                  SizedBox(width: 8),
+                                  Text('Chỉnh sửa trạng thái giao dịch'),
+                                ],
+                              ),
                             ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Xóa giao dịch'),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ];
+                          
+                          if (_isAdmin) {
+                            items.add(
+                              const PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text('Xóa giao dịch'),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                          
+                          return items;
+                        },
                       ),
                     ],
                   ),
@@ -527,24 +667,24 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 children: [
                   // Date
                   Text(
-                    'Ngày: ${transaction['date']}',
+                    'Ngày: ${transaction.transactionDate.day}/${transaction.transactionDate.month}/${transaction.transactionDate.year}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[700],
                     ),
                   ),
                   // Points for completed transactions
-                  if (transaction['status'] == 'completed')
+                  if (transaction.status == 'completed')
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.eco_outlined,
                           color: Colors.green,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          '+${transaction['points']} điểm',
+                        const Text(
+                          '+10 điểm', // Points amount would be from API in real implementation
                           style: TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
@@ -565,8 +705,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     switch (status) {
       case 'pending':
         return Colors.orange;
-      case 'processing':
+      case 'verified':
         return Colors.blue;
+      case 'processing':
+        return Colors.blue.shade700;
       case 'completed':
         return Colors.green;
       case 'rejected':
@@ -580,6 +722,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     switch (status) {
       case 'pending':
         return Icons.pending_outlined;
+      case 'verified':
+        return Icons.verified;
       case 'processing':
         return Icons.hourglass_top;
       case 'completed':
@@ -595,6 +739,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     switch (status) {
       case 'pending':
         return 'Chờ xử lý';
+      case 'verified':
+        return 'Đã xác nhận';
       case 'processing':
         return 'Đang xử lý';
       case 'completed':
