@@ -241,7 +241,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           return const Center(child: CircularProgressIndicator());
         }
         
-        if (state.transactionHistory.isEmpty) {
+        final history = state.transactionHistory;
+        if (history.isEmpty) {
           return _buildEmptyHistoryState();
         }
         
@@ -259,7 +260,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                 ),
               ),
               const SizedBox(height: 16),
-              _buildHistoryTimeline(state.transactionHistory),
+              _buildHistoryTimeline(history),
             ],
           ),
         );
