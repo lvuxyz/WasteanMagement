@@ -306,14 +306,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         event.transactionId,
       );
 
-      if (!result['success']) {
-        throw Exception('Failed to fetch transaction history');
+      List<TransactionHistory> history = [];
+      
+      if (result['success'] && result['data'] != null) {
+        final historyData = result['data'] as List<dynamic>;
+        history = historyData
+            .map((item) => TransactionHistory.fromJson(item))
+            .toList();
       }
-
-      final historyData = result['data'] as List<dynamic>;
-      final history = historyData
-          .map((item) => TransactionHistory.fromJson(item))
-          .toList();
 
       emit(state.copyWith(
         status: TransactionStatus.success,
@@ -324,6 +324,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
+        transactionHistory: [], // Provide an empty list on error
       ));
     }
   }
