@@ -685,17 +685,23 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         else 
-                          Row(
-                            children: [
-                              _buildStatusButton(innerContext, transaction, 'pending', 'Chờ xử lý'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'verified', 'Xác nhận'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'completed', 'Hoàn thành'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'rejected', 'Hủy bỏ'),
-                            ],
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _buildStatusButton(innerContext, transaction, 'pending', 'Chờ xử lý'),
+                                  const SizedBox(width: 8),
+                                  _buildStatusButton(innerContext, transaction, 'verified', 'Xác nhận'),
+                                  const SizedBox(width: 8),
+                                  _buildStatusButton(innerContext, transaction, 'completed', 'Hoàn thành'),
+                                  const SizedBox(width: 8),
+                                  _buildStatusButton(innerContext, transaction, 'rejected', 'Hủy bỏ'),
+                                ],
+                              ),
+                            ),
                           ),
+                        const SizedBox(width: 8),
                         ElevatedButton.icon(
                           onPressed: () => _showDeleteConfirmation(innerContext, transaction.transactionId),
                           icon: const Icon(Icons.delete_outline, size: 16),
