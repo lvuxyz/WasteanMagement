@@ -86,24 +86,33 @@ class RecyclingRecordItem extends StatelessWidget {
             
             const Divider(height: 24),
             
-            // Details
+            // Details - Fix the overflow by using Flexible widgets in a Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildDetailItem(
-                  'Khối lượng',
-                  '${record.weight} kg',
-                  Icons.scale,
+                Flexible(
+                  flex: 1,
+                  child: _buildDetailItem(
+                    'Khối lượng',
+                    '${record.weight} kg',
+                    Icons.scale,
+                  ),
                 ),
-                _buildDetailItem(
-                  'Địa điểm',
-                  record.collectionPointName,
-                  Icons.location_on,
+                Flexible(
+                  flex: 1,
+                  child: _buildDetailItem(
+                    'Địa điểm',
+                    record.collectionPointName,
+                    Icons.location_on,
+                  ),
                 ),
-                _buildDetailItem(
-                  'Điểm thưởng',
-                  '${record.rewardPoints ?? 0}',
-                  Icons.stars,
+                Flexible(
+                  flex: 1,
+                  child: _buildDetailItem(
+                    'Điểm thưởng',
+                    '${record.rewardPoints ?? 0}',
+                    Icons.stars,
+                  ),
                 ),
               ],
             ),
@@ -177,6 +186,8 @@ class RecyclingRecordItem extends StatelessWidget {
             fontWeight: FontWeight.w500,
             fontSize: 14,
           ),
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ],
     );
