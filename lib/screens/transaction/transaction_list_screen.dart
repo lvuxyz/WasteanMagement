@@ -215,43 +215,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     }
   }
 
-  void _showDeleteConfirmation(BuildContext context, int transactionId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Xác nhận xóa'),
-          content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _deleteTransaction(transactionId);
-              },
-              child: const Text(
-                'Xóa',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deleteTransaction(int transactionId) {
-    context.read<TransactionBloc>().add(DeleteTransaction(transactionId: transactionId));
-    
-    // After deleting, refresh the list
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _refreshTransactions();
-    });
-  }
-
   void _printEndpointInfo() {
     print('===== API INFO =====');
     print('Regular endpoint: ${ApiConstants.transactions}');
@@ -299,7 +262,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             body: Column(
               children: [
                 _buildSearchBar(),
-                _buildFilterBar(),
                 Expanded(
                   child: _buildTransactionList(state),
                 ),
@@ -413,28 +375,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
             borderSide: BorderSide.none,
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterBar() {
-    return Container(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip('all', 'Tất cả'),
-            const SizedBox(width: 8),
-            _buildFilterChip('pending', 'Chờ xử lý'),
-            const SizedBox(width: 8),
-            _buildFilterChip('verified', 'Đã xác nhận'),
-            const SizedBox(width: 8),
-            _buildFilterChip('completed', 'Hoàn thành'),
-            const SizedBox(width: 8),
-            _buildFilterChip('rejected', 'Đã hủy'),
-          ],
         ),
       ),
     );
@@ -611,8 +551,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             _navigateToDetails(transaction.transactionId);
                           } else if (value == 'edit') {
                             _navigateToEdit(transaction.transactionId);
-                          } else if (value == 'delete') {
-                            _showDeleteConfirmation(context, transaction.transactionId);
                           }
                         },
                         itemBuilder: (BuildContext context) {
@@ -638,22 +576,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                               ),
                             ),
                           ];
-                          
-                          if (_isAdmin) {
-                            items.add(
-                              const PopupMenuItem<String>(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete_outline, color: Colors.red),
-                                    SizedBox(width: 8),
-                                    Text('Xóa giao dịch'),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          
                           return items;
                         },
                       ),
