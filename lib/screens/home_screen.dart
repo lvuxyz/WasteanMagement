@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_event.dart';
+import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
@@ -27,6 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _authService = AuthService();
+    
+    // Ensure profile data is loaded
+    Future.microtask(() {
+      final profileState = context.read<ProfileBloc>().state;
+      if (profileState is! ProfileLoaded) {
+        context.read<ProfileBloc>().add(FetchProfile());
+      }
+    });
   }
 
   void _onItemTapped(int index){
@@ -146,12 +155,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.grey[700],
               ),
             ),
-            const Text(
-              'Nguyễn Văn A', // Từ bảng Users.full_name
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+            BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                String userName = 'Người dùng';
+                if (state is ProfileLoaded) {
+                  userName = state.user.fullName;
+                }
+                return Text(
+                  userName,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
             ),
           ],
         ),
