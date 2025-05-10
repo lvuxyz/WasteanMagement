@@ -101,8 +101,11 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   void _setupFormFields() {
     setState(() {
-      _quantityController.text = _transaction!.quantity.toString();
-      _selectedStatus = _transaction!.status;
+      if (_transaction != null) {
+        _selectedStatus = _transaction!.status;
+      } else {
+        _selectedStatus = 'pending'; // Giá trị mặc định
+      }
       _isLoading = false;
     });
   }
@@ -113,8 +116,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     });
 
     try {
-      // Chỉ cập nhật trạng thái giao dịch
-      if (_transaction != null && _isAdmin && _selectedStatus != _transaction!.status) {
+      // Cho phép tất cả người dùng cập nhật trạng thái
+      if (_transaction != null && _selectedStatus != _transaction!.status) {
         context.read<TransactionBloc>().add(
           UpdateTransactionStatus(
             transactionId: widget.transactionId,
@@ -287,47 +290,85 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
             ),
             const Divider(),
             const SizedBox(height: 16),
-            if (_isAdmin) ...[
-              const SizedBox(height: 24),
+            if (_transaction != null) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: _getStatusColor(_transaction!.status).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  border: Border.all(color: _getStatusColor(_transaction!.status).withOpacity(0.3)),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
+                    Icon(
+                      _getStatusIcon(_transaction!.status), 
+                      color: _getStatusColor(_transaction!.status)
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.admin_panel_settings, color: Colors.blue),
-                        SizedBox(width: 8),
+                        const Text(
+                          'Trạng thái hiện tại:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Text(
-                          'Cập nhật trạng thái giao dịch (Admin)',
+                          _getStatusText(_transaction!.status),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue[800],
+                            color: _getStatusColor(_transaction!.status),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Thay đổi trạng thái giao dịch sẽ gọi API: PATCH /api/v1/transactions/:id/status',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[700],
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildStatusSelector(),
                   ],
                 ),
               ),
             ],
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.swap_horiz, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
+                        'Chọn trạng thái mới',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Chọn một trạng thái và nhấn nút Cập nhật trạng thái bên dưới',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatusSelector(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -338,7 +379,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
@@ -355,18 +396,47 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   }
 
   Widget _buildStatusOption(String value, String label, Color color) {
+    final isSelected = _selectedStatus == value;
+    
     return RadioListTile<String>(
-      title: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontWeight: _selectedStatus == value ? FontWeight.bold : FontWeight.normal,
-        ),
+      title: Row(
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected ? color : Colors.transparent,
+              border: Border.all(
+                color: isSelected ? color : Colors.grey[400]!,
+                width: 2,
+              ),
+            ),
+            child: isSelected
+                ? Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 12,
+                  )
+                : null,
+          ),
+          SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? color : Colors.grey[700],
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
       value: value,
       groupValue: _selectedStatus,
       activeColor: color,
+      selected: isSelected,
       onChanged: (newValue) {
+        print('Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)');
         setState(() {
           _selectedStatus = newValue!;
         });
@@ -447,5 +517,50 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'verified':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        throw Exception('Unknown status');
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'pending':
+        return Icons.pending;
+      case 'verified':
+        return Icons.verified;
+      case 'completed':
+        return Icons.done;
+      case 'rejected':
+        return Icons.close;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Chờ xử lý';
+      case 'verified':
+        return 'Đã xác nhận';
+      case 'completed':
+        return 'Hoàn thành';
+      case 'rejected':
+        return 'Đã hủy';
+      default:
+        throw Exception('Unknown status');
+    }
   }
 } 
