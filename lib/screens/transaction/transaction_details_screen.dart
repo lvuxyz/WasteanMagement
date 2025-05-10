@@ -208,6 +208,22 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           title: const Text('Chi tiết giao dịch'),
           backgroundColor: AppColors.primaryGreen,
           foregroundColor: Colors.white,
+          actions: _isAdmin ? [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/edit-transaction',
+                  arguments: widget.transactionId,
+                ).then((_) {
+                  // Refresh when returning from edit
+                  _loadTransactionDetails();
+                });
+              },
+              tooltip: 'Chỉnh sửa giao dịch',
+            ),
+          ] : null,
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.white,
