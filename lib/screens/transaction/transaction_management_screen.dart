@@ -282,20 +282,25 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   }
 
   Widget _buildFilterTabs() {
+    // Define all available statuses
+    final List<Map<String, String>> statuses = [
+      {'value': 'all', 'label': 'Tất cả'},
+      {'value': 'pending', 'label': 'Chờ xử lý'},
+      {'value': 'verified', 'label': 'Đã xác nhận'},
+      {'value': 'processing', 'label': 'Đang xử lý'},
+      {'value': 'completed', 'label': 'Hoàn thành'},
+      {'value': 'rejected', 'label': 'Đã hủy'},
+    ];
+    
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: [
-            _buildFilterTab('all', 'Tất cả'),
-            _buildFilterTab('pending', 'Chờ xử lý'),
-            _buildFilterTab('verified', 'Đã xác nhận'),
-            _buildFilterTab('processing', 'Đang xử lý'),
-            _buildFilterTab('completed', 'Hoàn thành'),
-            _buildFilterTab('rejected', 'Đã hủy'),
-          ],
+          children: statuses.map((status) => 
+            _buildFilterTab(status['value']!, status['label']!)
+          ).toList(),
         ),
       ),
     );
@@ -304,65 +309,66 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   Widget _buildFilterTab(String value, String label) {
     final bool isSelected = _selectedFilterOption == value;
     
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedFilterOption = value;
-        });
-            
-        // Thêm sự kiện FetchTransactions hoặc FetchMyTransactions
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final builderWidget = Builder(
-            builder: (context) {
-              try {
-                if (_isAdmin) {
-                  context.read<TransactionBloc>().add(FetchTransactions(
-                    status: value == 'all' ? null : value,
-                  ));
-                } else {
-                  context.read<TransactionBloc>().add(FetchMyTransactions(
-                    status: value == 'all' ? null : value,
-                  ));
+    return Builder(
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // Only proceed if this isn't already selected
+                if (_selectedFilterOption != value) {
+                  setState(() {
+                    _selectedFilterOption = value;
+                  });
+                  
+                  // Fetch transactions with the new filter
+                  try {
+                    if (_isAdmin) {
+                      context.read<TransactionBloc>().add(FetchTransactions(
+                        status: value == 'all' ? null : value,
+                      ));
+                    } else {
+                      context.read<TransactionBloc>().add(FetchMyTransactions(
+                        status: value == 'all' ? null : value,
+                      ));
+                    }
+                  } catch (e) {
+                    print('Error applying filter: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi khi lọc giao dịch: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-              } catch (e) {
-                print('Error in filter tab: $e');
-              }
-              return const SizedBox.shrink();
-            }
-          );
-          
-          // Chèn builder widget vào widget tree
-          final overlay = Overlay.of(context);
-          final entry = OverlayEntry(
-            builder: (context) => Positioned(
-              child: builderWidget,
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryGreen : Colors.grey.shade300,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-          );
-          
-          overlay.insert(entry);
-          
-          // Xóa sau khi đã thực hiện
-          Future.microtask(() {
-            entry.remove();
-          });
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryGreen : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
