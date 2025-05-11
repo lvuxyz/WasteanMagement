@@ -147,7 +147,7 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
         filteredLanguages: _supportedLanguages,
       ));
     } catch (e) {
-      emit(LanguageError('Failed to initialize language'));
+      emit(const LanguageError('Failed to initialize language'));
     }
   }
   
@@ -173,7 +173,7 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
       try {
         await repository.setLanguageCode(currentState.selectedLanguage.code);
       } catch (e) {
-        emit(LanguageError('Failed to save language preference'));
+        emit(const LanguageError('Failed to save language preference'));
       }
     }
   }

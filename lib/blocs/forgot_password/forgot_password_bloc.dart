@@ -13,15 +13,17 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   }
 
   Future<void> _onForgotPasswordSubmitted(
-    ForgotPasswordSubmitted event,
-    Emitter<ForgotPasswordState> emit,
-  ) async {
+      ForgotPasswordSubmitted event,
+      Emitter<ForgotPasswordState> emit,
+      ) async {
     emit(ForgotPasswordLoading());
 
-    try {
-      final l10n = S.of(context);
-      final invalidEmailText = l10n.invalidEmail;
+    // Lấy chuỗi localization trước khi có bất kỳ async nào
+    final l10n = S.of(context);
+    final invalidEmailText = l10n.invalidEmail;
+    final resetPasswordErrorText = l10n.resetPasswordError;
 
+    try {
       // Validate email format
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
       if (!emailRegex.hasMatch(event.email)) {
@@ -29,18 +31,15 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
         return;
       }
 
-      // Simulate API call for password reset
+      // Giả lập API call
       await Future.delayed(const Duration(seconds: 1));
 
-      // In a real app, this would be an API call to send a password reset email
-      // For now, we'll just simulate a successful password reset request
       emit(ForgotPasswordSuccess(email: event.email));
     } catch (e) {
-      final l10n = S.of(context);
-      final resetPasswordErrorText = l10n.resetPasswordError;
       emit(ForgotPasswordFailure(error: '$resetPasswordErrorText: $e'));
     }
   }
+
 
   void _onForgotPasswordReset(
     ForgotPasswordReset event,
