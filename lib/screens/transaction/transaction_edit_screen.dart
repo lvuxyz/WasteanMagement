@@ -31,20 +31,15 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   final _quantityController = TextEditingController();
   String _selectedStatus = 'pending';
   final AuthService _authService = AuthService();
-  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    _checkIsAdmin();
     _loadTransactionDetails();
   }
 
   Future<void> _checkIsAdmin() async {
-    final isAdmin = await _authService.isAdmin();
-    setState(() {
-      _isAdmin = isAdmin;
-    });
+    await _authService.isAdmin(); // Keep the method for future use if needed
   }
 
   @override
