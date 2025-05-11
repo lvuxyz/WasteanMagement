@@ -768,14 +768,20 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
               const SizedBox(height: 16),
               _isUpdatingStatus 
                 ? const Center(child: CircularProgressIndicator())
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatusButton('pending', 'Chờ xử lý'),
-                      _buildStatusButton('verified', 'Xác nhận'),
-                      _buildStatusButton('completed', 'Hoàn thành'),
-                      _buildStatusButton('rejected', 'Hủy bỏ'),
-                    ],
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _buildStatusButton('pending', 'Chờ xử lý'),
+                        const SizedBox(width: 8),
+                        _buildStatusButton('verified', 'Xác nhận'),
+                        const SizedBox(width: 8),
+                        _buildStatusButton('completed', 'Hoàn thành'),
+                        const SizedBox(width: 8),
+                        _buildStatusButton('rejected', 'Hủy bỏ'),
+                      ],
+                    ),
                   ),
             ],
           ),
