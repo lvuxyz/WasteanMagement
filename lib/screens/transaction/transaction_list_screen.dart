@@ -25,7 +25,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
   bool _adminStatusChecked = false; // Flag để theo dõi trạng thái kiểm tra
   final AuthService _authService = AuthService();
   bool _isInitialized = false;
-  bool _didLoadInitialData = false;
 
   @override
   void initState() {
@@ -50,7 +49,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     
     setState(() {
       _isInitialized = true;
-      _didLoadInitialData = true;
     });
     
     // Tải giao dịch dựa trên vai trò
