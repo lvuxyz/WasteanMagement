@@ -17,9 +17,16 @@ import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
 import 'screens/waste_type/waste_type_collection_points_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/view_profile_screen.dart';
+import 'screens/about_app_screen.dart';
+import 'screens/help_and_guidance_screen.dart';
+import 'screens/change_password.dart';
+import 'screens/edit_profile_screen.dart';
 
 class AppRoutes {
-  static const String welcome = '/welcome';
+  static const String welcome = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String main = '/main';
@@ -38,6 +45,13 @@ class AppRoutes {
   static const String addTransaction = '/add-transaction';
   static const String transactionDetails = '/transaction-details';
   static const String editTransaction = '/edit-transaction';
+  static const String home = '/home';
+  static const String profile = '/profile';
+  static const String viewProfile = '/view-profile';
+  static const String editProfile = '/edit-profile';
+  static const String about = '/about';
+  static const String help = '/help';
+  static const String changePassword = '/change-password';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -96,7 +110,20 @@ class AppRoutes {
             collectionPointName: args['collectionPointName'],
           ),
         );
-
+      case home:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case viewProfile:
+        return MaterialPageRoute(builder: (_) => const ViewProfileScreen());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case about:
+        return MaterialPageRoute(builder: (_) => const AboutAppScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpAndGuidanceScreen());
+      case changePassword:
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
