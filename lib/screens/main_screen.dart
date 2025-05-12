@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
 import '../utils/app_colors.dart';
@@ -214,9 +213,7 @@ class _MainScreenState extends State<MainScreen> {
           // ),
           // Trang Tài khoản
           BlocProvider(
-            create: (context) => ProfileBloc(
-              userRepository: RepositoryProvider.of<UserRepository>(context),
-            )..add(LoadUserProfile()),
+            create: (context) => ProfileBloc()..add(LoadProfile()),
             child: const ProfileScreen(),
           ),
         ],
