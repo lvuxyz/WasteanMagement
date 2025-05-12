@@ -1,10 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/app_colors.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
-import '../blocs/profile/profile_state.dart';
-import '../models/user_profile.dart';
+import 'package:http/http.dart' as http;
+import '../core/api/api_constants.dart';
+import '../services/auth_service.dart';
 import '../widgets/common/loading_indicator.dart';
 import '../widgets/common/error_message.dart';
 import 'package:intl/intl.dart';
@@ -16,21 +15,77 @@ class ViewProfileScreen extends StatefulWidget {
   State<ViewProfileScreen> createState() => _ViewProfileScreenState();
 }
 
-class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ViewProfileScreenState extends State<ViewProfileScreen> {
+  final AuthService _authService = AuthService();
+  bool _isLoading = true;
+  String _errorMessage = '';
+  Map<String, dynamic> _userData = {};
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    // Load profile data when screen is initialized
-    context.read<ProfileBloc>().add(LoadProfile());
+    _loadUserData();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final token = await _authService.getToken();
+      
+      if (token == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Không tìm thấy token xác thực';
+        });
+        return;
+      }
+      
+      // Make API request
+      final response = await http.get(
+        Uri.parse(ApiConstants.profile),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      print("[DEBUG] Status code: ${response.statusCode}");
+      print("[DEBUG] Response body: ${response.body.substring(0, 100)}...");
+      
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        
+        if (responseData['success'] == true && responseData['data'] != null) {
+          setState(() {
+            _userData = responseData['data'];
+            _isLoading = false;
+          });
+          
+          print("[DEBUG] User data loaded: ${_userData['basic_info']?['full_name']}");
+        } else {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Không thể tải thông tin người dùng';
+          });
+        }
+      } else {
+        // Error handling
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Lỗi khi tải thông tin người dùng: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+      print("[DEBUG] Error loading profile: $e");
+    }
   }
 
   @override
@@ -39,268 +94,235 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
-        elevation: 0,
-        title: const Text(
-          'Thông tin cá nhân',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Thông tin cá nhân'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () {
-              Navigator.pushNamed(context, '/edit-profile').then((_) {
-                // Refresh profile data when returning from edit screen
-                context.read<ProfileBloc>().add(LoadProfile());
-              });
-            },
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadUserData,
           ),
         ],
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (context, state) {
-          if (state is ProfileLoading) {
-            return const Center(child: LoadingIndicator());
-          } else if (state is ProfileError) {
-            return ErrorMessage(
-              message: state.message,
-              onRetry: () => context.read<ProfileBloc>().add(LoadProfile()),
-            );
-          } else if (state is ProfileLoaded) {
-            final userProfile = state.userProfile;
-            return _buildProfileContent(userProfile);
-          }
-          return Center(
-            child: TextButton(
-              onPressed: () => context.read<ProfileBloc>().add(LoadProfile()),
-              child: const Text('Tải thông tin'),
-            ),
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _loadUserData,
+        child: _isLoading 
+          ? const Center(child: LoadingIndicator())
+          : _errorMessage.isNotEmpty
+            ? ErrorMessage(
+                message: _errorMessage,
+                onRetry: _loadUserData,
+              )
+            : _buildProfileContent(),
       ),
     );
   }
 
-  Widget _buildProfileContent(UserProfile userProfile) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<ProfileBloc>().add(LoadProfile());
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildProfileContent() {
+    if (_userData.isEmpty) {
+      return const Center(
+        child: Text('Không có dữ liệu người dùng'),
+      );
+    }
+
+    final basicInfo = _userData['basic_info'] ?? {};
+    final transactionStats = _userData['transaction_stats'] ?? {};
+    final accountStatus = _userData['account_status'] ?? {};
+    final additionalData = _userData['additional_data'] ?? {};
+    
+    print("[DEBUG] Building UI with basic info: $basicInfo");
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar and basic info
+          _buildProfileHeader(basicInfo),
+          
+          const SizedBox(height: 24),
+          
+          // Transaction stats card
+          _buildStatsCard(transactionStats),
+          
+          const SizedBox(height: 24),
+          
+          // Account info card
+          _buildAccountInfoCard(basicInfo, accountStatus, additionalData),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(Map<String, dynamic> basicInfo) {
+    final fullName = basicInfo['full_name'] ?? '';
+    final email = basicInfo['email'] ?? '';
+    final phone = basicInfo['phone'] ?? '';
+    final roles = (basicInfo['roles'] as List?)?.cast<String>() ?? <String>[];
+    
+    final firstLetter = fullName.isNotEmpty 
+        ? fullName[0].toUpperCase() 
+        : '?';
+        
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
           children: [
-            // Header with user information
-            _buildProfileHeader(userProfile.basicInfo),
-            
-            // Cards with summary statistics
-            _buildStatisticsCards(userProfile.transactionStats),
-            
-            // Tabs for detailed information
-            _buildDetailTabs(userProfile),
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
+              child: Text(
+                firstLetter,
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryGreen,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.email, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          email,
+                          style: const TextStyle(color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        phone,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  if (roles.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        roles.join(', '),
+                        style: TextStyle(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(BasicInfo basicInfo) {
-    final firstLetter = basicInfo.fullName.isNotEmpty ? basicInfo.fullName[0].toUpperCase() : '?';
+  Widget _buildStatsCard(Map<String, dynamic> stats) {
+    final totalTransactions = stats['total_transactions']?.toString() ?? '0';
+    final completedTransactions = stats['completed_transactions']?.toString() ?? '0';
+    final pendingTransactions = stats['pending_transactions']?.toString() ?? '0';
+    final rejectedTransactions = stats['rejected_transactions']?.toString() ?? '0';
+    final verifiedTransactions = stats['verified_transactions']?.toString() ?? '0';
+    final totalQuantity = stats['total_quantity']?.toString() ?? '0';
     
-    return Container(
-      padding: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: AppColors.primaryGreen,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                ),
-              ],
-            ),
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.white,
-              child: Text(
-                firstLetter,
-                style: TextStyle(
-                  fontSize: 45,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 15),
-          Text(
-            basicInfo.fullName,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.email, size: 16, color: Colors.white70),
-              const SizedBox(width: 5),
-              Text(
-                basicInfo.email,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.phone, size: 16, color: Colors.white70),
-              const SizedBox(width: 5),
-              Text(
-                basicInfo.phone,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.verified_user, size: 14, color: Colors.white),
-                const SizedBox(width: 5),
-                Text(
-                  basicInfo.roles.isNotEmpty ? basicInfo.roles.join(', ') : 'Người dùng',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatisticsCards(TransactionStats stats) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
-            child: Text(
-              'Thống kê tổng quan',
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Thống kê giao dịch',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatColumn(
-                        'Tổng giao dịch',
-                        stats.totalTransactions.toString(),
-                        Icons.assignment,
-                        Colors.blue,
-                      ),
-                      _buildStatColumn(
-                        'Đã hoàn thành',
-                        stats.completedTransactions,
-                        Icons.check_circle,
-                        Colors.green,
-                      ),
-                      _buildStatColumn(
-                        'Chờ xử lý',
-                        stats.pendingTransactions,
-                        Icons.hourglass_empty,
-                        Colors.orange,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatColumn(
-                        'Đã xác nhận',
-                        stats.verifiedTransactions,
-                        Icons.verified,
-                        Colors.blue,
-                      ),
-                      _buildStatColumn(
-                        'Từ chối',
-                        stats.rejectedTransactions,
-                        Icons.cancel,
-                        Colors.red,
-                      ),
-                      _buildStatColumn(
-                        'Tổng khối lượng',
-                        '${stats.totalQuantity} kg',
-                        Icons.scale,
-                        AppColors.primaryGreen,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatItem(
+                  'Tổng giao dịch',
+                  totalTransactions,
+                  Icons.assignment,
+                  Colors.blue,
+                ),
+                _buildStatItem(
+                  'Hoàn thành',
+                  completedTransactions,
+                  Icons.check_circle,
+                  Colors.green,
+                ),
+                _buildStatItem(
+                  'Chờ xử lý',
+                  pendingTransactions,
+                  Icons.hourglass_empty,
+                  Colors.orange,
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatItem(
+                  'Từ chối',
+                  rejectedTransactions,
+                  Icons.cancel,
+                  Colors.red,
+                ),
+                _buildStatItem(
+                  'Đã xác nhận',
+                  verifiedTransactions,
+                  Icons.verified,
+                  Colors.blue,
+                ),
+                _buildStatItem(
+                  'Tổng KL',
+                  '$totalQuantity kg',
+                  Icons.scale,
+                  AppColors.primaryGreen,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatColumn(String title, String value, IconData icon, Color color) {
+  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Container(
@@ -309,19 +331,18 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
             color: color.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: color, size: 28),
+          child: Icon(icon, color: color),
         ),
         const SizedBox(height: 8),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
         Text(
-          title,
+          label,
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey[600],
@@ -331,173 +352,58 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
     );
   }
 
-  Widget _buildDetailTabs(UserProfile userProfile) {
-    return Column(
-      children: [
-        // Tab bar
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: AppColors.primaryGreen,
-            ),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.grey[700],
-            tabs: const [
-              Tab(
-                icon: Icon(Icons.person_outline),
-                text: 'Thông tin',
-              ),
-              Tab(
-                icon: Icon(Icons.bar_chart),
-                text: 'Thống kê',
-              ),
-              Tab(
-                icon: Icon(Icons.history),
-                text: 'Giao dịch',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Tab content
-        SizedBox(
-          height: 450, // Adjust height as needed
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildInfoTab(userProfile),
-              _buildStatsTab(userProfile),
-              _buildTransactionsTab(userProfile),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoTab(UserProfile userProfile) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Thông tin cơ bản', Icons.person),
-              const SizedBox(height: 10),
-              _buildInfoRow('Tên đầy đủ', userProfile.basicInfo.fullName),
-              _buildInfoRow('Tên đăng nhập', userProfile.basicInfo.username),
-              _buildInfoRow('Email', userProfile.basicInfo.email),
-              _buildInfoRow('Điện thoại', userProfile.basicInfo.phone),
-              _buildInfoRow('Địa chỉ', userProfile.basicInfo.address),
-              
-              const SizedBox(height: 20),
-              _buildSectionHeader('Thông tin tài khoản', Icons.security),
-              const SizedBox(height: 10),
-              _buildInfoRow('Trạng thái', _getStatusText(userProfile.accountStatus.status)),
-              _buildInfoRow('Ngày tạo', _formatDateTime(userProfile.accountStatus.createdAt)),
-              _buildInfoRow('Múi giờ', userProfile.timezone),
-              _buildInfoRow('Số lần đăng nhập sai', userProfile.accountStatus.loginAttempts.toString()),
-              
-              if (userProfile.accountStatus.lockUntil != null)
-                _buildInfoRow('Khóa đến', _formatDateTime(userProfile.accountStatus.lockUntil!)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsTab(UserProfile userProfile) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Loại rác thải đã thu gom', Icons.delete_outline),
-              const SizedBox(height: 10),
-              ...userProfile.additionalData.wasteTypeStats.map((stat) => 
-                _buildWasteTypeRow(stat.wasteTypeName, stat.totalQuantity)
-              ).toList(),
-              
-              const SizedBox(height: 20),
-              _buildSectionHeader('Thông tin điểm thưởng', Icons.card_giftcard),
-              const SizedBox(height: 10),
-              _buildInfoRow(
-                'Tổng phần thưởng', 
-                userProfile.additionalData.rewardStats.totalRewards.toString(),
-                valueColor: Colors.green,
-                valueBold: true,
-              ),
-              _buildInfoRow(
-                'Tổng điểm', 
-                _formatNumber(userProfile.additionalData.rewardStats.totalPoints),
-                valueColor: Colors.blue,
-                valueBold: true,
-              ),
-              _buildInfoRow(
-                'Ngày nhận thưởng gần nhất',
-                _formatDateTime(userProfile.additionalData.rewardStats.lastRewardDate),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTransactionsTab(UserProfile userProfile) {
-    final transactions = userProfile.additionalData.latestTransactions;
-    
-    if (transactions.isEmpty) {
-      return const Center(
-        child: Text(
-          'Không có giao dịch gần đây',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
-        ),
-      );
-    }
+  Widget _buildAccountInfoCard(
+    Map<String, dynamic> basicInfo,
+    Map<String, dynamic> accountStatus,
+    Map<String, dynamic> additionalData,
+  ) {
+    final rewardStats = additionalData['reward_stats'] ?? {};
+    final timezone = _userData['timezone'] ?? 'UTC';
     
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('Giao dịch gần đây', Icons.history),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.separated(
-                itemCount: transactions.length,
-                separatorBuilder: (context, index) => const Divider(),
-                itemBuilder: (context, index) {
-                  final transaction = transactions[index];
-                  return _buildTransactionItem(transaction);
-                },
+            const Text(
+              'Thông tin tài khoản',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow('Tên đăng nhập', basicInfo['username'] ?? ''),
+            _buildInfoRow('Địa chỉ', basicInfo['address'] ?? ''),
+            _buildInfoRow('Trạng thái', _getStatusText(accountStatus['status'] ?? '')),
+            _buildInfoRow('Ngày tạo', _formatDateTime(accountStatus['created_at'] ?? '')),
+            _buildInfoRow('Múi giờ', timezone),
+            
+            const SizedBox(height: 16),
+            const Text(
+              'Thông tin điểm thưởng',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              'Tổng phần thưởng', 
+              (rewardStats['total_rewards'] ?? 0).toString(),
+              valueColor: Colors.green,
+            ),
+            _buildInfoRow(
+              'Tổng điểm', 
+              _formatNumber(rewardStats['total_points']?.toString() ?? '0'),
+              valueColor: Colors.blue,
+            ),
+            _buildInfoRow(
+              'Ngày nhận thưởng gần nhất',
+              _formatDateTime(rewardStats['last_reward_date'] ?? ''),
             ),
           ],
         ),
@@ -505,124 +411,21 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
     );
   }
 
-  Widget _buildTransactionItem(LatestTransaction transaction) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: _getTransactionIcon(transaction.status),
-      title: Text(
-        transaction.wasteTypeName,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(transaction.collectionPointName),
-          Text(
-            _formatDateTime(transaction.transactionDate, includeTime: true),
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
-        ],
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            '${transaction.quantity} kg',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          _buildStatusChip(transaction.status),
-        ],
-      ),
-    );
-  }
-
-  Widget _getTransactionIcon(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return CircleAvatar(
-          backgroundColor: Colors.green.withOpacity(0.1),
-          child: const Icon(Icons.check_circle, color: Colors.green, size: 20),
-        );
-      case 'pending':
-        return CircleAvatar(
-          backgroundColor: Colors.orange.withOpacity(0.1),
-          child: const Icon(Icons.hourglass_empty, color: Colors.orange, size: 20),
-        );
-      case 'verified':
-        return CircleAvatar(
-          backgroundColor: Colors.blue.withOpacity(0.1),
-          child: const Icon(Icons.verified, color: Colors.blue, size: 20),
-        );
-      case 'rejected':
-        return CircleAvatar(
-          backgroundColor: Colors.red.withOpacity(0.1),
-          child: const Icon(Icons.cancel, color: Colors.red, size: 20),
-        );
-      default:
-        return CircleAvatar(
-          backgroundColor: Colors.grey.withOpacity(0.1),
-          child: const Icon(Icons.help_outline, color: Colors.grey, size: 20),
-        );
-    }
-  }
-
-  Widget _buildWasteTypeRow(String wasteType, String quantity) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-          const SizedBox(width: 10),
-          Expanded(child: Text(wasteType)),
-          Text(
-            '$quantity kg',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryGreen,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.primaryGreen),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryGreen,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildInfoRow(
     String label, 
     String value, {
     Color? valueColor,
-    bool valueBold = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 140,
             child: Text(
               label,
               style: TextStyle(
                 color: Colors.grey[600],
-                fontSize: 14,
               ),
             ),
           ),
@@ -630,9 +433,8 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
             child: Text(
               value,
               style: TextStyle(
-                fontSize: 15,
+                fontWeight: FontWeight.w500,
                 color: valueColor,
-                fontWeight: valueBold ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
@@ -641,56 +443,9 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
     );
   }
 
-  Widget _buildStatusChip(String status) {
-    Color chipColor;
-    String displayText;
-    
-    switch (status.toLowerCase()) {
-      case 'completed':
-        chipColor = Colors.green;
-        displayText = 'Hoàn thành';
-        break;
-      case 'pending':
-        chipColor = Colors.orange;
-        displayText = 'Chờ xử lý';
-        break;
-      case 'verified':
-        chipColor = Colors.blue;
-        displayText = 'Xác nhận';
-        break;
-      case 'rejected':
-        chipColor = Colors.red;
-        displayText = 'Từ chối';
-        break;
-      default:
-        chipColor = Colors.grey;
-        displayText = status;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: chipColor.withOpacity(0.5))
-      ),
-      child: Text(
-        displayText,
-        style: TextStyle(
-          color: chipColor,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  String _formatDateTime(String dateTimeStr, {bool includeTime = false}) {
+  String _formatDateTime(String dateTimeStr) {
     try {
       final dateTime = DateTime.parse(dateTimeStr);
-      if (includeTime) {
-        return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
-      }
       return DateFormat('dd/MM/yyyy').format(dateTime);
     } catch (e) {
       return dateTimeStr;
@@ -721,4 +476,4 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
       return number;
     }
   }
-}
+} 

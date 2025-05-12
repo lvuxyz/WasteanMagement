@@ -149,6 +149,8 @@ class UserRepository {
                 // For new profile format, just return the raw data to be processed by ProfileBloc
                 // We'll create a minimal User object to satisfy the return type
                 final basicInfo = response['data']['basic_info'] ?? {};
+                print('[DEBUG] Raw profile data from API: ${response['data']}');
+                
                 final user = User(
                   id: basicInfo['id'] ?? 0,
                   username: basicInfo['username'] ?? '',
@@ -159,6 +161,9 @@ class UserRepository {
                   roles: List<String>.from(basicInfo['roles'] ?? []),
                   rawProfileData: response['data'], // Store the raw profile data for later use
                 );
+                
+                print('[DEBUG] Created User object with rawProfileData: ${user.rawProfileData != null}');
+                print('[DEBUG] Transaction stats in raw data: ${user.rawProfileData?['transaction_stats']}');
                 
                 await localDataSource.cacheUserProfile(user);
                 developer.log('Đã lấy và cập nhật thông tin người dùng mới: ${user.fullName}');
