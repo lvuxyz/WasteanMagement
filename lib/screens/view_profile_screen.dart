@@ -89,6 +89,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // User basic info card
           _buildProfileHeader(userProfile.basicInfo),
@@ -230,6 +231,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
 
   Widget _buildTabs(UserProfile userProfile) {
     return Column(
+      mainAxisSize: MainAxisSize.min, 
       children: [
         Container(
           color: Colors.white,
@@ -245,8 +247,9 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
             ],
           ),
         ),
-        SizedBox(
-          height: 400, // Fixed height for tab content
+        Container(
+          height: 400,
+          color: Colors.white,
           child: TabBarView(
             controller: _tabController,
             children: [
@@ -261,150 +264,151 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> with SingleTicker
   }
 
   Widget _buildBasicInfoTab(BasicInfo basicInfo, AccountStatus accountStatus, String timezone) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Thông tin cơ bản',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Thông tin cơ bản',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow('Tên đầy đủ', basicInfo.fullName),
-          _buildInfoRow('Tên đăng nhập', basicInfo.username),
-          _buildInfoRow('Email', basicInfo.email),
-          _buildInfoRow('Điện thoại', basicInfo.phone),
-          _buildInfoRow('Địa chỉ', basicInfo.address),
-          const Divider(height: 32),
-          const Text(
-            'Thông tin tài khoản',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 16),
+            _buildInfoRow('Tên đầy đủ', basicInfo.fullName),
+            _buildInfoRow('Tên đăng nhập', basicInfo.username),
+            _buildInfoRow('Email', basicInfo.email),
+            _buildInfoRow('Điện thoại', basicInfo.phone),
+            _buildInfoRow('Địa chỉ', basicInfo.address),
+            const Divider(height: 32),
+            const Text(
+              'Thông tin tài khoản',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow('Trạng thái', accountStatus.status),
-          _buildInfoRow(
-            'Ngày tạo',
-            DateFormat('dd/MM/yyyy').format(DateTime.parse(accountStatus.createdAt)),
-          ),
-          _buildInfoRow('Múi giờ', timezone),
-        ],
+            const SizedBox(height: 16),
+            _buildInfoRow('Trạng thái', accountStatus.status),
+            _buildInfoRow(
+              'Ngày tạo',
+              DateFormat('dd/MM/yyyy').format(DateTime.parse(accountStatus.createdAt)),
+            ),
+            _buildInfoRow('Múi giờ', timezone),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatsTab(AdditionalData additionalData) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Loại rác thải đã thu gom',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Loại rác thải đã thu gom',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: additionalData.wasteTypeStats.length,
-            itemBuilder: (context, index) {
-              final stat = additionalData.wasteTypeStats[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(stat.wasteTypeName),
-                    Text(
-                      '${stat.totalQuantity} kg',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const Divider(height: 32),
-          const Text(
-            'Thông tin điểm thưởng',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: additionalData.wasteTypeStats.length,
+              itemBuilder: (context, index) {
+                final stat = additionalData.wasteTypeStats[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(stat.wasteTypeName),
+                      Text(
+                        '${stat.totalQuantity} kg',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow('Tổng phần thưởng', additionalData.rewardStats.totalRewards.toString()),
-          _buildInfoRow('Tổng điểm', additionalData.rewardStats.totalPoints),
-          _buildInfoRow(
-            'Ngày nhận thưởng gần nhất',
-            DateFormat('dd/MM/yyyy').format(DateTime.parse(additionalData.rewardStats.lastRewardDate)),
-          ),
-        ],
+            const Divider(height: 32),
+            const Text(
+              'Thông tin điểm thưởng',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow('Tổng phần thưởng', additionalData.rewardStats.totalRewards.toString()),
+            _buildInfoRow('Tổng điểm', additionalData.rewardStats.totalPoints),
+            _buildInfoRow(
+              'Ngày nhận thưởng gần nhất',
+              DateFormat('dd/MM/yyyy').format(DateTime.parse(additionalData.rewardStats.lastRewardDate)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRecentTransactionsTab(List<LatestTransaction> transactions) {
-    return Container(
-      color: Colors.white,
+    if (transactions.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('Không có giao dịch gần đây'),
+        ),
+      );
+    }
+    
+    return ListView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Giao dịch gần đây',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+      children: [
+        const Text(
+          'Giao dịch gần đây',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: transactions.length,
-              itemBuilder: (context, index) {
-                final transaction = transactions[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(
-                      transaction.wasteTypeName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${transaction.collectionPointName}\n${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction.transactionDate))}',
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${transaction.quantity} kg',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        _buildStatusChip(transaction.status),
-                      ],
-                    ),
-                    isThreeLine: true,
-                  ),
-                );
-              },
+        ),
+        const SizedBox(height: 16),
+        ...transactions.map((transaction) => Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            title: Text(
+              transaction.wasteTypeName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
+            subtitle: Text(
+              '${transaction.collectionPointName}\n${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction.transactionDate))}',
+            ),
+            trailing: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${transaction.quantity} kg',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                _buildStatusChip(transaction.status),
+              ],
+            ),
+            isThreeLine: true,
           ),
-        ],
-      ),
+        )).toList(),
+      ],
     );
   }
 

@@ -4,13 +4,15 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_constants.dart';
 import '../../models/user_profile.dart';
 import '../../services/auth_service.dart';
+import '../../repositories/user_repository.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final AuthService _authService = AuthService();
+  final UserRepository? userRepository;
   
-  ProfileBloc() : super(ProfileInitial()) {
+  ProfileBloc({this.userRepository}) : super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
   }
@@ -22,7 +24,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       emit(ProfileLoading());
       
-      // Get the auth token
+      if (userRepository != null) {
+        try {
+          // If we have a userRepository, use it to get the profile
+          final user = await userRepository!.getUserProfile();
+          // Convert the User to UserProfile or fetch additional data if needed
+          final userProfile = UserProfile.fromUserModel(user);
+          emit(ProfileLoaded(userProfile: userProfile));
+          return;
+        } catch (repoError) {
+          // If using userRepository fails, fall back to the direct API call
+          emit(ProfileError(repoError.toString()));
+          return;
+        }
+      }
+      
+      // Fall back to original implementation using AuthService
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');
@@ -63,7 +80,28 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       emit(ProfileLoading());
       
-      // Get the auth token
+      // Try to use userRepository if available
+      if (userRepository != null) {
+        try {
+          await userRepository!.updateUserProfile(
+            fullName: event.fullName,
+            email: event.email,
+            phone: event.phone,
+            address: event.address,
+          );
+          
+          emit(const ProfileUpdateSuccess());
+          // Reload profile after successful update
+          add(LoadProfile());
+          return;
+        } catch (repoError) {
+          // If repository fails, try the direct API approach
+          emit(ProfileError(repoError.toString()));
+          return;
+        }
+      }
+      
+      // Fall back to original implementation using AuthService
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');

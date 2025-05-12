@@ -4,6 +4,7 @@ import 'package:wasteanmagement/blocs/auth/auth_bloc.dart';
 import 'package:wasteanmagement/blocs/auth/auth_event.dart';
 import 'package:wasteanmagement/blocs/auth/auth_state.dart';
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
+import 'package:wasteanmagement/blocs/profile/profile_event.dart';
 import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
@@ -204,7 +205,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                 builder: (context) => const ViewProfileScreen(),
+                  builder: (context) => BlocProvider<ProfileBloc>(
+                    create: (context) => ProfileBloc(
+                      userRepository: context.read<UserRepository>(),
+                    ),
+                    child: const ViewProfileScreen(),
+                  ),
                 ),
               );
             },
