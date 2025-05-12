@@ -204,10 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => BlocProvider.value(
-                    value: BlocProvider.of<ProfileBloc>(context),
-                    child: const ViewProfileScreen(),
-                  ),
+                 builder: (context) => const ViewProfileScreen(),
                 ),
               );
             },
