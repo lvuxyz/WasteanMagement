@@ -12,6 +12,7 @@ import 'package:wasteanmagement/repositories/collection_point_repository.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/blocs/waste_type/waste_type_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
+import 'package:wasteanmagement/blocs/user_profile/user_profile_bloc.dart';
 import 'package:provider/provider.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
@@ -84,6 +85,11 @@ Future<void> main() async {
           BlocProvider(
             create: (context) => TransactionBloc(
               transactionRepository: transactionRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => UserProfileBloc(
+              userRepository: userRepository,
             ),
           ),
         ],

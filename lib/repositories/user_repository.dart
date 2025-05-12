@@ -140,10 +140,34 @@ class UserRepository {
 
           developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');
           try {
-            final userData = await remoteDataSource.getUserProfile();
-            developer.log('Dữ liệu người dùng nhận được: $userData');
+            final response = await remoteDataSource.getUserProfile();
+            developer.log('Dữ liệu người dùng nhận được: $response');
             
-            final user = User.fromJson(userData);
+            // Check if we have the new response format with 'success' and 'data' fields
+            if (response is Map<String, dynamic> && response.containsKey('success') && response.containsKey('data')) {
+              if (response['success'] == true && response['data'] != null) {
+                // For new profile format, just return the raw data to be processed by ProfileBloc
+                // We'll create a minimal User object to satisfy the return type
+                final basicInfo = response['data']['basic_info'] ?? {};
+                final user = User(
+                  id: basicInfo['id'] ?? 0,
+                  username: basicInfo['username'] ?? '',
+                  fullName: basicInfo['full_name'] ?? '',
+                  email: basicInfo['email'] ?? '',
+                  phone: basicInfo['phone'] ?? '',
+                  address: basicInfo['address'] ?? '',
+                  roles: List<String>.from(basicInfo['roles'] ?? []),
+                  rawProfileData: response['data'], // Store the raw profile data for later use
+                );
+                
+                await localDataSource.cacheUserProfile(user);
+                developer.log('Đã lấy và cập nhật thông tin người dùng mới: ${user.fullName}');
+                return user;
+              }
+            }
+            
+            // Fallback to old format
+            final user = User.fromJson(response);
             developer.log('Đã chuyển đổi dữ liệu thành đối tượng User: ${user.fullName}');
 
             // Cập nhật cache

@@ -28,14 +28,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         try {
           // If we have a userRepository, use it to get the profile
           final user = await userRepository!.getUserProfile();
-          // Convert the User to UserProfile or fetch additional data if needed
+          
+          // If user has rawProfileData, it means we already have the full profile data
+          if (user.rawProfileData != null) {
+            // Create UserProfile from the raw data
+            final userProfile = UserProfile.fromJson(user.rawProfileData!);
+            emit(ProfileLoaded(userProfile: userProfile));
+            return;
+          }
+          
+          // Convert the User to UserProfile
           final userProfile = UserProfile.fromUserModel(user);
           emit(ProfileLoaded(userProfile: userProfile));
           return;
         } catch (repoError) {
           // If using userRepository fails, fall back to the direct API call
-          emit(ProfileError(repoError.toString()));
-          return;
+          print('UserRepository error: $repoError. Falling back to direct API call.');
         }
       }
       
@@ -47,7 +55,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       // Make API request
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/auth/me'),
+        Uri.parse('${ApiConstants.baseUrl}/api/v1/auth/me'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -58,6 +66,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       if (response.statusCode == 200) {
         if (responseData['success'] == true && responseData['data'] != null) {
+          // Use the provided data structure from the response
           final userProfile = UserProfile.fromJson(responseData['data']);
           emit(ProfileLoaded(userProfile: userProfile));
         } else {
@@ -96,8 +105,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           return;
         } catch (repoError) {
           // If repository fails, try the direct API approach
-          emit(ProfileError(repoError.toString()));
-          return;
+          print('UserRepository update error: $repoError. Falling back to direct API call.');
         }
       }
       
@@ -109,7 +117,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       // Make API request to update profile
       final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}auth/profile'),
+        Uri.parse('${ApiConstants.baseUrl}/api/v1/users/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -130,12 +138,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           // Reload profile after successful update
           add(LoadProfile());
         } else {
-          emit(ProfileError(responseData['message'] ?? 'Lỗi cập nhật thông tin'));
+          emit(ProfileError(responseData['message'] ?? 'Cập nhật thông tin thất bại'));
         }
       } else {
-        // Error handling
-        final errorMessage = responseData['message'] ?? 'Lỗi cập nhật thông tin người dùng';
-        emit(ProfileError(errorMessage));
+        emit(ProfileError(responseData['message'] ?? 'Lỗi khi cập nhật thông tin người dùng'));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
