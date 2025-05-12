@@ -7,19 +7,17 @@ abstract class ProfileEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchProfile extends ProfileEvent {} // Đổi từ ProfileFetchEvent
+class LoadProfile extends ProfileEvent {}
 
-class LoadUserProfile extends ProfileEvent {} // Thêm event này cho MainScreen
-
-class UpdateProfile extends ProfileEvent { // Đổi từ ProfileUpdateEvent
-  final String? fullName;
-  final String? email;
+class UpdateProfile extends ProfileEvent {
+  final String fullName;
+  final String email;
   final String? phone;
   final String? address;
 
   const UpdateProfile({
-    this.fullName,
-    this.email,
+    required this.fullName,
+    required this.email,
     this.phone,
     this.address,
   });

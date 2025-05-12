@@ -7,11 +7,11 @@ import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
 import 'package:wasteanmagement/screens/notification_screen.dart';
-import 'package:wasteanmagement/screens/edit_profile_screen.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/language_selection_screen.dart';
 import 'package:wasteanmagement/screens/login_screen.dart';
+import 'package:wasteanmagement/screens/view_profile_screen.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../generated/l10n.dart';
@@ -103,8 +103,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         String memberSince = 'Thành viên kể từ Tháng 3, 2023';
 
         if (state is ProfileLoaded) {
-          userName = state.user.fullName;
-          userEmail = state.user.email;
+          userName = state.userProfile.basicInfo.fullName;
+          userEmail = state.userProfile.basicInfo.email;
         }
 
         return Container(
@@ -199,14 +199,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           _buildOptionItem(
             icon: Icons.person_outline,
-            title: 'Chỉnh sửa thông tin cá nhân',
+            title: 'Thông tin cá nhân',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => BlocProvider.value(
                     value: BlocProvider.of<ProfileBloc>(context),
-                    child: const EditProfileScreen(),
+                    child: const ViewProfileScreen(),
                   ),
                 ),
               );

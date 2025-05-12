@@ -87,9 +87,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       // Chỉ cung cấp thay vì gọi FetchProfile ở đây
                       BlocProvider(
-                        create: (context) => ProfileBloc(
-                          userRepository: userRepository,
-                        ),
+                        create: (context) => ProfileBloc(),
                       ),
                     ],
                     child: MainScreen(username: state.username),

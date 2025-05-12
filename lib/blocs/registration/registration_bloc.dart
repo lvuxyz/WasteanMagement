@@ -25,7 +25,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       
       // API call
       final response = await http.post(
-        Uri.parse('${ApiConstants.register}'),
+        Uri.parse(ApiConstants.register),
         headers: {
           'Content-Type': 'application/json',
         },

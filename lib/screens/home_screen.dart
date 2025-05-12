@@ -8,7 +8,6 @@ import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:intl/intl.dart';
@@ -33,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() {
       final profileState = context.read<ProfileBloc>().state;
       if (profileState is! ProfileLoaded) {
-        context.read<ProfileBloc>().add(FetchProfile());
+        context.read<ProfileBloc>().add(LoadProfile());
       }
     });
   }
@@ -159,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, state) {
                 String userName = 'Người dùng';
                 if (state is ProfileLoaded) {
-                  userName = state.user.fullName;
+                  userName = state.userProfile.basicInfo.fullName;
                 }
                 return Text(
                   userName,
@@ -1384,9 +1383,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfilePage() {
     return BlocProvider(
-      create: (context) => ProfileBloc(
-        userRepository: context.read<UserRepository>(),
-      )..add(FetchProfile()), // Sử dụng đúng tên event
+      create: (context) => ProfileBloc()..add(LoadProfile()),
       child: const ProfileScreen(username: '',),
     );
   }
