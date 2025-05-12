@@ -31,23 +31,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           
           // If user has rawProfileData, it means we already have the full profile data
           if (user.rawProfileData != null) {
+            print('[DEBUG] Using rawProfileData to create UserProfile');
+            print('[DEBUG] Raw profile data: ${user.rawProfileData}');
             // Create UserProfile from the raw data
             final userProfile = UserProfile.fromJson(user.rawProfileData!);
+            print('[DEBUG] Created UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
             emit(ProfileLoaded(userProfile: userProfile));
             return;
           }
           
           // Convert the User to UserProfile
+          print('[DEBUG] Converting User model to UserProfile');
           final userProfile = UserProfile.fromUserModel(user);
+          print('[DEBUG] Converted to UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
           emit(ProfileLoaded(userProfile: userProfile));
           return;
         } catch (repoError) {
           // If using userRepository fails, fall back to the direct API call
-          print('UserRepository error: $repoError. Falling back to direct API call.');
+          print('[DEBUG] UserRepository error: $repoError. Falling back to direct API call.');
         }
       }
       
       // Fall back to original implementation using AuthService
+      print('[DEBUG] Using AuthService to get profile data');
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');

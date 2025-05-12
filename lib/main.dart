@@ -25,6 +25,7 @@ import 'routes.dart';
 import 'generated/l10n.dart';
 import 'utils/app_colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
+import 'blocs/profile/profile_bloc.dart';
 
 Future<void> main() async {
 
@@ -89,6 +90,11 @@ Future<void> main() async {
           ),
           BlocProvider(
             create: (context) => UserProfileBloc(
+              userRepository: userRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ProfileBloc(
               userRepository: userRepository,
             ),
           ),
