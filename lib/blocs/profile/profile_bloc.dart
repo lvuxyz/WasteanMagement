@@ -55,7 +55,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       // Make API request
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/api/v1/auth/me'),
+        Uri.parse(ApiConstants.profile),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -117,7 +117,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       
       // Make API request to update profile
       final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}/api/v1/users/profile'),
+        Uri.parse(ApiConstants.updateProfile),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
