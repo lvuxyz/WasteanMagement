@@ -12,6 +12,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final AuthService _authService = AuthService();
   final UserRepository? userRepository;
   
+  // Add cache variables
+  UserProfile? _cachedProfile;
+  DateTime? _lastFetchTime;
+  static const int _cacheDurationSeconds = 10; // Cache for 10 seconds
+  
   ProfileBloc({this.userRepository}) : super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
@@ -23,6 +28,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     try {
       emit(ProfileLoading());
+      
+      // Check cache first if not a forced refresh
+      if (!event.forceRefresh && _cachedProfile != null && _lastFetchTime != null) {
+        final now = DateTime.now();
+        final cacheDuration = now.difference(_lastFetchTime!);
+        if (cacheDuration.inSeconds < _cacheDurationSeconds) {
+          print('[DEBUG] Using cached profile data (cache age: ${cacheDuration.inSeconds}s)');
+          emit(ProfileLoaded(userProfile: _cachedProfile!));
+          return;
+        }
+      }
       
       if (userRepository != null) {
         try {
@@ -36,6 +52,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             // Create UserProfile from the raw data
             final userProfile = UserProfile.fromJson(user.rawProfileData!);
             print('[DEBUG] Created UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+            _updateCache(userProfile);
             emit(ProfileLoaded(userProfile: userProfile));
             return;
           }
@@ -44,6 +61,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           print('[DEBUG] Converting User model to UserProfile');
           final userProfile = UserProfile.fromUserModel(user);
           print('[DEBUG] Converted to UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+          _updateCache(userProfile);
           emit(ProfileLoaded(userProfile: userProfile));
           return;
         } catch (repoError) {
@@ -74,6 +92,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         if (responseData['success'] == true && responseData['data'] != null) {
           // Use the provided data structure from the response
           final userProfile = UserProfile.fromJson(responseData['data']);
+          _updateCache(userProfile);
           emit(ProfileLoaded(userProfile: userProfile));
         } else {
           emit(const ProfileError('Không thể tải thông tin người dùng'));
@@ -152,5 +171,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
+  }
+
+  // Helper method to update cache
+  void _updateCache(UserProfile profile) {
+    _cachedProfile = profile;
+    _lastFetchTime = DateTime.now();
+    print('[DEBUG] Updated profile cache');
   }
 }

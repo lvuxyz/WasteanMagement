@@ -23,7 +23,7 @@ class TransactionRepository {
     }
 
     // Sử dụng URL chính xác cho admin
-    final String adminUrl = 'http://192.168.173.102:5000/api/v1/transactions';
+    final String adminUrl = 'http://192.168.210.92:5000/api/v1/transactions';
     String url = isAdmin 
         ? adminUrl // Admin API endpoint chính xác
         : ApiConstants.transactions; // Regular API endpoint
