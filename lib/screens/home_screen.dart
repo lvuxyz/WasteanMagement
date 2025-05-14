@@ -114,6 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildUserSummaryCard(),
             const SizedBox(height: 24),
+            _buildRewardPointsCard(),
+            const SizedBox(height: 24),
             _buildSectionTitle('Điểm thu gom gần bạn'),
             const SizedBox(height: 16),
             _buildCollectionPointsList(),
@@ -344,73 +346,70 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Thêm Quick Actions ở đây
-  Widget _buildQuickActions({required int height}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Hành động nhanh',
+  Widget _buildQuickActions({required double height}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            'Truy cập nhanh',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
             children: [
-              _buildQuickAction(
-                icon: Icons.calendar_today_outlined,
-                title: 'Lịch hẹn',
-                onTap: () {},
+              _buildQuickActionCard(
+                icon: Icons.map,
+                title: 'Bản đồ\nđiểm thu gom',
+                color: Colors.blue,
+                onTap: () {
+                  Navigator.pushNamed(context, '/map');
+                },
               ),
-              _buildQuickAction(
+              _buildQuickActionCard(
                 icon: Icons.recycling,
-                title: 'Loại rác',
-                onTap: () {
-                  Navigator.pushNamed(context, '/waste-type');
-                },
-              ),
-              _buildQuickAction(
-                icon: Icons.location_on_outlined,
-                title: 'Điểm thu gom',
-                onTap: () {
-                  // This navigation is for a future functionality
-                  // Currently, we navigate to the collection points list screen
-                  // In the future, this will be changed to a different functionality
-                  Navigator.pushNamed(context, '/collection-points');
-                },
-              ),
-              _buildQuickAction(
-                icon: Icons.assignment_outlined,
-                title: 'Hướng dẫn',
+                title: 'Hướng dẫn\nphân loại',
+                color: Colors.green,
                 onTap: () {
                   Navigator.pushNamed(context, '/waste-guide');
                 },
               ),
+              _buildQuickActionCard(
+                icon: Icons.stars,
+                title: 'Điểm thưởng\ncủa tôi',
+                color: Colors.amber,
+                onTap: () {
+                  Navigator.pushNamed(context, '/rewards');
+                },
+              ),
+              _buildQuickActionCard(
+                icon: Icons.bar_chart,
+                title: 'Thống kê\ntiến độ',
+                color: Colors.purple,
+                onTap: () {
+                  Navigator.pushNamed(context, '/recycling-progress');
+                },
+              ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildQuickAction({
+  Widget _buildQuickActionCard({
     required IconData icon,
     required String title,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -422,12 +421,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: AppColors.primaryGreen,
+              color: color,
               size: 24,
             ),
           ),
@@ -1435,6 +1434,79 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(8),
       highlightColor: Colors.white24,
       splashColor: Colors.white24,
+    );
+  }
+
+  // Add reward points card
+  Widget _buildRewardPointsCard() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/rewards');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFB347), Color(0xFFFF8C00)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.3),
+              offset: const Offset(0, 4),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.stars,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Điểm thưởng',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Tích điểm để đổi quà hấp dẫn',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
