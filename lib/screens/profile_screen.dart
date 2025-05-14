@@ -6,7 +6,6 @@ import 'package:wasteanmagement/blocs/auth/auth_state.dart';
 import 'package:wasteanmagement/blocs/profile/profile_bloc.dart';
 import 'package:wasteanmagement/blocs/profile/profile_state.dart';
 import 'package:wasteanmagement/screens/change_password.dart';
-import 'package:wasteanmagement/screens/notification_screen.dart';
 import 'package:wasteanmagement/screens/help_and_guidance_screen.dart';
 import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/language_selection_screen.dart';
@@ -16,6 +15,7 @@ import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../generated/l10n.dart';
 import '../utils/app_colors.dart';
+import '../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? username;
@@ -185,10 +185,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Cài đặt tài khoản',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildOptionItem(
+            icon: Icons.person,
+            title: 'Thông tin cá nhân',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ViewProfileScreen()),
+              );
+            },
+          ),
+          _buildOptionItem(
+            icon: Icons.lock,
+            title: 'Đổi mật khẩu',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+              );
+            },
+          ),
+          _buildOptionItem(
+            icon: Icons.language,
+            title: 'Ngôn ngữ',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguageSelectionScreen()),
+              );
+            },
+          ),
+          
+          FutureBuilder<bool>(
+            future: AuthService().isAdmin(),
+            builder: (context, snapshot) {
+              final isAdmin = snapshot.data ?? false;
+              
+              if (isAdmin) {
+                return Column(
+                  children: [
+                    const Divider(height: 32),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        'Quản trị viên',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryText,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildOptionItem(
+                      icon: Icons.stars,
+                      title: 'Quản lý điểm thưởng',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/admin/rewards');
+                      },
+                    ),
+                  ],
+                );
+              }
+              
+              return const SizedBox.shrink();
+            },
+          ),
+          
+          const Divider(height: 32),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              'Cài đặt tài khoản',
+              'Hỗ trợ & Thông tin',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -198,119 +278,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           _buildOptionItem(
-            icon: Icons.person_outline,
-            title: 'Thông tin cá nhân',
+            icon: Icons.notifications,
+            title: 'Thông báo',
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider<ProfileBloc>(
-                    create: (context) => ProfileBloc(
-                      userRepository: context.read<UserRepository>(),
-                    ),
-                    child: const ViewProfileScreen(),
-                  ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Tính năng thông báo đang được phát triển'),
                 ),
               );
             },
           ),
           _buildOptionItem(
-            icon: Icons.lock_outline,
-            title: 'Thay đổi mật khẩu',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ChangePasswordScreen(),
-                ),
-              );
-            },
-          ),
-          _buildOptionItem(
-            icon: Icons.language,
-            title: 'Thay đổi ngôn ngữ',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LanguageSelectionScreen(),
-                ),
-              );
-            },
-          ),
-          _buildOptionItem(
-            icon: Icons.notifications_outlined,
-            title: 'Cài đặt thông báo',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildOptionItem(
-            icon: Icons.help_outline,
+            icon: Icons.help,
             title: 'Trợ giúp & Hướng dẫn',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const HelpAndGuidanceScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const HelpAndGuidanceScreen()),
               );
             },
           ),
           _buildOptionItem(
-            icon: Icons.info_outline,
-            title: 'Về ứng dụng',
+            icon: Icons.info,
+            title: 'Giới thiệu ứng dụng',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutAppScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const AboutAppScreen()),
               );
             },
           ),
-          
-          // DEBUG ONLY - XÓA KHI RELEASE
-          _buildOptionItem(
-            icon: Icons.developer_mode,
-            title: 'Thông tin token (Debug)',
-            onTap: () => _showTokenInfo(context),
-          ),
-          
           const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Card(
-              elevation: 0,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: Text(
-                  l10n.logout,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.red,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.red,
-                ),
-                onTap: () => confirmLogout(),
-              ),
-            ),
-          ),
+          _buildLogoutButton(context),
         ],
       ),
     );
@@ -442,6 +441,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    final l10n = S.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        elevation: 0,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          leading: const Icon(Icons.logout, color: Colors.red),
+          title: Text(
+            l10n.logout,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.red,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Colors.red,
+          ),
+          onTap: confirmLogout,
+        ),
       ),
     );
   }
