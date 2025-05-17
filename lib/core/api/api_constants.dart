@@ -7,7 +7,7 @@ class ApiConstants {
 
   // URL cho các môi trường khác nhau
   static const String _emulatorBaseUrl = 'http://10.0.2.2:5000/api/v1'; // Localhost trên emulator
-  static const String _physicalDeviceBaseUrl = 'http://192.168.210.92:5000/api/v1'; // IP máy chủ trên mạng LAN
+  static const String _physicalDeviceBaseUrl = 'http://103.27.239.248:3000/api/v1'; // IP máy chủ trên mạng LAN
   //static const String _localhostBaseUrl = 'http://localhost:5000/api/v1'; // Localhost trực tiếp
 
   static String get baseUrl => useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
