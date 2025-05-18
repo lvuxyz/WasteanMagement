@@ -8,6 +8,9 @@ import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
+import 'package:wasteanmagement/core/api/api_constants.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class AdminRewardManagementScreen extends StatefulWidget {
@@ -59,7 +62,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
       });
     }
   }
-  
+
   void _loadUserRewards() {
     if (_selectedUserId != null) {
       setState(() {
@@ -145,32 +148,60 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
     );
   }
   
-  // Simulate searching users - in a real app, this would call an API
-  void _searchUsers(String query, Function setState) {
+  // Fetch users from API instead of using mock data
+  void _searchUsers(String query, Function setState) async {
     setState(() {
       _isLoadingUsers = true;
     });
     
-    // Simulate API delay
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('${ApiConstants.users}${query.isNotEmpty ? '?search=$query' : ''}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success']) {
+        final users = data['data'] as List<dynamic>;
+        
+        setState(() {
+          _isLoadingUsers = false;
+          _usersList = users.map((user) {
+            return {
+              'id': user['user_id'] ?? user['id'],
+              'name': user['full_name'] ?? user['name'] ?? user['username'] ?? 'Người dùng ${user['user_id']}',
+              'email': user['email'] ?? '',
+            };
+          }).toList();
+        });
+      } else {
+        setState(() {
+          _isLoadingUsers = false;
+          _usersList = [];
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${data['message'] ?? 'Không thể lấy danh sách người dùng'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        });
+      }
+    } catch (e) {
       setState(() {
         _isLoadingUsers = false;
-        
-        // Mock user data for demonstration
-        _usersList = [
-          {'id': 1, 'name': 'Nguyễn Văn A', 'email': 'nguyenvana@example.com'},
-          {'id': 2, 'name': 'Trần Thị B', 'email': 'tranthib@example.com'},
-          {'id': 3, 'name': 'Lê Văn C', 'email': 'levanc@example.com'},
-          {'id': 4, 'name': 'Phạm Thị D', 'email': 'phamthid@example.com'},
-          {'id': 5, 'name': 'Hoàng Văn E', 'email': 'hoangvane@example.com'},
-        ].where((user) {
-          final name = user['name']?.toString().toLowerCase() ?? '';
-          final email = user['email']?.toString().toLowerCase() ?? '';
-          final searchLower = query.toLowerCase();
-          return name.contains(searchLower) || email.contains(searchLower);
-        }).toList();
+        _usersList = [];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       });
-    });
+    }
   }
   
   void _showAddRewardDialog() {
@@ -312,6 +343,15 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
           'Quản lý điểm thưởng',
           style: TextStyle(color: Colors.white),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/admin/rewards/add');
+            },
+            tooltip: 'Thêm điểm thưởng thủ công',
+          ),
+        ],
       ),
       body: BlocConsumer<RewardBloc, RewardState>(
         listener: (context, state) {
