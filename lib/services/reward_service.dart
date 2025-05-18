@@ -5,7 +5,6 @@ import '../core/api/api_constants.dart';
 import '../services/auth_service.dart';
 
 class RewardService {
-  final String baseUrl = '${ApiConstants.baseUrl}/rewards';
   final AuthService _authService = AuthService();
 
   // Get authenticated headers
@@ -26,7 +25,7 @@ class RewardService {
   }) async {
     final headers = await _getHeaders();
     
-    String url = '$baseUrl/my-rewards?page=$page&limit=$limit';
+    String url = '${ApiConstants.rewards}/my-rewards?page=$page&limit=$limit';
     if (fromDate != null) url += '&from_date=$fromDate';
     if (toDate != null) url += '&to_date=$toDate';
     
@@ -50,7 +49,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.get(
-      Uri.parse('$baseUrl/my-total-points'),
+      Uri.parse('${ApiConstants.rewards}/my-total-points'),
       headers: headers,
     );
     
@@ -66,7 +65,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.get(
-      Uri.parse('$baseUrl/my-statistics?period=$period'),
+      Uri.parse('${ApiConstants.rewards}/my-statistics?period=$period'),
       headers: headers,
     );
     
@@ -86,7 +85,7 @@ class RewardService {
 
   // Get user rankings
   Future<List<UserRanking>> getUserRankings() async {
-    final response = await http.get(Uri.parse('$baseUrl/rankings'));
+    final response = await http.get(Uri.parse('${ApiConstants.rewards}/rankings'));
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['data'] as List;
@@ -103,7 +102,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.get(
-      Uri.parse('$baseUrl/$rewardId'),
+      Uri.parse('${ApiConstants.rewards}/$rewardId'),
       headers: headers,
     );
     
@@ -121,7 +120,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.get(
-      Uri.parse('$baseUrl/users/$userId?page=$page&limit=$limit'),
+      Uri.parse('${ApiConstants.rewards}/users/$userId?page=$page&limit=$limit'),
       headers: headers,
     );
     
@@ -153,7 +152,7 @@ class RewardService {
     }
     
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(ApiConstants.rewards),
       headers: headers,
       body: json.encode(body),
     );
@@ -170,7 +169,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.put(
-      Uri.parse('$baseUrl/$rewardId'),
+      Uri.parse('${ApiConstants.rewards}/$rewardId'),
       headers: headers,
       body: json.encode({'points': points}),
     );
@@ -187,7 +186,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.delete(
-      Uri.parse('$baseUrl/$rewardId'),
+      Uri.parse('${ApiConstants.rewards}/$rewardId'),
       headers: headers,
     );
     
@@ -203,7 +202,7 @@ class RewardService {
     final headers = await _getHeaders();
     
     final response = await http.post(
-      Uri.parse('$baseUrl/transactions/$transactionId/process'),
+      Uri.parse('${ApiConstants.rewards}/transactions/$transactionId/process'),
       headers: headers,
     );
     
