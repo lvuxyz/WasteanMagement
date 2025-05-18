@@ -9,6 +9,7 @@ import 'package:wasteanmagement/screens/reward/reward_screen.dart';
 import 'package:wasteanmagement/screens/reward/reward_statistics_screen.dart';
 import 'package:wasteanmagement/screens/reward/reward_rankings_screen.dart';
 import 'package:wasteanmagement/screens/reward/admin_reward_management_screen.dart';
+import 'package:wasteanmagement/screens/reward/add_reward_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -62,6 +63,7 @@ class AppRoutes {
   static const String rewardStatistics = '/rewards/statistics';
   static const String rewardRankings = '/rewards/rankings';
   static const String adminRewardManagement = '/admin/rewards';
+  static const String addReward = '/admin/rewards/add';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -74,6 +76,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const RewardRankingsScreen());
       case adminRewardManagement:
         return MaterialPageRoute(builder: (_) => const AdminRewardManagementScreen());
+      case addReward:
+        return MaterialPageRoute(builder: (_) => const AddRewardScreen());
         
       case transactions:
         return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());

@@ -25,6 +25,7 @@ class ApiConstants {
   static String get profile => '$baseUrl/auth/me';
   static String get changePassword => '$baseUrl/users/change-password';
   static String get updateProfile => '$baseUrl/users/update-profile';
+  static String get users => '$baseUrl/auth/users';
 
   // Endpoint cho quản lý rác thải
   static String get wasteTypes => '$baseUrl/waste-types';

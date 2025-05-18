@@ -257,6 +257,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                     ),
                     _buildOptionItem(
+                      icon: Icons.add_circle,
+                      title: 'Thêm điểm thưởng thủ công',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/admin/rewards/add');
+                      },
+                    ),
+                    _buildOptionItem(
                       icon: Icons.dashboard_customize,
                       title: 'Quản lý loại rác',
                       onTap: () {
