@@ -32,7 +32,7 @@ class WasteType extends Equatable {
 
   factory WasteType.fromJson(Map<String, dynamic> json) {
     // Parse the recyclable field correctly
-    final bool isRecyclable = json['recyclable'] == 1;
+    final bool isRecyclable = json['recyclable'] == 1 || json['recyclable'] == true;
     
     // Determine category based on recyclable status
     String category;
@@ -60,8 +60,32 @@ class WasteType extends Equatable {
     // Set color based on recyclable status
     Color color = isRecyclable ? Colors.green : Colors.red;
     
+    // Xử lý id, API có thể trả về id hoặc waste_type_id
+    final int wasteTypeId = json['waste_type_id'] ?? json['id'] ?? 0;
+    
+    // Xử lý examples một cách an toàn
+    List<String> examplesList = [];
+    if (json['examples'] != null) {
+      if (json['examples'] is List) {
+        examplesList = List<String>.from(
+          json['examples'].map((e) => e.toString())
+        );
+      } else if (json['examples'] is String) {
+        // Nếu examples là một chuỗi, thử parse thành list
+        try {
+          // Giả sử nó là một chuỗi phân tách bởi dấu phẩy
+          examplesList = json['examples'].toString().split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+        } catch (e) {
+          examplesList = [json['examples'].toString()];
+        }
+      }
+    }
+    
     return WasteType(
-      id: json['waste_type_id'],
+      id: wasteTypeId,
       name: json['name'] ?? 'Unknown',
       description: json['description'] ?? 'No description available',
       recyclable: isRecyclable,
@@ -70,11 +94,9 @@ class WasteType extends Equatable {
       icon: iconData,
       color: color,
       category: category,
-      examples: json['examples'] != null 
-          ? List<String>.from(json['examples']) 
-          : [],
+      examples: examplesList,
       unit: json['unit'] ?? 'kg',
-      recentPoints: json['recent_points'] ?? '',
+      recentPoints: json['recent_points']?.toString() ?? '',
     );
   }
 
@@ -87,7 +109,8 @@ class WasteType extends Equatable {
       'unit_price': unitPrice,
       'unit': unit,
       'examples': examples,
-      // We don't send icon, color, or category as they're derived from recyclable
+      'category': category,
+      // We don't send icon, color as they're derived from recyclable and category
       // We don't send id as it's used in the URL path
     };
   }
