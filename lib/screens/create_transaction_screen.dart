@@ -6,7 +6,7 @@ import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/models/collection_point.dart';
-import 'package:wasteanmagement/models/waste_type.dart';
+import 'package:wasteanmagement/models/waste_type_model.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
 
 class CreateTransactionScreen extends StatefulWidget {
@@ -111,7 +111,15 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
           id: item['id'], 
           name: item['name'], 
           description: item['description'], 
-          unitPrice: item['unit_price'],
+          recyclable: true, // Giả định loại rác có thể tái chế
+          handlingInstructions: 'Rửa sạch và làm khô',
+          unitPrice: item['unit_price'].toDouble(),
+          icon: Icons.recycling,
+          color: Colors.green,
+          category: 'Tái chế',
+          examples: [],
+          unit: 'kg',
+          recentPoints: '',
         )).toList();
     });
   }

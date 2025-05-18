@@ -245,7 +245,11 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       };
       
       final wasteType = await repository.createWasteType(wasteTypeData);
-      emit(WasteTypeCreated(wasteType: wasteType));
+      emit(WasteTypeCreated(
+        wasteType: wasteType,
+        message: 'Đã tạo loại rác thành công',
+      ));
+      
       // Reload the waste types list
       add(LoadWasteTypes());
     } catch (e) {
@@ -260,7 +264,10 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteType.id, event.wasteType.toJson());
-      emit(WasteTypeUpdated(wasteType: wasteType));
+      emit(WasteTypeUpdated(
+        wasteType: wasteType,
+        message: 'Đã cập nhật loại rác thành công',
+      ));
       
       // Reload waste types list after successful update
       add(LoadWasteTypes());
@@ -276,7 +283,10 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteTypeId, event.data);
-      emit(WasteTypeUpdated(wasteType: wasteType));
+      emit(WasteTypeUpdated(
+        wasteType: wasteType,
+        message: 'Đã cập nhật loại rác thành công',
+      ));
       
       // Reload waste types list after successful update
       add(LoadWasteTypes());
