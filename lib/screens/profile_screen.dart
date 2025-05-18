@@ -256,6 +256,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.pushNamed(context, '/admin/rewards');
                       },
                     ),
+                    _buildOptionItem(
+                      icon: Icons.dashboard_customize,
+                      title: 'Quản lý loại rác',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/waste-type');
+                      },
+                    ),
+                    _buildOptionItem(
+                      icon: Icons.list_alt,
+                      title: 'Quản lý giao dịch',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/transactions');
+                      },
+                    ),
                   ],
                 );
               }

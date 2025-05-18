@@ -16,13 +16,19 @@ class RewardRankingsScreen extends StatefulWidget {
 }
 
 class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
+  bool _isLoading = false;
+  
   @override
   void initState() {
     super.initState();
-    context.read<RewardBloc>().add(LoadUserRankings());
+    _loadRankings();
   }
 
   void _loadRankings() {
+    setState(() {
+      _isLoading = true;
+    });
+    
     context.read<RewardBloc>().add(LoadUserRankings());
   }
 
@@ -37,9 +43,16 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocBuilder<RewardBloc, RewardState>(
+      body: BlocConsumer<RewardBloc, RewardState>(
+        listener: (context, state) {
+          if (state is RankingsLoaded || state is RewardError) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+        },
         builder: (context, state) {
-          if (state is RewardLoading) {
+          if (_isLoading) {
             return const Center(child: LoadingIndicator());
           } else if (state is RankingsLoaded) {
             return _buildRankingsList(state.rankings);

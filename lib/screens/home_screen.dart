@@ -8,10 +8,14 @@ import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
+import 'package:wasteanmagement/routes.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/app_colors.dart';
+import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
+import 'package:wasteanmagement/blocs/reward/reward_event.dart';
+import 'package:wasteanmagement/blocs/reward/reward_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1439,74 +1443,103 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Add reward points card
   Widget _buildRewardPointsCard() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/rewards');
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFB347), Color(0xFFFF8C00)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return BlocBuilder<RewardBloc, RewardState>(
+      builder: (context, state) {
+        int totalPoints = 0;
+        bool isLoading = state is RewardLoading;
+        
+        if (state is MyRewardsLoaded) {
+          totalPoints = state.totalPoints;
+        } else if (!(state is RewardLoading)) {
+          // Nếu chưa load dữ liệu thì load
+          context.read<RewardBloc>().add(LoadMyRewards(page: 1));
+        }
+        
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).pushNamed(AppRoutes.rewards);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.stars,
+                          color: Colors.amber,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Điểm thưởng',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white70,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                isLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        '$totalPoints',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Tham gia các hoạt động để tích lũy điểm thưởng',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.orange.withOpacity(0.3),
-              offset: const Offset(0, 4),
-              blurRadius: 10,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.stars,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Điểm thưởng',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Tích điểm để đổi quà hấp dẫn',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
-              size: 20,
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
