@@ -67,7 +67,7 @@ class AppRoutes {
     switch (settings.name) {
       // Reward routes
       case rewards:
-        return MaterialPageRoute(builder: (_) => const RewardScreen());
+        return MaterialPageRoute(builder: (_) => const RewardScreen(isInTabView: false));
       case rewardStatistics:
         return MaterialPageRoute(builder: (_) => const RewardStatisticsScreen());
       case rewardRankings:

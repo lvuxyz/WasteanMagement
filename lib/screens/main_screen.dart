@@ -187,8 +187,8 @@ class _MainScreenState extends State<MainScreen> {
           const MapScreen(),
           // Trang Thống kê
           const RecyclingProgressScreen(),
-          // Trang Điểm thưởng
-          const RewardScreen(),
+          // Trang Điểm thưởng - Truyền tham số isInTabView = true
+          const RewardScreen(isInTabView: true),
           // Trang Cá nhân
           const ProfileScreen(),
         ],

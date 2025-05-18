@@ -23,7 +23,9 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
   String? _selectedUserName;
   List<Map<String, dynamic>> _usersList = [];
   bool _isLoadingUsers = false;
+  bool _isCheckingAdmin = true;
   bool _isAdmin = false;
+  bool _isLoadingRewards = false;
   final AuthService _authService = AuthService();
   
   @override
@@ -33,9 +35,15 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
   }
   
   Future<void> _checkAdminStatus() async {
+    setState(() {
+      _isCheckingAdmin = true;
+    });
+    
     final isAdmin = await _authService.isAdmin();
+    
     setState(() {
       _isAdmin = isAdmin;
+      _isCheckingAdmin = false;
     });
     
     if (!isAdmin) {
@@ -54,6 +62,10 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
   
   void _loadUserRewards() {
     if (_selectedUserId != null) {
+      setState(() {
+        _isLoadingRewards = true;
+      });
+      
       context.read<RewardBloc>().add(LoadUserRewards(userId: _selectedUserId!));
     }
   }
@@ -243,10 +255,51 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
 
   @override
   Widget build(BuildContext context) {
-    if (!_isAdmin) {
+    if (_isCheckingAdmin) {
       return const Scaffold(
         body: Center(
           child: LoadingIndicator(),
+        ),
+      );
+    }
+    
+    if (!_isAdmin) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lock,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Bạn không có quyền truy cập',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Chức năng này chỉ dành cho quản trị viên',
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Quay lại'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -260,38 +313,37 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Column(
-        children: [
-          _buildUserSelectionBar(),
-          Expanded(
-            child: _selectedUserId == null
-                ? _buildSelectUserPrompt()
-                : BlocConsumer<RewardBloc, RewardState>(
-                    listener: (context, state) {
-                      if (state is RewardCreated || state is RewardUpdated || state is RewardDeleted) {
-                        // Reload user rewards after successful operations
-                        _loadUserRewards();
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is RewardLoading) {
-                        return const Center(child: LoadingIndicator());
-                      } else if (state is UserRewardsLoaded && state.userId == _selectedUserId) {
-                        return _buildUserRewardsList(state);
-                      } else if (state is RewardError) {
-                        return ErrorView(
-                          message: state.message,
-                          onRetry: _loadUserRewards,
-                          title: 'Lỗi tải dữ liệu',
-                        );
-                      }
-                      
-                      // Initial state or unexpected state
-                      return const Center(child: LoadingIndicator());
-                    },
-                  ),
-          ),
-        ],
+      body: BlocConsumer<RewardBloc, RewardState>(
+        listener: (context, state) {
+          if (state is UserRewardsLoaded || state is RewardError) {
+            setState(() {
+              _isLoadingRewards = false;
+            });
+          }
+        },
+        builder: (context, state) {
+          return Column(
+            children: [
+              _buildUserSelector(),
+              _buildDivider('Điểm thưởng của người dùng'),
+              Expanded(
+                child: _selectedUserId == null
+                    ? _buildNoUserSelected()
+                    : _isLoadingRewards
+                        ? const Center(child: LoadingIndicator())
+                        : state is UserRewardsLoaded
+                            ? _buildUserRewardsList(state)
+                            : state is RewardError
+                                ? ErrorView(
+                                    message: state.message,
+                                    onRetry: _loadUserRewards,
+                                    title: 'Lỗi tải dữ liệu',
+                                  )
+                                : const Center(child: LoadingIndicator()),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: _selectedUserId != null
           ? FloatingActionButton(
@@ -303,7 +355,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
     );
   }
   
-  Widget _buildUserSelectionBar() {
+  Widget _buildUserSelector() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -359,7 +411,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
     );
   }
   
-  Widget _buildSelectUserPrompt() {
+  Widget _buildNoUserSelected() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -626,6 +678,34 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
               }
             },
             child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDivider(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.grey[100],
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppColors.primaryGreen,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryText,
+            ),
           ),
         ],
       ),

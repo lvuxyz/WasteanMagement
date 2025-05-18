@@ -18,6 +18,7 @@ class RewardStatisticsScreen extends StatefulWidget {
 
 class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
   String _currentPeriod = 'monthly';
+  bool _isLoading = false;
   
   @override
   void initState() {
@@ -26,13 +27,21 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
   }
   
   void _loadStatistics() {
+    setState(() {
+      _isLoading = true;
+    });
+    
     context.read<RewardBloc>().add(LoadMyStatistics(period: _currentPeriod));
   }
   
   void _changePeriod(String period) {
+    if (period == _currentPeriod) return;
+    
     setState(() {
       _currentPeriod = period;
+      _isLoading = true;
     });
+    
     _loadStatistics();
   }
 
@@ -47,9 +56,20 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocBuilder<RewardBloc, RewardState>(
+      body: BlocConsumer<RewardBloc, RewardState>(
+        listener: (context, state) {
+          if (state is StatisticsLoaded) {
+            setState(() {
+              _isLoading = false;
+            });
+          } else if (state is RewardError) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+        },
         builder: (context, state) {
-          if (state is RewardLoading) {
+          if (_isLoading) {
             return const Center(child: LoadingIndicator());
           } else if (state is StatisticsLoaded) {
             return _buildStatisticsContent(state);

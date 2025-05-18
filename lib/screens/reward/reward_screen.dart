@@ -12,7 +12,9 @@ import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
 
 class RewardScreen extends StatefulWidget {
-  const RewardScreen({Key? key}) : super(key: key);
+  final bool isInTabView;
+  
+  const RewardScreen({Key? key, this.isInTabView = true}) : super(key: key);
 
   @override
   State<RewardScreen> createState() => _RewardScreenState();
@@ -110,46 +112,87 @@ class _RewardScreenState extends State<RewardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
-      appBar: AppBar(
+      // Chỉ hiển thị AppBar nếu không phải đang trong TabView
+      appBar: widget.isInTabView ? null : AppBar(
         backgroundColor: AppColors.primaryGreen,
         title: const Text(
           'Điểm thưởng',
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.leaderboard, color: Colors.white),
-            onPressed: _navigateToRankings,
-            tooltip: 'Bảng xếp hạng',
-          ),
-          IconButton(
-            icon: const Icon(Icons.insert_chart, color: Colors.white),
-            onPressed: _navigateToStatistics,
-            tooltip: 'Thống kê',
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: _buildScreenContent(),
+    );
+  }
+  
+  Widget _buildScreenContent() {
+    // Thêm phần header cho trường hợp hiển thị trong TabView
+    return RefreshIndicator(
+      onRefresh: () async {
+        _loadRewards();
+      },
+      child: Column(
+        children: [
+          // Header chỉ hiển thị khi ở trong TabView
+          if (widget.isInTabView)
+            _buildHeader(),
+          
+          Expanded(
+            child: BlocBuilder<RewardBloc, RewardState>(
+              builder: (context, state) {
+                if (state is RewardLoading) {
+                  return const Center(child: LoadingIndicator());
+                } else if (state is MyRewardsLoaded) {
+                  return _buildRewardsContent(state);
+                } else if (state is RewardError) {
+                  return ErrorView(
+                    message: state.message,
+                    onRetry: _loadRewards,
+                    title: 'Lỗi tải dữ liệu',
+                  );
+                }
+                // Initial state or unexpected state
+                return const Center(child: LoadingIndicator());
+              },
+            ),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadRewards();
-        },
-        child: BlocBuilder<RewardBloc, RewardState>(
-          builder: (context, state) {
-            if (state is RewardLoading) {
-              return const Center(child: LoadingIndicator());
-            } else if (state is MyRewardsLoaded) {
-              return _buildRewardsContent(state);
-            } else if (state is RewardError) {
-              return ErrorView(
-                message: state.message,
-                onRetry: _loadRewards,
-                title: 'Lỗi tải dữ liệu',
-              );
-            }
-            // Initial state or unexpected state
-            return const Center(child: LoadingIndicator());
-          },
-        ),
+    );
+  }
+  
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Điểm thưởng của bạn',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryText,
+            ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.leaderboard, color: AppColors.primaryGreen),
+                onPressed: _navigateToRankings,
+                tooltip: 'Bảng xếp hạng',
+              ),
+              IconButton(
+                icon: const Icon(Icons.insert_chart, color: AppColors.primaryGreen),
+                onPressed: _navigateToStatistics,
+                tooltip: 'Thống kê',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
