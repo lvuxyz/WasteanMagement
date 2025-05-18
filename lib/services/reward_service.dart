@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/reward.dart';
-import '../constants/api_constants.dart';
+import '../core/api/api_constants.dart';
 import '../services/auth_service.dart';
 
 class RewardService {
