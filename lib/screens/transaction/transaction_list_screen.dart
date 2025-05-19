@@ -22,7 +22,7 @@ class Logger {
 }
 
 class TransactionListScreen extends StatefulWidget {
-  const TransactionListScreen({Key? key}) : super(key: key);
+  const TransactionListScreen({super.key});
 
   @override
   State<TransactionListScreen> createState() => _TransactionListScreenState();
@@ -51,20 +51,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     _checkAdminStatus();
   }
 
-  // Đơn giản hóa phương thức khởi tạo dữ liệu
-  Future<void> _initializeData() async {
-    // Đảm bảo đã kiểm tra admin status trước khi tải dữ liệu
-    if (!_adminStatusChecked) {
-      await _checkAdminStatus();
-    }
-
-    setState(() {
-      _isInitialized = true;
-    });
-
-    // Tải giao dịch dựa trên vai trò
-    _loadTransactionsBasedOnRole();
-  }
 
   // Cải thiện phương thức kiểm tra admin status
   Future<void> _checkAdminStatus() async {
@@ -647,25 +633,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
                       color: Colors.grey[700],
                     ),
                   ),
-                  // Points for completed transactions
-                  if (transaction.status == 'completed')
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.eco_outlined,
-                          color: Colors.green,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '+10 điểm', // Points amount would be from API in real implementation
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
                 ],
               ),
             ],
