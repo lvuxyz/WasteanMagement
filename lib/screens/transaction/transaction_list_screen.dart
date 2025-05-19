@@ -9,10 +9,21 @@ import '../../repositories/transaction_repository.dart';
 import '../../services/auth_service.dart';
 import '../../models/transaction.dart';
 import '../../core/api/api_constants.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+
+// Thêm lớp Logger để thay thế print
+class Logger {
+  static void log(String message) {
+    // Chỉ hiển thị log trong môi trường debug
+    if (kDebugMode) {
+      debugPrint(message);
+    }
+  }
+}
 
 class TransactionListScreen extends StatefulWidget {
   const TransactionListScreen({Key? key}) : super(key: key);
-  
+
   @override
   State<TransactionListScreen> createState() => _TransactionListScreenState();
 }
@@ -32,41 +43,41 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScroll);
     _printEndpointInfo();
-    
+
     // Đăng ký observer để phát hiện khi app trở về từ background
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Kiểm tra admin status khi khởi tạo màn hình
     _checkAdminStatus();
   }
-  
+
   // Đơn giản hóa phương thức khởi tạo dữ liệu
   Future<void> _initializeData() async {
     // Đảm bảo đã kiểm tra admin status trước khi tải dữ liệu
     if (!_adminStatusChecked) {
       await _checkAdminStatus();
     }
-    
+
     setState(() {
       _isInitialized = true;
     });
-    
+
     // Tải giao dịch dựa trên vai trò
     _loadTransactionsBasedOnRole();
   }
-  
+
   // Cải thiện phương thức kiểm tra admin status
   Future<void> _checkAdminStatus() async {
     try {
       // Sử dụng phương thức forceAdminCheck để bỏ qua cache nếu cần thiết
       final isAdmin = await _authService.forceAdminCheck();
-      print('TRANSACTION LIST: Admin status = $isAdmin');
-      
+      Logger.log('TRANSACTION LIST: Admin status = $isAdmin');
+
       if (mounted) {
         setState(() {
           _isAdmin = isAdmin;
           _adminStatusChecked = true;
-          
+
           // Khởi tạo dữ liệu nếu chưa được khởi tạo
           if (!_isInitialized) {
             _isInitialized = true;
@@ -75,12 +86,12 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
         });
       }
     } catch (e) {
-      print('TRANSACTION LIST: Error checking admin status: $e');
+      Logger.log('TRANSACTION LIST: Error checking admin status: $e');
       if (mounted) {
         setState(() {
           _isAdmin = false;
           _adminStatusChecked = true;
-          
+
           // Khởi tạo dữ liệu với quyền người dùng thường
           if (!_isInitialized) {
             _isInitialized = true;
@@ -90,7 +101,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
       }
     }
   }
-  
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Khi app trở về từ nền, kiểm tra lại trạng thái admin
@@ -98,19 +109,19 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
       _checkAdminStatus();
     }
   }
-  
-  @override 
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
-  
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Kiểm tra admin status mỗi khi context thay đổi
     _checkAdminStatus();
   }
@@ -118,9 +129,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
   void _loadTransactionsBasedOnRole() async {
     try {
       final bloc = context.read<TransactionBloc>();
-      
+
       if (_isAdmin) {
-        print('Loading admin transactions with isAdmin flag set to true');
+        Logger.log('Loading admin transactions with isAdmin flag set to true');
         bloc.add(FetchTransactions(
           status: _filterOption == 'all' ? null : _filterOption,
           page: 1,
@@ -128,7 +139,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
           isAdmin: true,
         ));
       } else {
-        print('Loading user transactions');
+        Logger.log('Loading user transactions');
         bloc.add(FetchMyTransactions(
           status: _filterOption == 'all' ? null : _filterOption,
           page: 1,
@@ -136,7 +147,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
         ));
       }
     } catch (e) {
-      print('Error loading transactions: $e');
+      Logger.log('Error loading transactions: $e');
     }
   }
 
@@ -149,10 +160,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     if (_isBottom) {
       // Load more transactions when scrolled to bottom
       final state = context.read<TransactionBloc>().state;
-      
+
       if (!state.hasReachedMax) {
         if (_isAdmin) {
-          print('Loading more admin transactions, page: ${state.currentPage + 1}');
+          Logger.log('Loading more admin transactions, page: ${state.currentPage + 1}');
           context.read<TransactionBloc>().add(FetchTransactions(
             page: state.currentPage + 1,
             limit: 10,
@@ -160,7 +171,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
             isAdmin: true,
           ));
         } else {
-          print('Loading more user transactions, page: ${state.currentPage + 1}');
+          Logger.log('Loading more user transactions, page: ${state.currentPage + 1}');
           context.read<TransactionBloc>().add(FetchMyTransactions(
             page: state.currentPage + 1,
             limit: 10,
@@ -182,7 +193,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     setState(() {
       _filterOption = filter;
     });
-    
+
     // Refresh with new filter
     _refreshTransactions();
   }
@@ -219,17 +230,17 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
   }
 
   void _printEndpointInfo() {
-    print('===== API INFO =====');
-    print('Regular endpoint: ${ApiConstants.transactions}');
-    print('Admin endpoint: http://localhost:5000/api/v1/transactions');
-    print('====================');
+    Logger.log('===== API INFO =====');
+    Logger.log('Regular endpoint: ${ApiConstants.transactions}');
+    Logger.log('Admin endpoint: http://localhost:5000/api/v1/transactions');
+    Logger.log('====================');
   }
 
   @override
   Widget build(BuildContext context) {
     // Get transaction repository from provider
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
-    
+
     // Sử dụng FutureBuilder để hiển thị UI dựa trên admin status
     return FutureBuilder<bool>(
       // Sử dụng phương thức isAdmin từ AuthService
@@ -237,36 +248,36 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
       builder: (context, snapshot) {
         // Cập nhật biến state dựa trên kết quả từ Future
         final bool isAdmin = snapshot.data ?? false;
-        
+
         // Cập nhật _isAdmin nếu cần
         if (isAdmin != _isAdmin && snapshot.connectionState == ConnectionState.done) {
           _isAdmin = isAdmin;
-          print('Admin status updated in build: $_isAdmin');
-          
+          Logger.log('Admin status updated in build: $_isAdmin');
+
           // Reload transactions if needed
           if (_isInitialized) {
             Future.microtask(() => _loadTransactionsBasedOnRole());
           }
         }
-        
+
         // Create a new TransactionBloc
         return BlocProvider(
           create: (context) {
             final bloc = TransactionBloc(transactionRepository: transactionRepository);
-            
+
             // Chỉ tải giao dịch nếu đã khởi tạo
             if (_isInitialized) {
-              print('TransactionListScreen build: isAdmin=$_isAdmin, initializing transactions');
+              Logger.log('TransactionListScreen build: isAdmin=$_isAdmin, initializing transactions');
               _loadTransactionsBasedOnRole();
             }
-            
+
             return bloc;
           },
           child: BlocBuilder<TransactionBloc, TransactionState>(
             builder: (context, state) {
               // Debugging
-              print('TransactionState: ${state.status}, transactions: ${state.transactions.length}, isAdmin: $_isAdmin');
-              
+              Logger.log('TransactionState: ${state.status}, transactions: ${state.transactions.length}, isAdmin: $_isAdmin');
+
               return Scaffold(
                 appBar: AppBar(
                   title: Text(_isAdmin ? 'Tất cả giao dịch' : 'Giao dịch của tôi'),
@@ -282,7 +293,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
                 body: Column(
                   children: [
                     _buildSearchBar(),
-                    
+
                     // Filter options
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -305,26 +316,26 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     Expanded(
                       child: _buildTransactionList(state),
                     ),
                   ],
                 ),
-                floatingActionButton: _isAdmin 
-                  ? FloatingActionButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/add-transaction').then((_) {
-                          // Refresh the list when returning from add
-                          _refreshTransactions();
-                        });
-                      },
-                      backgroundColor: AppColors.primaryGreen,
-                      child: const Icon(Icons.add),
-                    )
-                  : null,
+                floatingActionButton: _isAdmin
+                    ? FloatingActionButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/add-transaction').then((_) {
+                      // Refresh the list when returning from add
+                      _refreshTransactions();
+                    });
+                  },
+                  backgroundColor: AppColors.primaryGreen,
+                  child: const Icon(Icons.add),
+                )
+                    : null,
               );
             },
           ),
@@ -337,7 +348,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     if (state.status == TransactionStatus.initial) {
       return const Center(child: CircularProgressIndicator());
     } else if (state.status == TransactionStatus.loading && state.transactions.isEmpty) {
@@ -345,11 +356,11 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
     } else if (state.status == TransactionStatus.failure) {
       return _buildErrorState(state.errorMessage);
     }
-    
+
     if (state.transactions.isEmpty) {
       return _buildEmptyState();
     }
-    
+
     return RefreshIndicator(
       onRefresh: () async {
         _refreshTransactions();
@@ -432,7 +443,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
 
   Widget _buildFilterChip(String value, String label) {
     final bool isSelected = _filterOption == value;
-    
+
     return GestureDetector(
       onTap: () => _onFilterChanged(value),
       child: Container(
@@ -572,7 +583,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
                       ],
                     ),
                   ),
-                  
+
                   // Status badge and actions
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -593,7 +604,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       // Kiểm tra đúng trạng thái admin và trạng thái giao dịch
                       Visibility(
                         visible: _isAdmin && transaction.status != 'completed',
@@ -714,4 +725,4 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
         return 'Không xác định';
     }
   }
-} 
+}
