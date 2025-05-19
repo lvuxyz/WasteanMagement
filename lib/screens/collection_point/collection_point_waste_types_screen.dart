@@ -31,7 +31,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    
+
     // Load waste types for this collection point
     context.read<WasteTypeBloc>().add(
       LoadWasteTypesForCollectionPoint(
@@ -46,7 +46,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
     _searchController.dispose();
     super.dispose();
   }
-  
+
   void _onSearchChanged() {
     setState(() {
       _searchQuery = _searchController.text;
@@ -60,11 +60,11 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Loại rác tại: ${widget.collectionPointName}',
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               context.read<WasteTypeBloc>().add(
                 LoadWasteTypesForCollectionPoint(
@@ -79,23 +79,23 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
       body: BlocBuilder<WasteTypeBloc, WasteTypeState>(
         builder: (context, state) {
           if (state is WasteTypeLoading) {
-            return LoadingView(message: 'Đang tải loại rác...');
+            return const LoadingView(message: 'Đang tải loại rác...');
           }
 
           if (state is WasteTypesForCollectionPointLoaded) {
             final wasteTypes = state.wasteTypes;
-            
+
             if (wasteTypes.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.delete_outline,
                       size: 80,
-                      color: Colors.grey[400],
+                      color: Colors.grey,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'Không có loại rác nào tại điểm thu gom này',
                       style: TextStyle(
@@ -104,7 +104,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                         color: Colors.grey[700],
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Hiện chưa có loại rác nào được liên kết\nvới điểm thu gom này',
                       textAlign: TextAlign.center,
@@ -117,14 +117,14 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                 ),
               );
             }
-            
+
             // Filter waste types by search query
             final filteredWasteTypes = _searchQuery.isEmpty
                 ? wasteTypes
-                : wasteTypes.where((wasteType) => 
-                    wasteType.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                    wasteType.description.toLowerCase().contains(_searchQuery.toLowerCase())
-                  ).toList();
+                : wasteTypes.where((wasteType) =>
+            wasteType.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                wasteType.description.toLowerCase().contains(_searchQuery.toLowerCase())
+            ).toList();
 
             return Column(
               children: [
@@ -139,21 +139,21 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                     },
                   ),
                 ),
-                
+
                 // Counter
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.primaryGreen.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '${filteredWasteTypes.length} loại rác',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.primaryGreen,
                             fontWeight: FontWeight.w500,
@@ -163,44 +163,44 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                     ],
                   ),
                 ),
-                
+
                 // List of waste types
                 Expanded(
                   child: filteredWasteTypes.isEmpty && _searchQuery.isNotEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                              SizedBox(height: 16),
-                              Text(
-                                'Không tìm thấy loại rác phù hợp',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Không tìm thấy loại rác phù hợp',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.all(16),
-                          itemCount: filteredWasteTypes.length,
-                          physics: BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final wasteType = filteredWasteTypes[index];
-                            return WasteTypeItem(
-                              wasteType: wasteType,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context, 
-                                  '/waste-type/details',
-                                  arguments: wasteType.id,
-                                );
-                              },
-                            );
-                          },
                         ),
+                      ],
+                    ),
+                  )
+                      : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredWasteTypes.length,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final wasteType = filteredWasteTypes[index];
+                      return WasteTypeItem(
+                        wasteType: wasteType,
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/waste-type/details',
+                            arguments: wasteType.id,
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             );
@@ -223,11 +223,11 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
             );
           }
 
-          return Center(
+          return const Center(
             child: Text('Không tìm thấy dữ liệu'),
           );
         },
       ),
     );
   }
-} 
+}
