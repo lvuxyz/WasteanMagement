@@ -1,6 +1,7 @@
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/core/api/api_constants.dart';
 import 'package:wasteanmagement/models/transaction.dart';
+import 'package:wasteanmagement/core/services/logger_service.dart';
 
 class TransactionRepository {
   final ApiClient apiClient;
@@ -24,10 +25,10 @@ class TransactionRepository {
 
     // Sử dụng URL chính xác cho admin
     final String adminUrl = 'http://103.27.239.248:3000/api/v1/transactions';
-    String url = isAdmin 
+    String url = isAdmin
         ? adminUrl // Admin API endpoint chính xác
         : ApiConstants.transactions; // Regular API endpoint
-    
+
     if (queryParams.isNotEmpty) {
       url += '?';
       url += queryParams.entries
@@ -36,18 +37,18 @@ class TransactionRepository {
     }
 
     try {
-      print('Fetching transactions with isAdmin=$isAdmin from URL: $url');
+      LoggerService.info('Fetching transactions with isAdmin=$isAdmin from URL: $url');
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transactions API response: ${response.data}');
+        LoggerService.debug('Transactions API response: ${response.data}');
         return TransactionResponse.fromJson(response.data);
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
+        LoggerService.error('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load transactions: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactions: $e');
+      LoggerService.error('Exception in getTransactions:', e);
       throw Exception('Failed to load transactions: $e');
     }
   }
@@ -91,18 +92,18 @@ class TransactionRepository {
     }
 
     try {
-      print('Fetching my transactions from: $url');
+      LoggerService.info('Fetching my transactions from: $url');
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('My transactions API response: ${response.data}');
+        LoggerService.debug('My transactions API response: ${response.data}');
         return TransactionResponse.fromJson(response.data);
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
+        LoggerService.error('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load my transactions: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getMyTransactions: $e');
+      LoggerService.error('Exception in getMyTransactions:', e);
       throw Exception('Failed to load my transactions: $e');
     }
   }
@@ -126,7 +127,7 @@ class TransactionRepository {
         data['proof_image_url'] = proofImageUrl;
       }
 
-      print('Creating transaction with data: $data');
+      LoggerService.info('Creating transaction with data: $data');
       final response = await apiClient.post(
         ApiConstants.transactions,
         body: data,
@@ -142,80 +143,80 @@ class TransactionRepository {
         'data': response.data['data']
       };
     } catch (e) {
-      print('Exception in createTransaction: $e');
+      LoggerService.error('Exception in createTransaction:', e);
       throw Exception('Failed to create transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> updateTransactionStatus({
     required int transactionId,
     required String status,
   }) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId/status';
-      print('Updating transaction status: $url with status: $status');
-      
+      LoggerService.info('Updating transaction status: $url with status: $status');
+
       final Map<String, dynamic> data = {
         'status': status,
       };
-      
+
       final response = await apiClient.patch(url, body: data);
-      
+
       // Convert response to expected format
       final bool isSuccess = response.isSuccess;
       final String message = response.message;
-      
+
       return {
         'success': isSuccess,
         'message': message,
         'data': response.data['data']
       };
     } catch (e) {
-      print('Exception in updateTransactionStatus: $e');
+      LoggerService.error('Exception in updateTransactionStatus:', e);
       throw Exception('Failed to update transaction status: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> deleteTransaction(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Deleting transaction: $url');
-      
+      LoggerService.info('Deleting transaction: $url');
+
       final response = await apiClient.delete(url);
-      
+
       // Convert response to expected format
       final bool isSuccess = response.isSuccess;
       final String message = response.message;
-      
+
       return {
         'success': isSuccess,
         'message': message,
       };
     } catch (e) {
-      print('Exception in deleteTransaction: $e');
+      LoggerService.error('Exception in deleteTransaction:', e);
       throw Exception('Failed to delete transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getTransactionById(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Fetching transaction details: $url');
-      
+      LoggerService.info('Fetching transaction details: $url');
+
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transaction details response: ${response.data}');
+        LoggerService.debug('Transaction details response: ${response.data}');
         return {
           'success': true,
           'data': response.data['data'],
         };
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
+        LoggerService.error('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load transaction details: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactionById: $e');
+      LoggerService.error('Exception in getTransactionById:', e);
       throw Exception('Failed to load transaction details: $e');
     }
   }
@@ -230,55 +231,55 @@ class TransactionRepository {
   }) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Updating transaction: $url');
-      
+      LoggerService.info('Updating transaction: $url');
+
       final Map<String, dynamic> data = {
         'collection_point_id': collectionPointId,
         'waste_type_id': wasteTypeId,
         'quantity': quantity,
         'unit': unit,
       };
-      
+
       if (proofImageUrl != null) {
         data['proof_image_url'] = proofImageUrl;
       }
-      
+
       final response = await apiClient.put(url, body: data);
-      
+
       // Convert response to expected format
       final bool isSuccess = response.isSuccess;
       final String message = response.message;
-      
+
       return {
         'success': isSuccess,
         'message': message,
         'data': response.data['data']
       };
     } catch (e) {
-      print('Exception in updateTransaction: $e');
+      LoggerService.error('Exception in updateTransaction:', e);
       throw Exception('Failed to update transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getTransactionHistory(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId/history';
-      print('Fetching transaction history: $url');
-      
+      LoggerService.info('Fetching transaction history: $url');
+
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transaction history response: ${response.data}');
+        LoggerService.debug('Transaction history response: ${response.data}');
         return {
           'success': true,
           'data': response.data['data'],
         };
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
+        LoggerService.error('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load transaction history: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactionHistory: $e');
+      LoggerService.error('Exception in getTransactionHistory:', e);
       throw Exception('Failed to load transaction history: $e');
     }
   }
