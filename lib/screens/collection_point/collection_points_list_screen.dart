@@ -55,7 +55,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     try {
       // Lấy dữ liệu từ API thông qua repository
       final collectionPoints = await _repository.getAllCollectionPoints();
-      
+
       setState(() {
         _collectionPoints = collectionPoints;
         _isLoading = false;
@@ -84,28 +84,28 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
-        title: Text(
+        title: const Text(
           'Điểm thu gom',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadCollectionPoints,
           ),
         ],
       ),
       body: _isLoading
-          ? LoadingView(message: 'Đang tải điểm thu gom...')
+          ? const LoadingView(message: 'Đang tải điểm thu gom...')
           : _errorMessage != null
-              ? ErrorView(
-                  icon: Icons.error_outline,
-                  title: 'Đã xảy ra lỗi',
-                  message: _errorMessage!,
-                  buttonText: 'Thử lại',
-                  onRetry: _loadCollectionPoints,
-                )
-              : _buildCollectionPointsList(),
+          ? ErrorView(
+        icon: Icons.error_outline,
+        title: 'Đã xảy ra lỗi',
+        message: _errorMessage!,
+        buttonText: 'Thử lại',
+        onRetry: _loadCollectionPoints,
+      )
+          : _buildCollectionPointsList(),
     );
   }
 
@@ -113,22 +113,22 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     // Filter collection points by search query
     final filteredCollectionPoints = _searchQuery.isEmpty
         ? _collectionPoints
-        : _collectionPoints.where((cp) => 
-            cp.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            cp.address.toLowerCase().contains(_searchQuery.toLowerCase())
-          ).toList();
+        : _collectionPoints.where((cp) =>
+    cp.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        cp.address.toLowerCase().contains(_searchQuery.toLowerCase())
+    ).toList();
 
     if (_collectionPoints.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.location_off,
               size: 80,
-              color: Colors.grey[400],
+              color: Colors.grey,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Không có điểm thu gom nào',
               style: TextStyle(
@@ -155,21 +155,21 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             },
           ),
         ),
-        
+
         // Counter
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${filteredCollectionPoints.length} điểm thu gom',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primaryGreen,
                     fontWeight: FontWeight.w500,
@@ -179,35 +179,35 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             ],
           ),
         ),
-        
+
         // List of collection points
         Expanded(
           child: filteredCollectionPoints.isEmpty && _searchQuery.isNotEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
-                      Text(
-                        'Không tìm thấy điểm thu gom phù hợp',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  'Không tìm thấy điểm thu gom phù hợp',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: filteredCollectionPoints.length,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final collectionPoint = filteredCollectionPoints[index];
-                    return _buildCollectionPointItem(context, collectionPoint);
-                  },
                 ),
+              ],
+            ),
+          )
+              : ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: filteredCollectionPoints.length,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              final collectionPoint = filteredCollectionPoints[index];
+              return _buildCollectionPointItem(context, collectionPoint);
+            },
+          ),
         ),
       ],
     );
@@ -216,8 +216,8 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   Widget _buildCollectionPointItem(BuildContext context, CollectionPoint collectionPoint) {
     // Use currentLoad with a fallback to 0 if it's null
     final currentLoad = collectionPoint.currentLoad ?? 0;
-    final capacityPercentage = 
-        ((currentLoad / collectionPoint.capacity) * 100).toInt();
+    final capacityPercentage =
+    ((currentLoad / collectionPoint.capacity) * 100).toInt();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -241,7 +241,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
                       shape: BoxShape.circle,
@@ -252,19 +252,19 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                       size: 20,
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           collectionPoint.name,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           collectionPoint.address,
                           style: TextStyle(
@@ -302,7 +302,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                 ],
               ),
             ),
-            
+
             // Info row (hours, capacity)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -313,18 +313,18 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     child: Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.access_time_outlined,
                             color: Colors.orange,
                             size: 14,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             collectionPoint.operatingHours,
@@ -339,10 +339,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                       ],
                     ),
                   ),
-                  
+
                   // Capacity
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -363,24 +363,24 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                 ],
               ),
             ),
-            
+
             // View waste types button
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.05),
-                borderRadius: BorderRadius.vertical(
+                borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(16),
                 ),
               ),
               child: TextButton.icon(
                 onPressed: () => _navigateToWasteTypes(context, collectionPoint),
-                icon: Icon(
+                icon: const Icon(
                   Icons.recycling,
                   size: 16,
                   color: Colors.blue,
                 ),
-                label: Text(
+                label: const Text(
                   'Xem loại rác được thu gom',
                   style: TextStyle(
                     color: Colors.blue,
@@ -388,8 +388,8 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(16),
                     ),
@@ -429,7 +429,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         return Colors.blue;
     }
   }
-  
+
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'active':
@@ -444,7 +444,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         return Icons.info_outline;
     }
   }
-  
+
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'active':
@@ -459,4 +459,4 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         return status;
     }
   }
-} 
+}
