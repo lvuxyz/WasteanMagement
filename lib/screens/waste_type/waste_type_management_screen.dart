@@ -37,11 +37,11 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
     try {
       final userRepository = RepositoryProvider.of<UserRepository>(context);
       final user = await userRepository.getUserProfile();
-      
+
       setState(() {
         _isAdmin = user.isAdmin;
       });
-      
+
       developer.log('User admin status: $_isAdmin');
     } catch (e) {
       developer.log('Error checking admin privileges: $e', error: e);
@@ -67,15 +67,15 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Xóa loại rác'),
+        title: const Text('Xóa loại rác'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bạn có chắc chắn muốn xóa loại rác sau đây không?'),
-            SizedBox(height: 12),
+            const Text('Bạn có chắc chắn muốn xóa loại rác sau đây không?'),
+            const SizedBox(height: 12),
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(8),
@@ -83,12 +83,12 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, color: Colors.red),
-                  SizedBox(width: 8),
+                  const Icon(Icons.delete_outline, color: Colors.red),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -96,7 +96,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn dữ liệu này.',
               style: TextStyle(
@@ -109,7 +109,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Hủy'),
+            child: const Text('Hủy'),
           ),
           ElevatedButton.icon(
             onPressed: () {
@@ -119,8 +119,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               });
               blocContext.read<WasteTypeBloc>().add(DeleteWasteType(wasteTypeId));
             },
-            icon: Icon(Icons.delete_outline, size: 18),
-            label: Text('Xác nhận xóa'),
+            icon: const Icon(Icons.delete_outline, size: 18),
+            label: const Text('Xác nhận xóa'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -147,7 +147,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         _updatingItems[wasteTypeId] = true;
       });
     }
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -163,7 +163,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
           _updatingItems.remove(wasteTypeId);
         });
       }
-      
+
       // Refresh the list
       context.read<WasteTypeBloc>().add(LoadWasteTypes());
     });
@@ -190,7 +190,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   Widget build(BuildContext context) {
     // Lấy ApiClient được khởi tạo từ RepositoryProvider
     final wasteTypeRepository = RepositoryProvider.of<WasteTypeRepository>(context);
-    
+
     return BlocProvider(
       create: (context) => WasteTypeBloc(
         repository: wasteTypeRepository,
@@ -200,13 +200,13 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
           backgroundColor: Colors.grey[50],
           appBar: AppBar(
             backgroundColor: AppColors.primaryGreen,
-            title: Text(
+            title: const Text(
               'Quản lý loại rác thải',
               style: TextStyle(color: Colors.white),
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.refresh, color: Colors.white),
+                icon: const Icon(Icons.refresh, color: Colors.white),
                 onPressed: () {
                   _searchController.clear();
                   blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
@@ -214,18 +214,18 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               ),
             ],
           ),
-          floatingActionButton: _isAdmin 
-            ? FloatingActionButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/waste-type/add').then((_) {
-                    // Reload the list when coming back from add screen
-                    blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
-                  });
-                },
-                backgroundColor: AppColors.primaryGreen,
-                child: Icon(Icons.add, color: Colors.white),
-              )
-            : null,
+          floatingActionButton: _isAdmin
+              ? FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/waste-type/add').then((_) {
+                // Reload the list when coming back from add screen
+                blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
+              });
+            },
+            backgroundColor: AppColors.primaryGreen,
+            child: const Icon(Icons.add, color: Colors.white),
+          )
+              : null,
           body: Column(
             children: [
               // Search and filter bar
@@ -236,7 +236,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                       blurRadius: 4,
                     ),
                   ],
@@ -248,15 +248,15 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       controller: _searchController,
                       decoration: InputDecoration(
                         hintText: 'Tìm kiếm loại rác...',
-                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
                         suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                              },
-                            )
-                          : null,
+                            ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                            : null,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -265,12 +265,12 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                         filled: true,
                         fillColor: Colors.grey.shade50,
                       ),
                     ),
-                    
+
                     // Filter options
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -288,7 +288,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                   ],
                 ),
               ),
-              
+
               // List of waste types
               Expanded(
                 child: BlocConsumer<WasteTypeBloc, WasteTypeState>(
@@ -297,10 +297,10 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       setState(() {
                         _deletingItems.remove(state.wasteTypeId);
                       });
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Đã xóa loại rác thành công'),
+                          content: const Text('Đã xóa loại rác thành công'),
                           backgroundColor: Colors.green,
                           behavior: SnackBarBehavior.floating,
                           action: SnackBarAction(
@@ -318,7 +318,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                         _deletingItems.clear();
                         _updatingItems.clear();
                       });
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(state.message),
@@ -337,7 +337,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       setState(() {
                         _updatingItems.remove(state.wasteType.id);
                       });
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(state.message),
@@ -349,12 +349,12 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                   },
                   builder: (context, state) {
                     if (state is WasteTypeLoading) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     if (state is WasteTypeLoaded) {
                       var wasteTypes = state.filteredWasteTypes;
-                      
+
                       // Apply additional filter based on selected option
                       if (_selectedFilterOption == 'recyclable') {
                         wasteTypes = wasteTypes.where((type) => type.recyclable).toList();
@@ -372,7 +372,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                         },
                         child: ListView.builder(
                           controller: _scrollController,
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           itemCount: wasteTypes.length,
                           itemBuilder: (context, index) {
                             final wasteType = wasteTypes[index];
@@ -380,8 +380,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                               wasteType: wasteType,
                               onView: () => _navigateToDetails(wasteType.id),
                               onEdit: _isAdmin ? () => _navigateToEdit(blocContext, wasteType.id) : null,
-                              onDelete: _isAdmin && !(_deletingItems[wasteType.id] ?? false) && !(_updatingItems[wasteType.id] ?? false) ? 
-                                () => _showDeleteConfirmation(blocContext, wasteType.id, wasteType.name) : null,
+                              onDelete: _isAdmin && !(_deletingItems[wasteType.id] ?? false) && !(_updatingItems[wasteType.id] ?? false) ?
+                                  () => _showDeleteConfirmation(blocContext, wasteType.id, wasteType.name) : null,
                               onManageCollectionPoints: _isAdmin ? () => _navigateToCollectionPoints(
                                 blocContext,
                                 wasteType.id,
@@ -394,7 +394,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       );
                     }
 
-                    return Center(child: Text('Không thể tải dữ liệu.'));
+                    return const Center(child: Text('Không thể tải dữ liệu.'));
                   },
                 ),
               ),
@@ -407,7 +407,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
   Widget _buildFilterChip(String value, String label) {
     final isSelected = _selectedFilterOption == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -415,8 +415,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         });
       },
       child: Container(
-        margin: EdgeInsets.only(right: 8),
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryGreen : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(20),
@@ -440,8 +440,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
+          const Icon(Icons.search_off, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
           Text(
             'Không tìm thấy loại rác phù hợp',
             style: TextStyle(
@@ -449,7 +449,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               color: Colors.grey[600],
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextButton.icon(
             onPressed: () {
               _searchController.clear();
@@ -458,8 +458,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               });
               context.read<WasteTypeBloc>().add(LoadWasteTypes());
             },
-            icon: Icon(Icons.refresh),
-            label: Text('Đặt lại'),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Đặt lại'),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primaryGreen,
             ),
