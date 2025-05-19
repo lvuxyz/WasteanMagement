@@ -28,14 +28,17 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypes event,
       Emitter<WasteTypeState> emit,
       ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteTypes = await repository.getWasteTypes();
+      // ignore: prefer_const_constructors
       emit(WasteTypeLoaded(
         wasteTypes: wasteTypes,
         filteredWasteTypes: wasteTypes,
       ));
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Không thể tải danh sách loại rác: $e'));
     }
   }
@@ -49,16 +52,16 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       final query = event.query.toLowerCase();
 
       List<WasteType> filteredList;
-      
+
       if (query.isEmpty) {
         filteredList = currentState.wasteTypes;
       } else {
         filteredList = currentState.wasteTypes
-            .where((type) => 
-                type.name.toLowerCase().contains(query) ||
-                type.description.toLowerCase().contains(query) ||
-                type.category.toLowerCase().contains(query) ||
-                type.examples.any((example) => example.toLowerCase().contains(query)))
+            .where((type) =>
+        type.name.toLowerCase().contains(query) ||
+            type.description.toLowerCase().contains(query) ||
+            type.category.toLowerCase().contains(query) ||
+            type.examples.any((example) => example.toLowerCase().contains(query)))
             .toList();
       }
 
@@ -78,7 +81,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       final category = event.category;
 
       List<WasteType> filteredList;
-      
+
       if (category.isEmpty || category == 'Tất cả') {
         filteredList = currentState.wasteTypes;
       } else {
@@ -113,11 +116,14 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     try {
       final result = await repository.addToRecyclingPlan(event.wasteTypeId);
       if (result) {
+        // ignore: prefer_const_constructors
         emit(RecyclingPlanUpdated('Đã thêm loại rác vào kế hoạch tái chế thành công'));
       } else {
+        // ignore: prefer_const_constructors
         emit(WasteTypeError('Không thể thêm loại rác vào kế hoạch tái chế'));
       }
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Đã xảy ra lỗi khi thêm vào kế hoạch tái chế: $e'));
     }
   }
@@ -126,15 +132,18 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypeDetails event,
       Emitter<WasteTypeState> emit,
       ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
       final collectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
+      // ignore: prefer_const_constructors
       emit(WasteTypeDetailLoaded(
         wasteType: wasteType,
         collectionPoints: collectionPoints,
       ));
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError(e.toString()));
     }
   }
@@ -143,18 +152,21 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypeDetailsWithAvailablePoints event,
       Emitter<WasteTypeState> emit,
       ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
       final linkedCollectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
       final allCollectionPoints = await repository.getAllCollectionPoints();
-      
+
+      // ignore: prefer_const_constructors
       emit(WasteTypeDetailLoaded(
         wasteType: wasteType,
         collectionPoints: linkedCollectionPoints,
         allCollectionPoints: allCollectionPoints,
       ));
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError(e.toString()));
     }
   }
@@ -166,16 +178,19 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     try {
       final result = await repository.deleteWasteType(event.wasteTypeId);
       if (result) {
+        // ignore: prefer_const_constructors
         emit(WasteTypeDeleted(
           wasteTypeId: event.wasteTypeId,
           message: 'Đã xóa loại rác thành công',
         ));
-        
+
         add(LoadWasteTypes());
       } else {
+        // ignore: prefer_const_constructors
         emit(WasteTypeError('Không thể xóa loại rác'));
       }
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Đã xảy ra lỗi khi xóa loại rác: $e'));
     }
   }
@@ -189,18 +204,21 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         event.wasteTypeId,
         event.collectionPointId,
       );
-      
+
       if (result) {
+        // ignore: prefer_const_constructors
         emit(CollectionPointLinked(
           wasteTypeId: event.wasteTypeId,
           collectionPointId: event.collectionPointId,
         ));
-        
+
         add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
       } else {
+        // ignore: prefer_const_constructors
         emit(WasteTypeError('Không thể liên kết điểm thu gom'));
       }
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Đã xảy ra lỗi khi liên kết điểm thu gom: $e'));
     }
   }
@@ -214,26 +232,30 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         event.wasteTypeId,
         event.collectionPointId,
       );
-      
+
       if (result) {
+        // ignore: prefer_const_constructors
         emit(CollectionPointUnlinked(
           wasteTypeId: event.wasteTypeId,
           collectionPointId: event.collectionPointId,
         ));
-        
+
         add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
       } else {
+        // ignore: prefer_const_constructors
         emit(WasteTypeError('Không thể hủy liên kết điểm thu gom'));
       }
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Đã xảy ra lỗi khi hủy liên kết điểm thu gom: $e'));
     }
   }
 
   Future<void> _onCreateWasteType(
-    CreateWasteType event,
-    Emitter<WasteTypeState> emit,
-  ) async {
+      CreateWasteType event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final Map<String, dynamic> wasteTypeData = {
@@ -243,71 +265,82 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         'handling_instructions': event.handlingInstructions,
         'unit_price': event.unitPrice,
       };
-      
+
       final wasteType = await repository.createWasteType(wasteTypeData);
+      // ignore: prefer_const_constructors
       emit(WasteTypeCreated(
         wasteType: wasteType,
         message: 'Đã tạo loại rác thành công',
       ));
-      
+
       // Reload the waste types list
       add(LoadWasteTypes());
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Không thể tạo loại rác: $e'));
     }
   }
 
   Future<void> _onUpdateWasteType(
-    UpdateWasteType event,
-    Emitter<WasteTypeState> emit,
-  ) async {
+      UpdateWasteType event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteType.id, event.wasteType.toJson());
+      // ignore: prefer_const_constructors
       emit(WasteTypeUpdated(
         wasteType: wasteType,
         message: 'Đã cập nhật loại rác thành công',
       ));
-      
+
       // Reload waste types list after successful update
       add(LoadWasteTypes());
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
     }
   }
 
   Future<void> _onUpdateWasteTypeData(
-    UpdateWasteTypeData event,
-    Emitter<WasteTypeState> emit,
-  ) async {
+      UpdateWasteTypeData event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteTypeId, event.data);
+      // ignore: prefer_const_constructors
       emit(WasteTypeUpdated(
         wasteType: wasteType,
         message: 'Đã cập nhật loại rác thành công',
       ));
-      
+
       // Reload waste types list after successful update
       add(LoadWasteTypes());
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Không thể cập nhật loại rác: $e'));
     }
   }
 
   Future<void> _onLoadWasteTypesForCollectionPoint(
-    LoadWasteTypesForCollectionPoint event,
-    Emitter<WasteTypeState> emit,
-  ) async {
+      LoadWasteTypesForCollectionPoint event,
+      Emitter<WasteTypeState> emit,
+      ) async {
+    // ignore: prefer_const_constructors
     emit(WasteTypeLoading());
     try {
       final wasteTypes = await repository.getWasteTypesForCollectionPoint(event.collectionPointId);
+      // ignore: prefer_const_constructors
       emit(WasteTypesForCollectionPointLoaded(
         collectionPointId: event.collectionPointId,
         collectionPointName: event.collectionPointName,
         wasteTypes: wasteTypes,
       ));
     } catch (e) {
+      // ignore: prefer_const_constructors
       emit(WasteTypeError('Không thể tải danh sách loại rác cho điểm thu gom: $e'));
     }
   }
