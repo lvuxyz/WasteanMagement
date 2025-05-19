@@ -1,3 +1,17 @@
+import 'package:logger/logger.dart';
+
+// Khởi tạo logger toàn cục cho module Transaction
+final Logger _logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 8,
+    lineLength: 120,
+    colors: true,
+    printEmojis: true,
+    printTime: false,
+  ),
+);
+
 class Transaction {
   final int transactionId;
   final int userId;
@@ -31,9 +45,9 @@ class Transaction {
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     try {
-      // Print the transaction data for debugging
-      print('Parsing transaction: ${json['transaction_id']}');
-      
+      // Ghi log thông tin giao dịch đang xử lý
+      _logger.d('Parsing transaction: ${json['transaction_id']}');
+
       // Handle quantity that can be int, double, or string
       double parseQuantity() {
         final quantity = json['quantity'];
@@ -47,7 +61,7 @@ class Transaction {
           return 0.0; // Default value
         }
       }
-      
+
       return Transaction(
         transactionId: json['transaction_id'],
         userId: json['user_id'],
@@ -59,13 +73,13 @@ class Transaction {
         status: json['status'],
         proofImageUrl: json['proof_image_url'],
         userName: json['user_name'] ?? json['user_full_name'], // Handle different field names
-        username: json['username'], 
+        username: json['username'],
         collectionPointName: json['collection_point_name'] ?? 'Không xác định',
         wasteTypeName: json['waste_type_name'] ?? 'Không xác định',
       );
     } catch (e) {
-      print('Error parsing Transaction: $e');
-      print('JSON: $json');
+      _logger.e('Error parsing Transaction: $e');
+      _logger.e('JSON: $json');
       rethrow;
     }
   }
@@ -93,8 +107,8 @@ class TransactionPagination {
         pages: json['pages'],
       );
     } catch (e) {
-      print('Error parsing TransactionPagination: $e');
-      print('JSON: $json');
+      _logger.e('Error parsing TransactionPagination: $e');
+      _logger.e('JSON: $json');
       rethrow;
     }
   }
@@ -115,21 +129,21 @@ class TransactionResponse {
 
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     try {
-      print('Parsing TransactionResponse: $json');
-      
+      _logger.d('Parsing TransactionResponse');
+
       // Check if data exists and is a list
       if (!json.containsKey('data') || json['data'] == null) {
-        print('Warning: No data key found in response');
+        _logger.w('Warning: No data key found in response');
         return TransactionResponse(
           success: json['success'] ?? false,
           message: json['message'] ?? 'No data found in response',
           data: [],
-          pagination: json.containsKey('pagination') 
+          pagination: json.containsKey('pagination')
               ? TransactionPagination.fromJson(json['pagination'])
               : TransactionPagination(total: 0, page: 1, limit: 10, pages: 0),
         );
       }
-      
+
       final List<dynamic> dataJson = json['data'];
       final List<Transaction> transactions = dataJson
           .map((item) => Transaction.fromJson(item))
@@ -142,8 +156,8 @@ class TransactionResponse {
         pagination: TransactionPagination.fromJson(json['pagination']),
       );
     } catch (e) {
-      print('Error parsing TransactionResponse: $e');
-      print('JSON: $json');
+      _logger.e('Error parsing TransactionResponse: $e');
+      _logger.e('JSON: $json');
       rethrow;
     }
   }
@@ -177,8 +191,8 @@ class TransactionHistory {
         adminName: json['admin_name'],
       );
     } catch (e) {
-      print('Error parsing TransactionHistory: $e');
-      print('JSON: $json');
+      _logger.e('Error parsing TransactionHistory: $e');
+      _logger.e('JSON: $json');
       rethrow;
     }
   }
@@ -208,9 +222,9 @@ class TransactionHistoryResponse {
         data: history,
       );
     } catch (e) {
-      print('Error parsing TransactionHistoryResponse: $e');
-      print('JSON: $json');
+      _logger.e('Error parsing TransactionHistoryResponse: $e');
+      _logger.e('JSON: $json');
       rethrow;
     }
   }
-} 
+}
