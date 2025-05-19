@@ -88,7 +88,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
     if (!_isAdmin) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: const Text('Bạn không có quyền thực hiện chức năng này'),
+          content: Text('Bạn không có quyền thực hiện chức năng này'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),

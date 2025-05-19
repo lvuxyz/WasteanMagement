@@ -328,14 +328,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Xem tất cả',
                   style: TextStyle(
                     color: AppColors.primaryGreen,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   color: AppColors.primaryGreen,
                   size: 14,
@@ -880,21 +880,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.receipt_long_outlined,
                           color: AppColors.primaryGreen,
                           size: 48,
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
+                        SizedBox(height: 16),
+                        Text(
                           'Không có giao dịch nào',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: 8),
+                        Text(
                           'Chưa có giao dịch nào được tạo trong hệ thống',
                           textAlign: TextAlign.center,
                         ),
@@ -1117,21 +1117,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.receipt_long_outlined,
                       color: AppColors.primaryGreen,
                       size: 48,
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
+                    SizedBox(height: 16),
+                    Text(
                       'Không có giao dịch nào',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Bạn chưa thực hiện giao dịch nào',
                       textAlign: TextAlign.center,
                     ),
@@ -1237,7 +1237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.eco_outlined,
                                     color: AppColors.primaryGreen,
                                     size: 14,
@@ -1483,13 +1483,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.stars,
                           color: Colors.amber,
                           size: 24,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Điểm thưởng',
                           style: TextStyle(
                             color: Colors.white,
@@ -1499,7 +1499,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward,
                       color: Colors.white70,
                       size: 20,

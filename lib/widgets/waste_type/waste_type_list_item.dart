@@ -228,7 +228,7 @@ class WasteTypeListItem extends StatelessWidget {
                       const SizedBox(
                         width: 24,
                         height: 24,
-                        child: const CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                         ),
@@ -310,8 +310,8 @@ class WasteTypeListItem extends StatelessWidget {
             value: 'manage_collection_points',
             child: const Row(
               children: [
-                const Icon(Icons.location_on_outlined, color: Colors.purple),
-                const SizedBox(width: 8),
+                Icon(Icons.location_on_outlined, color: Colors.purple),
+                SizedBox(width: 8),
                 Text('Quản lý điểm thu gom'),
               ],
             ),

@@ -205,7 +205,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                       controller: _tabController,
                       backgroundColor: statusColor,
                       tabs: const [
-                        const Tab(text: 'Thông tin cơ bản'),
+                        Tab(text: 'Thông tin cơ bản'),
                         const Tab(text: 'Điểm thu gom'),
                       ],
                     ),

@@ -247,7 +247,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${capacityPercentage}%',
+                          '$capacityPercentage%',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

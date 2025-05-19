@@ -70,6 +70,14 @@ class AuthService {
           final roles = List<String>.from(payloadMap['roles']);
           final isAdmin = roles.contains('ADMIN') || roles.contains('admin');
           LoggerService.debug('ADMIN CHECK RESULT: User has roles: $roles, isAdmin: $isAdmin');
+          
+          // Hiển thị log chi tiết hơn nếu không phải admin
+          if (!isAdmin) {
+            LoggerService.debug('ADMIN CHECK RESULT: User roles do not include ADMIN or admin');
+          } else {
+            LoggerService.debug('ADMIN CHECK RESULT: User is confirmed as ADMIN');
+          }
+          
           _updateAdminCache(isAdmin);
           return isAdmin;
         }
@@ -107,5 +115,12 @@ class AuthService {
 
     // Gọi isAdmin bình thường
     return isAdmin();
+  }
+  
+  // Xóa toàn bộ thông tin cache
+  void clearCache() {
+    _cachedAdminStatus = null;
+    _cachedAdminStatusTime = null;
+    LoggerService.debug('Cleared admin status cache');
   }
 }

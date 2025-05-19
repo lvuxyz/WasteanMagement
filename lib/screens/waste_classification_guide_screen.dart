@@ -394,7 +394,7 @@ class _WasteClassificationGuideContentState extends State<WasteClassificationGui
         const SizedBox(height: 16),
 
         // Danh sách các mục trong danh mục
-        ...category.items.map((item) => _buildWasteItemCard(item, category.id)).toList(),
+        ...category.items.map((item) => _buildWasteItemCard(item, category.id)),
 
         // Khoảng cách giữa các danh mục
         const SizedBox(height: 24),

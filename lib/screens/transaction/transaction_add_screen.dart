@@ -417,9 +417,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.check_circle_outline, size: 22),
-                                  const SizedBox(width: 8),
-                                  const Text(
+                                  Icon(Icons.check_circle_outline, size: 22),
+                                  SizedBox(width: 8),
+                                  Text(
                                     'Xác nhận tạo giao dịch',
                                     style: TextStyle(
                                       fontSize: 16,
@@ -554,7 +554,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             decoration: InputDecoration(
               labelText: 'Đơn giá',
               prefixIcon: const Icon(Icons.monetization_on_outlined),
-              suffixText: 'đ/${_unit}',
+              suffixText: 'đ/$_unit',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

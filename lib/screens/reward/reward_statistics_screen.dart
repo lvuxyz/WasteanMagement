@@ -243,7 +243,7 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
             show: true,
             horizontalInterval: maxY / 5,
             getDrawingHorizontalLine: (value) => const FlLine(
-              color: const Color(0xFFEEEEEE),
+              color: Color(0xFFEEEEEE),
               strokeWidth: 1,
             ),
             drawVerticalLine: false,
@@ -251,10 +251,10 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           titlesData: FlTitlesData(
             show: true,
             topTitles: const AxisTitles(
-              sideTitles: const SideTitles(showTitles: false),
+              sideTitles: SideTitles(showTitles: false),
             ),
             rightTitles: const AxisTitles(
-              sideTitles: const SideTitles(showTitles: false),
+              sideTitles: SideTitles(showTitles: false),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -426,7 +426,7 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
               ),
               _buildStatItem(
                 'Trung bình',
-                totalCount > 0 ? '${(totalPoints / totalCount).toStringAsFixed(1)}' : '0',
+                totalCount > 0 ? (totalPoints / totalCount).toStringAsFixed(1) : '0',
                 Icons.trending_up,
                 Colors.amber,
               ),
