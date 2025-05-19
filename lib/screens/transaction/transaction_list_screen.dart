@@ -210,7 +210,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
   void _printEndpointInfo() {
     Logger.log('===== API INFO =====');
     Logger.log('Regular endpoint: ${ApiConstants.transactions}');
-    Logger.log('Admin endpoint: http://localhost:5000/api/v1/transactions');
+    Logger.log('Admin endpoint: http://103.27.239.248:3000/api/v1/transactions');
     Logger.log('====================');
   }
 
