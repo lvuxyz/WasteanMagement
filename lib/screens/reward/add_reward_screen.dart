@@ -18,7 +18,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _pointsController = TextEditingController();
   final TextEditingController _transactionIdController = TextEditingController();
-  
+
   int? _selectedUserId;
   List<dynamic> _users = [];
   bool _isLoading = false;
@@ -26,33 +26,33 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
   bool _isAdmin = false;
   String _message = '';
   final AuthService _authService = AuthService();
-  
+
   @override
   void initState() {
     super.initState();
     _checkAdminStatus();
     _loadUsers();
   }
-  
+
   @override
   void dispose() {
     _pointsController.dispose();
     _transactionIdController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _checkAdminStatus() async {
     setState(() {
       _isCheckingAdmin = true;
     });
-    
+
     final isAdmin = await _authService.isAdmin();
-    
+
     setState(() {
       _isAdmin = isAdmin;
       _isCheckingAdmin = false;
     });
-    
+
     if (!isAdmin) {
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
@@ -66,12 +66,12 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       });
     }
   }
-  
+
   Future<void> _loadUsers() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final token = await _authService.getToken();
       final response = await http.get(
@@ -81,7 +81,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
           'Content-Type': 'application/json',
         },
       );
-      
+
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success']) {
         setState(() {
@@ -102,28 +102,28 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       });
     }
   }
-  
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
         _message = '';
       });
-      
+
       try {
         final rewardService = RewardService();
         int? transactionId;
-        
+
         if (_transactionIdController.text.isNotEmpty) {
           transactionId = int.tryParse(_transactionIdController.text);
         }
-        
-        final reward = await rewardService.createReward(
+
+        await rewardService.createReward(
           _selectedUserId!,
           int.parse(_pointsController.text),
           transactionId: transactionId,
         );
-        
+
         setState(() {
           _message = 'Thêm điểm thưởng thành công!';
           _selectedUserId = null;
@@ -141,7 +141,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isCheckingAdmin) {
@@ -151,7 +151,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
         ),
       );
     }
-    
+
     if (!_isAdmin) {
       return Scaffold(
         body: Center(
@@ -192,7 +192,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
         ),
       );
     }
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thêm Điểm Thưởng Thủ Công'),
@@ -211,21 +211,21 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: _message.contains('thành công') 
-                        ? Colors.green.shade100 
+                    color: _message.contains('thành công')
+                        ? Colors.green.shade100
                         : Colors.red.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     _message,
                     style: TextStyle(
-                      color: _message.contains('thành công') 
-                          ? Colors.green.shade800 
+                      color: _message.contains('thành công')
+                          ? Colors.green.shade800
                           : Colors.red.shade800,
                     ),
                   ),
                 ),
-              
+
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(
                   labelText: 'Chọn người dùng',
@@ -237,11 +237,11 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   final username = user['username'] ?? '';
                   final email = user['email'] ?? '';
                   final fullName = user['full_name'] ?? user['name'] ?? '';
-                  
-                  String displayName = fullName.isNotEmpty 
-                      ? fullName 
+
+                  String displayName = fullName.isNotEmpty
+                      ? fullName
                       : (username.isNotEmpty ? username : 'User $userId');
-                  
+
                   return DropdownMenuItem<int>(
                     value: userId,
                     child: Text(
@@ -263,9 +263,9 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                 },
                 isExpanded: true,
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               TextFormField(
                 controller: _pointsController,
                 decoration: const InputDecoration(
@@ -287,9 +287,9 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   return null;
                 },
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               TextFormField(
                 controller: _transactionIdController,
                 decoration: const InputDecoration(
@@ -311,9 +311,9 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   return null;
                 },
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -325,17 +325,17 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
                       : const Text(
-                          'Thêm Điểm Thưởng',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                    'Thêm Điểm Thưởng',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
             ],
@@ -344,4 +344,4 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       ),
     );
   }
-} 
+}
