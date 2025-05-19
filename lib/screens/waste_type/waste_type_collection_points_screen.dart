@@ -87,8 +87,8 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
   void _showUnlinkConfirmation(BuildContext context, int collectionPointId, String name) {
     if (!_isAdmin) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bạn không có quyền thực hiện chức năng này'),
+        const SnackBar(
+          content: const Text('Bạn không có quyền thực hiện chức năng này'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -126,12 +126,12 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             if (state is WasteTypeDetailLoaded) {
               return Text(
                 'Quản lý điểm thu gom: ${state.wasteType.name}',
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               );
             }
-            return Text(
+            return const Text(
               'Quản lý điểm thu gom',
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             );
           },
         ),
@@ -143,13 +143,13 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
           indicatorColor: Colors.white,
           indicatorWeight: 3,
           tabs: [
-            Tab(text: 'Đã liên kết'),
-            Tab(text: 'Sẵn có'),
+            const Tab(text: 'Đã liên kết'),
+            const Tab(text: 'Sẵn có'),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               context.read<WasteTypeBloc>().add(
                 LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
@@ -162,8 +162,8 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
         listener: (context, state) {
           if (state is CollectionPointLinked) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Đã thêm điểm thu gom thành công'),
+              const SnackBar(
+                content: const Text('Đã thêm điểm thu gom thành công'),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -174,7 +174,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             );
           } else if (state is CollectionPointUnlinked) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Đã xóa liên kết điểm thu gom thành công'),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
@@ -196,7 +196,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
         },
         builder: (context, state) {
           if (state is WasteTypeLoading) {
-            return LoadingView(message: 'Đang tải điểm thu gom...');
+            return const LoadingView(message: 'Đang tải điểm thu gom...');
           }
 
           if (state is WasteTypeDetailLoaded) {
@@ -251,7 +251,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
             );
           }
 
-          return Center(
+          return const Center(
             child: Text('Không tìm thấy dữ liệu'),
           );
         },
@@ -270,7 +270,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
               size: 80,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Chưa có điểm thu gom nào được liên kết',
               style: TextStyle(
@@ -279,7 +279,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Chuyển sang tab "Sẵn có" để thêm điểm thu gom mới',
               textAlign: TextAlign.center,
@@ -313,14 +313,14 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${collectionPoints.length} điểm thu gom',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primaryGreen,
                     fontWeight: FontWeight.w500,
@@ -339,7 +339,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'Không tìm thấy điểm thu gom phù hợp',
                         style: TextStyle(
@@ -351,9 +351,9 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: collectionPoints.length,
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     final collectionPoint = collectionPoints[index];
                     return CollectionPointItem(
@@ -387,7 +387,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
               size: 80,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Không có điểm thu gom nào khả dụng',
               style: TextStyle(
@@ -396,7 +396,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Tất cả điểm thu gom đã được liên kết hoặc\nchưa có điểm thu gom nào trong hệ thống',
               textAlign: TextAlign.center,
@@ -430,14 +430,14 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${collectionPoints.length} điểm thu gom sẵn có',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: Colors.blue,
                     fontWeight: FontWeight.w500,
@@ -456,7 +456,7 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'Không tìm thấy điểm thu gom phù hợp',
                         style: TextStyle(
@@ -468,9 +468,9 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: collectionPoints.length,
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     final collectionPoint = collectionPoints[index];
                     return CollectionPointItem(
@@ -481,8 +481,8 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                       onActionPressed: () {
                         if (!_isAdmin) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Bạn không có quyền thực hiện chức năng này'),
+                            const SnackBar(
+                              content: const Text('Bạn không có quyền thực hiện chức năng này'),
                               backgroundColor: Colors.red,
                               behavior: SnackBarBehavior.floating,
                             ),

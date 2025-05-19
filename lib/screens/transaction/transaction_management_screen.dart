@@ -532,7 +532,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                             ),
                           ),
                           if (transaction.status == 'completed')
-                            Row(
+                            const Row(
                               children: [
                                 const Icon(
                                   Icons.eco_outlined,
@@ -540,7 +540,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                                   size: 14,
                                 ),
                                 const SizedBox(width: 2),
-                                Text(
+                                const Text(
                                   '+10 điểm', // Points will be implemented based on API data
                                   style: const TextStyle(
                                     color: AppColors.primaryGreen,
@@ -642,7 +642,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),

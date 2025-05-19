@@ -46,7 +46,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
       body: BlocBuilder<WasteTypeBloc, WasteTypeState>(
         builder: (context, state) {
           if (state is WasteTypeLoading) {
-            return LoadingView(message: 'Đang tải thông tin loại rác thải...');
+            return const LoadingView(message: 'Đang tải thông tin loại rác thải...');
           }
 
           if (state is WasteTypeDetailLoaded) {
@@ -69,13 +69,13 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                     pinned: true,
                     backgroundColor: statusColor,
                     leading: IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                     actions: [
                       if (_isAdmin)
                         IconButton(
-                          icon: Icon(Icons.edit, color: Colors.white),
+                          icon: const Icon(Icons.edit, color: Colors.white),
                           onPressed: () {
                             Navigator.pushNamed(
                               context,
@@ -100,7 +100,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                           fontWeight: FontWeight.bold,
                           shadows: [
                             Shadow(
-                              offset: Offset(0, 1),
+                              offset: const Offset(0, 1),
                               blurRadius: 3.0,
                               color: Colors.black.withOpacity(0.3),
                             ),
@@ -138,7 +138,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                             left: 16,
                             bottom: 16,
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(20),
@@ -155,10 +155,10 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                                     size: 16,
                                     color: Colors.white,
                                   ),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
                                     wasteType.category,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -173,7 +173,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                               right: 16,
                               bottom: 16,
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.orange,
                                   borderRadius: BorderRadius.circular(20),
@@ -181,15 +181,15 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.monetization_on_outlined,
                                       size: 16,
                                       color: Colors.white,
                                     ),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     Text(
                                       '${wasteType.unitPrice}đ/${wasteType.unit}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -204,9 +204,9 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                     bottom: CustomTabBar(
                       controller: _tabController,
                       backgroundColor: statusColor,
-                      tabs: [
-                        Tab(text: 'Thông tin cơ bản'),
-                        Tab(text: 'Điểm thu gom'),
+                      tabs: const [
+                        const Tab(text: 'Thông tin cơ bản'),
+                        const Tab(text: 'Điểm thu gom'),
                       ],
                     ),
                   ),
@@ -242,8 +242,8 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
               },
             );
           }
-          return Center(
-            child: Text('Không tìm thấy dữ liệu'),
+          return const Center(
+            child: const Text('Không tìm thấy dữ liệu'),
           );
         },
       ),
@@ -267,11 +267,11 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                 });
               },
               backgroundColor: AppColors.primaryGreen,
-              icon: Icon(Icons.edit),
-              label: Text('Quản lý điểm thu gom'),
+              icon: const Icon(Icons.edit),
+              label: const Text('Quản lý điểm thu gom'),
             );
           }
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         },
       ) : null,
     );

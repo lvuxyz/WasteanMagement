@@ -4,6 +4,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/api_constants.dart';
 import '../../core/error/exceptions.dart';
 import '../../utils/secure_storage.dart';
+import 'dart:convert';
 
 class RemoteDataSource {
   final ApiClient apiClient;
@@ -50,13 +51,26 @@ class RemoteDataSource {
             return responseData['data'];
           } else {
             // Tạo dữ liệu người dùng tạm thời nếu không có trong phản hồi
+            // Kiểm tra và tạo token với vai trò ADMIN cho các tài khoản admin
+            final isAdmin = username.toLowerCase().contains('admin');
+            final roles = isAdmin ? ['ADMIN'] : ['USER'];
+            
+            // Tạo token JWT tạm thời có chứa thông tin vai trò
+            final header = base64Url.encode(utf8.encode('{"alg":"HS256","typ":"JWT"}'));
+            final payload = base64Url.encode(utf8.encode('{"sub":"$username","name":"${username.toUpperCase()}","roles":${json.encode(roles)}}'));
+            final signature = base64Url.encode(utf8.encode('dummy_signature'));
+            final token = '$header.$payload.$signature';
+            
+            developer.log('Created temporary token with roles: $roles for user: $username');
+            
             return {
-              'token': 'temp_token_${DateTime.now().millisecondsSinceEpoch}',
+              'token': token,
               'user': {
                 'username': username,
                 'full_name': username,
                 'id': 0,
                 'email': '',
+                'roles': roles,
               },
             };
           }
@@ -68,14 +82,26 @@ class RemoteDataSource {
         if (response.message.toLowerCase().contains('thành công')) {
           developer.log('Phát hiện đăng nhập thành công từ thông báo lỗi: ${response.message}');
           
-          // Trả về dữ liệu tạm thời vì đăng nhập thành công nhưng không có dữ liệu
+          // Kiểm tra và tạo token với vai trò ADMIN cho các tài khoản admin
+          final isAdmin = username.toLowerCase().contains('admin');
+          final roles = isAdmin ? ['ADMIN'] : ['USER'];
+          
+          // Tạo token JWT tạm thời có chứa thông tin vai trò
+          final header = base64Url.encode(utf8.encode('{"alg":"HS256","typ":"JWT"}'));
+          final payload = base64Url.encode(utf8.encode('{"sub":"$username","name":"${username.toUpperCase()}","roles":${json.encode(roles)}}'));
+          final signature = base64Url.encode(utf8.encode('dummy_signature'));
+          final token = '$header.$payload.$signature';
+          
+          developer.log('Created temporary token with roles: $roles for user: $username');
+          
           return {
-            'token': 'temp_token_${DateTime.now().millisecondsSinceEpoch}',
+            'token': token,
             'user': {
               'username': username,
               'full_name': username,
               'id': 0,
               'email': '',
+              'roles': roles,
             },
           };
         }
@@ -87,14 +113,26 @@ class RemoteDataSource {
       if (e.toString().toLowerCase().contains('thành công')) {
         developer.log('Phát hiện đăng nhập thành công từ lỗi: ${e.toString()}');
         
-        // Trả về dữ liệu tạm thời vì đăng nhập thành công nhưng không có dữ liệu
+        // Kiểm tra và tạo token với vai trò ADMIN cho các tài khoản admin
+        final isAdmin = username.toLowerCase().contains('admin');
+        final roles = isAdmin ? ['ADMIN'] : ['USER'];
+        
+        // Tạo token JWT tạm thời có chứa thông tin vai trò
+        final header = base64Url.encode(utf8.encode('{"alg":"HS256","typ":"JWT"}'));
+        final payload = base64Url.encode(utf8.encode('{"sub":"$username","name":"${username.toUpperCase()}","roles":${json.encode(roles)}}'));
+        final signature = base64Url.encode(utf8.encode('dummy_signature'));
+        final token = '$header.$payload.$signature';
+        
+        developer.log('Created temporary token with roles: $roles for user: $username');
+        
         return {
-          'token': 'temp_token_${DateTime.now().millisecondsSinceEpoch}',
+          'token': token,
           'user': {
             'username': username,
             'full_name': username,
             'id': 0,
             'email': '',
+            'roles': roles,
           },
         };
       }

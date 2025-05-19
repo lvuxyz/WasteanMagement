@@ -174,7 +174,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
               backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
               child: Text(
                 firstLetter,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryGreen,
@@ -228,7 +228,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                       ),
                       child: Text(
                         roles.join(', '),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.primaryGreen,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,

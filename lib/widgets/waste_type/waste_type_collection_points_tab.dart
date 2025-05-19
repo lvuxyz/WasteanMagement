@@ -24,7 +24,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: collectionPoints.length,
-      physics: BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       itemBuilder: (context, index) {
         final collectionPoint = collectionPoints[index];
         final capacityPercentage = 
@@ -43,7 +43,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(32),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 shape: BoxShape.circle,
@@ -99,7 +99,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -149,7 +149,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: _getStatusColor(point.status).withOpacity(0.1),
                         shape: BoxShape.circle,
@@ -160,7 +160,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                         size: 24,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +172,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                               fontSize: 18,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -194,7 +194,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                                   size: 12,
                                   color: _getStatusColor(point.status),
                                 ),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
                                   _getStatusText(point.status),
                                   style: TextStyle(
@@ -369,7 +369,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
@@ -401,14 +401,14 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Xóa liên kết'),
+        title: const Text('Xóa liên kết'),
         content: Text(
           'Bạn có chắc chắn muốn xóa liên kết với điểm thu gom "${point.name}" không?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Hủy'),
+            child: const Text('Hủy'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -419,7 +419,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text('Xóa liên kết'),
+            child: const Text('Xóa liên kết'),
           ),
         ],
       ),

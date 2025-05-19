@@ -89,7 +89,7 @@ class WasteTypeRepository {
 
     // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
     return [
-      CollectionPoint(
+      const CollectionPoint(
         collectionPointId: 1,
         name: 'Trung tâm Tái chế Hà Nội',
         address: '123 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',
@@ -108,7 +108,7 @@ class WasteTypeRepository {
         capacity: 100,
         operatingHours: '08:00 - 17:00, Thứ 2 - Thứ 7',
       ),
-      CollectionPoint(
+      const CollectionPoint(
         collectionPointId: 2,
         name: 'Điểm thu gom Cầu Giấy',
         address: '45 Đường Cầu Giấy, Cầu Giấy, Hà Nội',
@@ -138,7 +138,7 @@ class WasteTypeRepository {
 
     // Dữ liệu mẫu - trong thực tế sẽ lấy từ API
     return [
-      CollectionPoint(
+      const CollectionPoint(
         collectionPointId: 1,
         name: 'Trung tâm Tái chế Hà Nội',
         address: '123 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',
@@ -157,7 +157,7 @@ class WasteTypeRepository {
         capacity: 100,
         operatingHours: '08:00 - 17:00, Thứ 2 - Thứ 7',
       ),
-      CollectionPoint(
+      const CollectionPoint(
         collectionPointId: 2,
         name: 'Điểm thu gom Cầu Giấy',
         address: '45 Đường Cầu Giấy, Cầu Giấy, Hà Nội',
@@ -176,7 +176,7 @@ class WasteTypeRepository {
         capacity: 80,
         operatingHours: '07:30 - 16:30, Hàng ngày',
       ),
-      CollectionPoint(
+      const CollectionPoint(
         collectionPointId: 3,
         name: 'Điểm thu gom Thanh Xuân',
         address: '78 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội',

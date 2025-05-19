@@ -79,7 +79,7 @@ class AboutAppScreen extends StatelessWidget {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
+            child: const Text(
               'Phiên bản ${AppConstants.appVersion}',
               style: const TextStyle(
                 color: Colors.white,

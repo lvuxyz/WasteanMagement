@@ -38,7 +38,7 @@ class LanguageMenu extends StatelessWidget {
                 children: [
                   Text(
                     isEnglish ? 'EN' : 'VI',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,

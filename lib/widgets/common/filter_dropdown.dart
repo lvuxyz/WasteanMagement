@@ -30,10 +30,10 @@ class FilterDropdown extends StatelessWidget {
               color: Colors.grey[700],
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
         ],
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(10),
@@ -43,7 +43,7 @@ class FilterDropdown extends StatelessWidget {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: Icon(Icons.filter_list, color: AppColors.primaryGreen),
+              icon: const Icon(Icons.filter_list, color: AppColors.primaryGreen),
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
@@ -51,7 +51,7 @@ class FilterDropdown extends StatelessWidget {
                 );
               }).toList(),
               onChanged: onChanged,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 14,
               ),

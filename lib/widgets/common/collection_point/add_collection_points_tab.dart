@@ -45,7 +45,7 @@ class _AddCollectionPointsTabState extends State<AddCollectionPointsTab> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'Không tìm thấy điểm thu gom',
                         style: TextStyle(fontSize: 16, color: Colors.grey[600]),
@@ -55,19 +55,19 @@ class _AddCollectionPointsTabState extends State<AddCollectionPointsTab> {
                 )
               : ListView.builder(
                   itemCount: widget.availableCollectionPoints.length,
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemBuilder: (context, index) {
                     final collectionPoint = widget.availableCollectionPoints[index];
                     return Card(
-                      margin: EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        contentPadding: EdgeInsets.all(16),
+                        contentPadding: const EdgeInsets.all(16),
                         title: Text(
                           collectionPoint.name,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
                           collectionPoint.address,
@@ -75,8 +75,8 @@ class _AddCollectionPointsTabState extends State<AddCollectionPointsTab> {
                         ),
                         trailing: ElevatedButton.icon(
                           onPressed: () => widget.onAddCollectionPoint(collectionPoint),
-                          icon: Icon(Icons.add, size: 18),
-                          label: Text('Thêm'),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Thêm'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryGreen,
                             foregroundColor: Colors.white,

@@ -5,6 +5,7 @@ import '../models/user_model.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
 import '../core/api/api_constants.dart';
+import 'dart:convert';
 
 class UserRepository {
   final RemoteDataSource remoteDataSource;
@@ -40,7 +41,19 @@ class UserRepository {
 
       // Phân tích và lưu cache dữ liệu người dùng
       if (response['user'] != null) {
+        // Debug: Log thông tin user trước khi chuyển đổi
+        developer.log('Thông tin user từ API: ${response['user']}');
+        
+        // Kiểm tra dữ liệu roles
+        if (response['user']['roles'] != null) {
+          developer.log('User có roles: ${response['user']['roles']}');
+        } else {
+          developer.log('User không có thông tin roles');
+        }
+        
         final user = User.fromJson(response['user']);
+        developer.log('User sau khi chuyển đổi - roles: ${user.roles}, isAdmin: ${user.isAdmin}');
+        
         await localDataSource.cacheUserProfile(user);
         developer.log('Đã lưu thông tin người dùng vào cache: ${user.fullName}');
         return user;
@@ -154,6 +167,48 @@ class UserRepository {
               return cachedUser;
             }
             throw UnauthorizedException('Người dùng chưa đăng nhập');
+          }
+
+          // Kiểm tra xem token có phải là token tạm thời không (được tạo trong RemoteDataSource)
+          if (token.startsWith('eyJ')) {
+            // Parse JWT token để kiểm tra vai trò
+            try {
+              final parts = token.split('.');
+              if (parts.length == 3) {
+                final payload = parts[1];
+                final normalizedPayload = base64Url.normalize(payload);
+                final decoded = utf8.decode(base64Url.decode(normalizedPayload));
+                final payloadMap = json.decode(decoded);
+                
+                developer.log('JWT payload user repository: $payloadMap');
+                
+                // Nếu là token tạm thời có chứa thông tin roles
+                if (payloadMap.containsKey('roles') && payloadMap['roles'] is List) {
+                  final roles = List<String>.from(payloadMap['roles']);
+                  final username = payloadMap['sub'] ?? 'unknown';
+                  final fullName = payloadMap['name'] ?? username;
+                  
+                  developer.log('Created user from JWT with roles: $roles');
+                  
+                  // Tạo user từ thông tin JWT
+                  final user = User(
+                    id: 0,
+                    username: username,
+                    email: '',
+                    fullName: fullName,
+                    roles: roles,
+                  );
+                  
+                  // Cache user và trả về
+                  await localDataSource.cacheUserProfile(user);
+                  _updateCache(user);
+                  return user;
+                }
+              }
+            } catch (e) {
+              developer.log('Lỗi khi parse JWT token: $e', error: e);
+              // Tiếp tục thực hiện API call nếu có lỗi
+            }
           }
 
           developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');

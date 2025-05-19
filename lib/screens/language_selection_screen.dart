@@ -12,7 +12,7 @@ class LanguageSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LanguageBloc(repository: BlocProvider.of<LanguageBloc>(context).repository)..add(LanguageInitialized()),
+      create: (context) => LanguageBloc(repository: BlocProvider.of<LanguageBloc>(context).repository)..add(const LanguageInitialized()),
       // Hoặc sử dụng constructor phù hợp với loại repository mà LanguageBloc yêu cầu
       child: Scaffold(
         backgroundColor: Colors.white,

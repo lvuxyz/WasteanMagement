@@ -338,8 +338,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.swap_horiz, color: Colors.blue),
-                      SizedBox(width: 8),
+                      const Icon(Icons.swap_horiz, color: Colors.blue),
+                      const SizedBox(width: 8),
                       Text(
                         'Chọn trạng thái mới',
                         style: TextStyle(
@@ -408,14 +408,14 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
               ),
             ),
             child: isSelected
-                ? Icon(
+                ? const Icon(
                     Icons.check,
                     color: Colors.white,
                     size: 12,
                   )
                 : null,
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
             label,
             style: TextStyle(
@@ -466,7 +466,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                 Text('Đang lưu...'),
               ],
             )
-          : Row(
+          : const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.save),

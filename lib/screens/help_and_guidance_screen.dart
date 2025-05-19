@@ -557,7 +557,7 @@ class _ContactTab extends StatelessWidget {
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(

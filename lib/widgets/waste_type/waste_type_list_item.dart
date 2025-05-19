@@ -190,7 +190,7 @@ class WasteTypeListItem extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
@@ -198,7 +198,7 @@ class WasteTypeListItem extends StatelessWidget {
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         'Đang xóa...',
                         style: TextStyle(
@@ -225,15 +225,15 @@ class WasteTypeListItem extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         'Đang cập nhật...',
                         style: TextStyle(
@@ -262,8 +262,8 @@ class WasteTypeListItem extends StatelessWidget {
     }
 
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert),
-      offset: Offset(0, 40),
+      icon: const Icon(Icons.more_vert),
+      offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -284,44 +284,44 @@ class WasteTypeListItem extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           value: 'view',
-          child: Row(
+          child: const Row(
             children: [
-              Icon(Icons.visibility_outlined, color: AppColors.primaryGreen),
-              SizedBox(width: 8),
-              Text('Xem chi tiết'),
+              const Icon(Icons.visibility_outlined, color: AppColors.primaryGreen),
+              const SizedBox(width: 8),
+              const Text('Xem chi tiết'),
             ],
           ),
         ),
         if (onEdit != null)
-          PopupMenuItem<String>(
+          const PopupMenuItem<String>(
             value: 'edit',
-            child: Row(
+            child: const Row(
               children: [
-                Icon(Icons.edit_outlined, color: Colors.blue),
-                SizedBox(width: 8),
-                Text('Chỉnh sửa'),
+                const Icon(Icons.edit_outlined, color: Colors.blue),
+                const SizedBox(width: 8),
+                const Text('Chỉnh sửa'),
               ],
             ),
           ),
         if (onManageCollectionPoints != null)
-          PopupMenuItem<String>(
+          const PopupMenuItem<String>(
             value: 'manage_collection_points',
-            child: Row(
+            child: const Row(
               children: [
-                Icon(Icons.location_on_outlined, color: Colors.purple),
-                SizedBox(width: 8),
+                const Icon(Icons.location_on_outlined, color: Colors.purple),
+                const SizedBox(width: 8),
                 Text('Quản lý điểm thu gom'),
               ],
             ),
           ),
         if (onDelete != null)
-          PopupMenuItem<String>(
+          const PopupMenuItem<String>(
             value: 'delete',
-            child: Row(
+            child: const Row(
               children: [
-                Icon(Icons.delete_outline, color: Colors.red),
+                const Icon(Icons.delete_outline, color: Colors.red),
                 SizedBox(width: 8),
                 Text('Xóa'),
               ],

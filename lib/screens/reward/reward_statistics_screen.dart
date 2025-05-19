@@ -242,7 +242,7 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           gridData: FlGridData(
             show: true,
             horizontalInterval: maxY / 5,
-            getDrawingHorizontalLine: (value) => FlLine(
+            getDrawingHorizontalLine: (value) => const FlLine(
               color: const Color(0xFFEEEEEE),
               strokeWidth: 1,
             ),
@@ -250,11 +250,11 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           ),
           titlesData: FlTitlesData(
             show: true,
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            topTitles: const AxisTitles(
+              sideTitles: const SideTitles(showTitles: false),
             ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            rightTitles: const AxisTitles(
+              sideTitles: const SideTitles(showTitles: false),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(

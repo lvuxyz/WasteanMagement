@@ -50,7 +50,7 @@ class RecyclingStatistics extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.eco,
                   color: AppColors.primaryGreen,
                   size: 40,
@@ -69,7 +69,7 @@ class RecyclingStatistics extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '${totalWeight.toStringAsFixed(2)} kg',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryGreen,

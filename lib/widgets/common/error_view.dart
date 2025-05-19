@@ -30,7 +30,7 @@ class ErrorView extends StatelessWidget {
               size: 80,
               color: Colors.red.withOpacity(0.8),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               title,
               style: TextStyle(
@@ -40,7 +40,7 @@ class ErrorView extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               message,
               style: TextStyle(
@@ -49,16 +49,16 @@ class ErrorView extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh),
               label: Text(buttonText),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                textStyle: TextStyle(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                textStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

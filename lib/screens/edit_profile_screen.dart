@@ -36,7 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _addressController.text = basicInfo.address;
     } else {
       // If we don't have the data yet, fetch it
-      context.read<ProfileBloc>().add(LoadProfile());
+      context.read<ProfileBloc>().add(const LoadProfile());
     }
   }
 

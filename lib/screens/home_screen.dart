@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() {
       final profileState = context.read<ProfileBloc>().state;
       if (profileState is! ProfileLoaded) {
-        context.read<ProfileBloc>().add(LoadProfile());
+        context.read<ProfileBloc>().add(const LoadProfile());
       }
     });
   }
@@ -325,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/waste-type');
               }
             },
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
@@ -335,7 +335,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 4),
                 const Icon(
                   Icons.arrow_forward_ios,
                   color: AppColors.primaryGreen,
@@ -877,7 +876,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1114,7 +1113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              child: Center(
+              child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1235,7 +1234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: AppColors.primaryGreen.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
@@ -1386,7 +1385,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfilePage() {
     return BlocProvider(
-      create: (context) => ProfileBloc()..add(LoadProfile()),
+      create: (context) => ProfileBloc()..add(const LoadProfile()),
       child: const ProfileScreen(username: '',),
     );
   }
@@ -1452,7 +1451,7 @@ class _HomeScreenState extends State<HomeScreen> {
           totalPoints = state.totalPoints;
         } else if (!(state is RewardLoading)) {
           // Nếu chưa load dữ liệu thì load
-          context.read<RewardBloc>().add(LoadMyRewards(page: 1));
+          context.read<RewardBloc>().add(const LoadMyRewards(page: 1));
         }
         
         return InkWell(
@@ -1479,7 +1478,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(

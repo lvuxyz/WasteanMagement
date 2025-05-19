@@ -21,7 +21,7 @@ class WasteTypeInfoTab extends StatelessWidget {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      physics: BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -63,7 +63,7 @@ class WasteTypeInfoTab extends StatelessWidget {
         Expanded(
           flex: 1,
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
@@ -73,7 +73,7 @@ class WasteTypeInfoTab extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.tag, size: 18, color: Colors.grey[700]),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'ID: ${wasteType.id}',
                   style: TextStyle(
@@ -85,14 +85,14 @@ class WasteTypeInfoTab extends StatelessWidget {
             ),
           ),
         ),
-        
-        SizedBox(width: 12),
+
+        const SizedBox(width: 12),
         
         // Recyclable status
         Expanded(
           flex: 2,
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: isRecyclable ? AppColors.primaryGreen.withOpacity(0.1) : Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
@@ -108,7 +108,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                   size: 18, 
                   color: isRecyclable ? AppColors.primaryGreen : Colors.red,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   isRecyclable ? 'Có thể tái chế' : 'Không thể tái chế',
                   style: TextStyle(
@@ -137,8 +137,8 @@ class WasteTypeInfoTab extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.primaryGreen),
-                SizedBox(width: 8),
+                const Icon(Icons.info_outline, color: AppColors.primaryGreen),
+                const SizedBox(width: 8),
                 Text(
                   'Mô tả chi tiết',
                   style: TextStyle(
@@ -149,7 +149,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(height: 24),
+            const Divider(height: 24),
             Text(
               wasteType.description,
               style: TextStyle(
@@ -178,7 +178,7 @@ class WasteTypeInfoTab extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.recycling, color: statusColor),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Hướng dẫn xử lý',
                   style: TextStyle(
@@ -189,7 +189,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(height: 24),
+            const Divider(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -216,7 +216,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                         ),
                         radius: 16,
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           wasteType.handlingInstructions,
@@ -251,8 +251,8 @@ class WasteTypeInfoTab extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.attach_money, color: Colors.orange),
-                SizedBox(width: 8),
+                const Icon(Icons.attach_money, color: Colors.orange),
+                const SizedBox(width: 8),
                 Text(
                   'Thông tin thu mua',
                   style: TextStyle(
@@ -263,7 +263,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(height: 24),
+            const Divider(height: 24),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -280,13 +280,13 @@ class WasteTypeInfoTab extends StatelessWidget {
                 children: [
                   Text(
                     '${wasteType.unitPrice}đ',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.orange,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'trên mỗi ${wasteType.unit}',
                     style: TextStyle(
@@ -294,7 +294,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                       color: Colors.grey[700],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Hãy mang tới các điểm thu gom để bán và nhận tiền mặt!',
                     textAlign: TextAlign.center,
@@ -327,14 +327,14 @@ class WasteTypeInfoTab extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: isRecyclable ? AppColors.primaryGreen : Colors.grey,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         child: Text(
           isRecyclable ? 'Thêm vào kế hoạch tái chế' : 'Không thể tái chế',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),

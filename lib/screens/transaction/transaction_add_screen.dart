@@ -414,7 +414,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                 elevation: 2,
                                 disabledBackgroundColor: Colors.grey[400],
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Icon(Icons.check_circle_outline, size: 22),
@@ -663,7 +663,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       right: 8,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.primaryGreen,
                           shape: BoxShape.circle,
                         ),

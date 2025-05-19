@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         return Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.primaryGreen,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(30),
@@ -185,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          const Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               'Cài đặt tài khoản',

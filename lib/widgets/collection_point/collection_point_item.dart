@@ -45,7 +45,7 @@ class CollectionPointItem extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
                       shape: BoxShape.circle,
@@ -56,19 +56,19 @@ class CollectionPointItem extends StatelessWidget {
                       size: 20,
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           collectionPoint.name,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           collectionPoint.address,
                           style: TextStyle(
@@ -117,18 +117,18 @@ class CollectionPointItem extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.access_time_outlined,
                             color: Colors.orange,
                             size: 14,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             collectionPoint.operatingHours,
@@ -146,7 +146,7 @@ class CollectionPointItem extends StatelessWidget {
                   
                   // Capacity
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -173,8 +173,8 @@ class CollectionPointItem extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: actionButtonColor.withOpacity(0.05),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(16),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: const Radius.circular(16),
                 ),
               ),
               child: TextButton.icon(
@@ -192,10 +192,10 @@ class CollectionPointItem extends StatelessWidget {
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(16),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: const Radius.circular(16),
                     ),
                   ),
                 ),

@@ -20,7 +20,7 @@ class LinkedCollectionPointsTab extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.link_off, size: 64, color: Colors.grey[400]),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'Chưa có điểm thu gom nào được liên kết',
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
@@ -30,19 +30,19 @@ class LinkedCollectionPointsTab extends StatelessWidget {
           )
         : ListView.builder(
             itemCount: linkedCollectionPoints.length,
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemBuilder: (context, index) {
               final collectionPoint = linkedCollectionPoints[index];
               return Card(
-                margin: EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                   title: Text(
                     collectionPoint.name,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     collectionPoint.address,
@@ -50,8 +50,8 @@ class LinkedCollectionPointsTab extends StatelessWidget {
                   ),
                   trailing: ElevatedButton.icon(
                     onPressed: () => onRemoveCollectionPoint(collectionPoint),
-                    icon: Icon(Icons.link_off, size: 18),
-                    label: Text('Xóa liên kết'),
+                    icon: const Icon(Icons.link_off, size: 18),
+                    label: const Text('Xóa liên kết'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,

@@ -4,13 +4,13 @@ import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../repositories/waste_type_repository.dart';
-import '../../repositories/user_repository.dart';
 import '../../widgets/waste_type/waste_type_list_item.dart';
 import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
 import 'waste_type_edit_screen.dart';
 import 'waste_type_collection_points_screen.dart';
 import 'dart:developer' as developer;
+import '../../services/auth_service.dart';
 
 class WasteTypeManagementScreen extends StatefulWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -22,9 +22,11 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isAdmin = false; // Default to false until we check user role
+  bool _isCheckingAdmin = true; // New: Tracking whether admin check is in progress
   String _selectedFilterOption = 'all';
   Map<int, bool> _deletingItems = {}; // Track which items are being deleted
   Map<int, bool> _updatingItems = {}; // Track which items are being updated
+  final AuthService _authService = AuthService(); // Add AuthService
 
   @override
   void initState() {
@@ -34,21 +36,54 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   }
 
   Future<void> _checkAdminPrivileges() async {
+    setState(() {
+      _isCheckingAdmin = true; // Start checking
+    });
+    
     try {
-      final userRepository = RepositoryProvider.of<UserRepository>(context);
-      final user = await userRepository.getUserProfile();
-
-      setState(() {
-        _isAdmin = user.isAdmin;
-      });
-
-      developer.log('User admin status: $_isAdmin');
+      // Sử dụng AuthService trực tiếp thay vì thông qua User
+      final isAdmin = await _authService.forceAdminCheck();
+      
+      if (mounted) {
+        setState(() {
+          _isAdmin = isAdmin;
+          _isCheckingAdmin = false; // Done checking
+        });
+      }
+      
+      developer.log('User admin status from token: $_isAdmin');
+      
+      // If not admin, show message and navigate back
+      if (!isAdmin && mounted) {
+        // Delay to allow UI to update
+        Future.delayed(Duration.zero, () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bạn không có quyền truy cập chức năng quản lý này'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          // Optionally navigate back if not admin
+          // Navigator.of(context).pop();
+        });
+      }
     } catch (e) {
       developer.log('Error checking admin privileges: $e', error: e);
       // Default to non-admin in case of error
-      setState(() {
-        _isAdmin = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isAdmin = false;
+          _isCheckingAdmin = false; // Done checking
+        });
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi kiểm tra quyền truy cập: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -188,6 +223,65 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Show loading indicator while checking admin status
+    if (_isCheckingAdmin) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
+    // Show unauthorized screen if not admin
+    if (!_isAdmin) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          title: const Text('Quản lý loại rác thải', style: TextStyle(color: Colors.white)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lock,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Bạn không có quyền truy cập',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Chức năng này chỉ dành cho quản trị viên',
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Quay lại'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     // Lấy ApiClient được khởi tạo từ RepositoryProvider
     final wasteTypeRepository = RepositoryProvider.of<WasteTypeRepository>(context);
 

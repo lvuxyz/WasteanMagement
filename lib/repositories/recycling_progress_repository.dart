@@ -93,7 +93,7 @@ class RecyclingProgressRepository {
     // This would normally call an API or database
     // For now, return a simple mock list
     return [
-      WasteType(
+      const WasteType(
         id: 1,
         name: 'Giấy',
         description: 'Giấy các loại, bao gồm giấy báo, tạp chí, sách, hộp giấy',
@@ -107,7 +107,7 @@ class RecyclingProgressRepository {
         recentPoints: '25',
         recyclable: true,
       ),
-      WasteType(
+      const WasteType(
         id: 2,
         name: 'Chai nhựa PET',
         description: 'Chai nhựa trong suốt dùng đựng nước, nước ngọt',
@@ -121,7 +121,7 @@ class RecyclingProgressRepository {
         recentPoints: '15',
         recyclable: true,
       ),
-      WasteType(
+      const WasteType(
         id: 3,
         name: 'Lon nhôm',
         description: 'Lon kim loại đựng đồ uống',
@@ -135,7 +135,7 @@ class RecyclingProgressRepository {
         recentPoints: '12',
         recyclable: true,
       ),
-      WasteType(
+      const WasteType(
         id: 4,
         name: 'Thủy tinh',
         description: 'Chai, lọ thủy tinh các loại',

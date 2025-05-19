@@ -104,7 +104,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -134,7 +134,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
     final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
     if (finalExamples.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Cần nhập ít nhất một ví dụ'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
@@ -259,14 +259,14 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           _isEditing ? 'Cập nhật loại rác thải' : 'Thêm loại rác thải mới',
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         actions: [
           if (!_isLoading)
             TextButton.icon(
               onPressed: _submitForm,
-              icon: Icon(Icons.save, color: Colors.white),
-              label: Text(
+              icon: const Icon(Icons.save, color: Colors.white),
+              label: const Text(
                 'Lưu',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -292,7 +292,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 ),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
                 action: SnackBarAction(
                   label: 'OK',
                   textColor: Colors.white,
@@ -304,7 +304,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             );
             
             // Add a slight delay before popping to ensure the user sees the success message
-            Future.delayed(Duration(milliseconds: 500), () {
+            Future.delayed(const Duration(milliseconds: 500), () {
               Navigator.of(context).pop(true); // Return true to indicate success
             });
           } else if (state is WasteTypeError) {
@@ -317,7 +317,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 content: Text(state.message),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 4),
+                duration: const Duration(seconds: 4),
                 action: SnackBarAction(
                   label: 'Thử lại',
                   textColor: Colors.white,
@@ -335,10 +335,10 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+                  const CircularProgressIndicator(
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Đang tải thông tin...',
                     style: TextStyle(color: Colors.grey[600]),
@@ -352,8 +352,8 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             children: [
               SingleChildScrollView(
                 controller: _scrollController,
-                padding: EdgeInsets.all(16),
-                physics: BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                physics: const BouncingScrollPhysics(),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -362,26 +362,26 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                       // Basic Information Section
                       _buildSectionTitle('Thông tin cơ bản'),
                       _buildBasicInfoSection(),
-                      
-                      SizedBox(height: 24),
+
+                      const SizedBox(height: 24),
                       
                       // Description and Recycling Method Section
                       _buildSectionTitle('Mô tả và Hướng dẫn'),
                       _buildDescriptionAndRecyclingSection(),
-                      
-                      SizedBox(height: 24),
+
+                      const SizedBox(height: 24),
                       
                       // Example Items Section
                       _buildSectionTitle('Các ví dụ về loại rác'),
                       _buildExamplesSection(),
                       
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       
                       // Pricing Information Section
                       _buildSectionTitle('Thông tin thu mua'),
                       _buildPricingSection(),
-                      
-                      SizedBox(height: 80), // Extra space for button
+
+                      const SizedBox(height: 80), // Extra space for button
                     ],
                   ),
                 ),
@@ -395,13 +395,13 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        const CircularProgressIndicator(
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           _isEditing ? 'Đang cập nhật loại rác...' : 'Đang tạo loại rác mới...',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -418,13 +418,13 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       bottomNavigationBar: _isLoading 
           ? null
           : Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
-                    offset: Offset(0, -4),
+                    offset: const Offset(0, -4),
                     blurRadius: 8,
                   ),
                 ],
@@ -435,14 +435,14 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Text(
                     _isEditing ? 'Cập nhật' : 'Tạo mới',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -466,7 +466,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             title,
             style: TextStyle(
@@ -503,7 +503,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 return null;
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Category selection
             Text(
               'Danh mục',
@@ -513,11 +513,11 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedCategory,
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -547,7 +547,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 }
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Recyclable switch
             CustomSwitchField(
               label: 'Có thể tái chế',
@@ -593,7 +593,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 return null;
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Recycling method field
             CustomTextField(
               controller: _handlingInstructionsController,
@@ -625,7 +625,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (int i = 0; i < _examples.length; i++) ...[
-              if (i > 0) SizedBox(height: 16),
+              if (i > 0) const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -639,13 +639,13 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                     ),
                     child: Text(
                       '${i + 1}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.primaryGreen,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       initialValue: _examples[i],
@@ -655,31 +655,31 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
                       onChanged: (value) => _updateExample(i, value),
                     ),
                   ),
                   if (_examples.length > 1)
                     IconButton(
-                      icon: Icon(Icons.remove_circle_outline, color: Colors.red),
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
                       onPressed: () => _removeExample(i),
                       padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
+                      constraints: const BoxConstraints(),
                     ),
                 ],
               ),
             ],
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _addExample,
-              icon: Icon(Icons.add),
-              label: Text('Thêm ví dụ'),
+              icon: const Icon(Icons.add),
+              label: const Text('Thêm ví dụ'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: AppColors.primaryGreen,
                 elevation: 0,
-                side: BorderSide(color: AppColors.primaryGreen),
+                side: const BorderSide(color: AppColors.primaryGreen),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -723,7 +723,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                     },
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   flex: 2,
                   child: CustomTextField(
@@ -740,7 +740,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'Để mức giá là 0 nếu không thu mua loại rác này',
               style: TextStyle(

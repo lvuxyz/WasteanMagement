@@ -6,10 +6,12 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart' as auth_events;
 import 'login_event.dart';
 import 'login_state.dart';
+import '../../services/auth_service.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final UserRepository userRepository;
   final AuthBloc? authBloc;
+  final AuthService _authService = AuthService();
 
   LoginBloc({
     required this.userRepository,
@@ -34,6 +36,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
 
       developer.log('Đăng nhập thành công, username: ${user.username}, fullName: ${user.fullName}');
+      
+      // Reset admin status cache để đảm bảo kiểm tra lại admin status
+      await _authService.forceAdminCheck();
+      
+      // Ghi log thông tin admin từ token
+      final isAdmin = await _authService.isAdmin();
+      developer.log('Người dùng là admin (theo token): $isAdmin');
+      
+      // Xác nhận vai trò từ đối tượng user
+      developer.log('Người dùng có vai trò: ${user.roles}, isAdmin: ${user.isAdmin}');
 
       // Cập nhật trạng thái thành công
       emit(LoginSuccess(username: user.fullName));
@@ -52,6 +64,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (e.toString().contains('Đăng nhập thành công')) {
         // Đây thực sự là một thành công, nhưng bị xử lý như lỗi
         developer.log('Phát hiện lỗi sai: ${e.toString()} - Đây là thành công');
+        
+        // Reset admin status cache
+        await _authService.forceAdminCheck();
+        
         emit(LoginSuccess(username: event.username));
         
         // Cập nhật AuthBloc
