@@ -33,7 +33,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
   final ScrollController _scrollController = ScrollController();
   String _filterOption = 'all';
   bool _isAdmin = false;
-  bool _adminStatusChecked = false; // Flag để theo dõi trạng thái kiểm tra
   final AuthService _authService = AuthService();
   bool _isInitialized = false;
 
@@ -53,18 +52,14 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
 
 
   // Cải thiện phương thức kiểm tra admin status
-  Future<void> _checkAdminStatus() async {
+  Future _checkAdminStatus() async {
     try {
-      // Sử dụng phương thức forceAdminCheck để bỏ qua cache nếu cần thiết
       final isAdmin = await _authService.forceAdminCheck();
       Logger.log('TRANSACTION LIST: Admin status = $isAdmin');
 
       if (mounted) {
         setState(() {
           _isAdmin = isAdmin;
-          _adminStatusChecked = true;
-
-          // Khởi tạo dữ liệu nếu chưa được khởi tạo
           if (!_isInitialized) {
             _isInitialized = true;
             _loadTransactionsBasedOnRole();
@@ -76,9 +71,6 @@ class _TransactionListScreenState extends State<TransactionListScreen> with Widg
       if (mounted) {
         setState(() {
           _isAdmin = false;
-          _adminStatusChecked = true;
-
-          // Khởi tạo dữ liệu với quyền người dùng thường
           if (!_isInitialized) {
             _isInitialized = true;
             _loadTransactionsBasedOnRole();
