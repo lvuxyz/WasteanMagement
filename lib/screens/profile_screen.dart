@@ -70,16 +70,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   state.message.contains("không hợp lệ")) {
                 context.read<AuthBloc>().add(CheckAuthenticationStatus());
               }else{
-                  // Hiển thị thông báo cho các lỗi khác
-                  ScaffoldMessenger.of(context).showSnackBar(
+                // Hiển thị thông báo cho các lỗi khác
+                ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
                   ),
-                  );
-                  }
+                );
               }
-            },
+            }
+          },
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -227,12 +227,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
           ),
-          
+
           FutureBuilder<bool>(
             future: AuthService().isAdmin(),
             builder: (context, snapshot) {
               final isAdmin = snapshot.data ?? false;
-              
+
               if (isAdmin) {
                 return Column(
                   children: [
@@ -280,11 +280,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 );
               }
-              
+
               return const SizedBox.shrink();
             },
           ),
-          
+
           const Divider(height: 32),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
@@ -367,19 +367,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void confirmLogout() async {
+  Future<void> confirmLogout() async {
+    final currentContext = context;
     final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: currentContext,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Xác nhận đăng xuất'),
         content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Hủy'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Đăng xuất'),
           ),
         ],
@@ -387,83 +388,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result == true && mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      context.read<AuthBloc>().add(LogoutRequested());
-
-      // Closing the loading manually is now handled by AuthBloc listener
+      _handleLogout(currentContext);
     }
+  }
+
+  void _handleLogout(BuildContext currentContext) {
+    showDialog(
+      context: currentContext,
+      barrierDismissible: false,
+      builder: (loadingContext) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    currentContext.read<AuthBloc>().add(LogoutRequested());
+    // Closing the loading dialog is handled by AuthBloc listener
   }
 
   // FUNCTION NÀY CHỈ DÙNG ĐỂ DEBUG - XÓA KHI RELEASE
   Future<void> _showTokenInfo(BuildContext context) async {
     final secureStorage = SecureStorage();
+    // Lưu userRepository và context trước khi có thao tác bất đồng bộ
     final userRepository = context.read<UserRepository>();
-    
+    final currentContext = context;
+
     // Lấy token
     String? token = await secureStorage.getToken();
-    
+
     if (!mounted) return;
-    
+
+    _showTokenInfoDialog(currentContext, token, userRepository);
+  }
+
+  void _showTokenInfoDialog(BuildContext currentContext, String? token, UserRepository userRepository) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: currentContext,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Thông tin token (Debug)'),
-        content: token != null 
-          ? SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Token hiện tại:'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SelectableText(
-                      token,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
+        content: token != null
+            ? SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Token hiện tại:'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  token,
+                  style: const TextStyle(fontSize: 12),
+                ),
               ),
-            )
-          : const Text('Không có token'),
+            ],
+          ),
+        )
+            : const Text('Không có token'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Đóng'),
           ),
           if (token != null)
             TextButton(
-              onPressed: () async {
-                await userRepository.logout();
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã xóa token'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  // Chuyển về màn hình đăng nhập
-                  context.read<AuthBloc>().add(LogoutRequested());
-                }
-              },
+              onPressed: () => _handleTokenDelete(dialogContext, userRepository),
               child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
             ),
         ],
       ),
     );
+  }
+
+  Future<void> _handleTokenDelete(BuildContext dialogContext, UserRepository userRepository) async {
+    // Đóng dialog trước khi thực hiện thao tác bất đồng bộ
+    Navigator.of(dialogContext).pop();
+
+    if (!mounted) return;
+
+    // Hiển thị dialog loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (loadingContext) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    // Thực hiện logout
+    await userRepository.logout();
+
+    if (!mounted) return;
+
+    // Đóng dialog loading
+    Navigator.of(context).pop();
+
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã xóa token'),
+        backgroundColor: Colors.red,
+      ),
+    );
+
+    // Gửi sự kiện logout
+    context.read<AuthBloc>().add(LogoutRequested());
   }
 
   Widget _buildLogoutButton(BuildContext context) {
