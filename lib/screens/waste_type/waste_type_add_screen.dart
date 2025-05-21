@@ -5,8 +5,6 @@ import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
-import '../../widgets/common/loading_indicator.dart';
-import '../../utils/snackbar_utils.dart';
 import '../../utils/app_colors.dart';
 
 class WasteTypeAddScreen extends StatefulWidget {
