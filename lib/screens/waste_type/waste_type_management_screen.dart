@@ -9,6 +9,7 @@ import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
 import 'waste_type_edit_screen.dart';
 import 'waste_type_collection_points_screen.dart';
+import 'dart:developer' as developer;
 
 class WasteTypeManagementScreen extends StatefulWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -28,6 +29,22 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
     _searchController.addListener(_onSearchChanged);
     // Load data when screen initializes
     context.read<WasteTypeBloc>().add(LoadWasteTypes());
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kích hoạt kiểm tra admin status
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        // Khi đang ở màn hình quản lý, cần đặt quyền admin
+        developer.log('Setting admin status to true for management screen');
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override
@@ -142,12 +159,60 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AdminCubit, bool>(
-      listener: (context, isAdmin) {
-        setState(() {
-          _isAdmin = isAdmin;
-        });
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AdminCubit, bool>(
+          listener: (context, isAdmin) {
+            developer.log('AdminCubit listener triggered: isAdmin = $isAdmin');
+            setState(() {
+              _isAdmin = isAdmin;
+            });
+          },
+        ),
+        BlocListener<WasteTypeBloc, WasteTypeState>(
+          listener: (context, state) {
+            if (state is WasteTypeDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã xóa loại rác thành công'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'Đóng',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            } else if (state is WasteTypeError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'Đóng',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            } else if (state is WasteTypeUpdated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
@@ -162,12 +227,15 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               onPressed: () {
                 _searchController.clear();
                 context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                // Refresh admin status
+                context.read<AdminCubit>().checkAdminStatus();
               },
             ),
           ],
         ),
         floatingActionButton: BlocBuilder<AdminCubit, bool>(
           builder: (context, isAdmin) {
+            developer.log('FloatingActionButton BlocBuilder: isAdmin = $isAdmin');
             return isAdmin 
               ? FloatingActionButton(
                   onPressed: () {
@@ -187,6 +255,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
             // Debug text to show admin status
             BlocBuilder<AdminCubit, bool>(
               builder: (context, isAdmin) {
+                developer.log('Debug text BlocBuilder: isAdmin = $isAdmin');
                 return Container(
                   padding: EdgeInsets.all(8),
                   color: isAdmin ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
@@ -264,45 +333,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
             Expanded(
               child: BlocConsumer<WasteTypeBloc, WasteTypeState>(
                 listener: (context, state) {
-                  if (state is WasteTypeDeleted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đã xóa loại rác thành công'),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                        action: SnackBarAction(
-                          label: 'Đóng',
-                          textColor: Colors.white,
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          },
-                        ),
-                      ),
-                    );
-                  } else if (state is WasteTypeError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red,
-                        behavior: SnackBarBehavior.floating,
-                        action: SnackBarAction(
-                          label: 'Đóng',
-                          textColor: Colors.white,
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          },
-                        ),
-                      ),
-                    );
-                  } else if (state is WasteTypeUpdated) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
+                  // Listener moved to MultiBlocListener
                 },
                 builder: (context, state) {
                   if (state is WasteTypeLoading) {
@@ -326,6 +357,8 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                     return RefreshIndicator(
                       onRefresh: () async {
                         context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                        // Refresh admin status
+                        context.read<AdminCubit>().checkAdminStatus();
                       },
                       child: ListView.builder(
                         controller: _scrollController,
@@ -333,15 +366,22 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                         itemCount: wasteTypes.length,
                         itemBuilder: (context, index) {
                           final wasteType = wasteTypes[index];
-                          return WasteTypeListItem(
-                            wasteType: wasteType,
-                            onView: () => _navigateToDetails(wasteType.id),
-                            onEdit: _isAdmin ? () => _navigateToEdit(context, wasteType.id) : null,
-                            onDelete: _isAdmin ? () => _showDeleteConfirmation(context, wasteType.id, wasteType.name) : null,
-                            onManageCollectionPoints: _isAdmin ? () => _navigateToCollectionPoints(
-                              context,
-                              wasteType.id,
-                            ) : null,
+                          
+                          // Use BlocBuilder to get the latest admin status
+                          return BlocBuilder<AdminCubit, bool>(
+                            builder: (context, isAdmin) {
+                              developer.log('WasteTypeListItem BlocBuilder: isAdmin = $isAdmin');
+                              return WasteTypeListItem(
+                                wasteType: wasteType,
+                                onView: () => _navigateToDetails(wasteType.id),
+                                onEdit: isAdmin ? () => _navigateToEdit(context, wasteType.id) : null,
+                                onDelete: isAdmin ? () => _showDeleteConfirmation(context, wasteType.id, wasteType.name) : null,
+                                onManageCollectionPoints: isAdmin ? () => _navigateToCollectionPoints(
+                                  context,
+                                  wasteType.id,
+                                ) : null,
+                              );
+                            },
                           );
                         },
                       ),

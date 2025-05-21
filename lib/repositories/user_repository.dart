@@ -178,6 +178,32 @@ class UserRepository {
                 final basicInfo = response['data']['basic_info'] ?? {};
                 print('[DEBUG] Raw profile data from API: ${response['data']}');
                 
+                // Kiểm tra và xử lý trường roles
+                List<String> roles = [];
+                if (basicInfo['roles'] != null) {
+                  if (basicInfo['roles'] is List) {
+                    roles = List<String>.from(basicInfo['roles']);
+                  } else if (basicInfo['roles'] is String) {
+                    // Nếu roles là string, chuyển thành list
+                    roles = [basicInfo['roles']];
+                  }
+                } else if (response['data']['roles'] != null) {
+                  // Thử lấy roles từ cấp cao hơn nếu có
+                  if (response['data']['roles'] is List) {
+                    roles = List<String>.from(response['data']['roles']);
+                  } else if (response['data']['roles'] is String) {
+                    roles = [response['data']['roles']];
+                  }
+                }
+                
+                // Nếu vẫn không có roles, mặc định thêm role USER
+                if (roles.isEmpty) {
+                  roles = ['USER'];
+                  print('[DEBUG] Using default role: USER as no roles were found in API response');
+                }
+                
+                print('[DEBUG] Roles after processing: $roles');
+                
                 final user = User(
                   id: basicInfo['id'] ?? 0,
                   username: basicInfo['username'] ?? '',
@@ -185,7 +211,7 @@ class UserRepository {
                   email: basicInfo['email'] ?? '',
                   phone: basicInfo['phone'] ?? '',
                   address: basicInfo['address'] ?? '',
-                  roles: List<String>.from(basicInfo['roles'] ?? []),
+                  roles: roles,
                   rawProfileData: response['data'], // Store the raw profile data for later use
                 );
                 

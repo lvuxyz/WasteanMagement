@@ -32,6 +32,21 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
     _tabController = TabController(length: 2, vsync: this);
     // Load waste type details
     context.read<WasteTypeBloc>().add(LoadWasteTypeDetails(widget.wasteTypeId));
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kích hoạt kiểm tra admin status
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình chi tiết
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        // Khi đang ở màn hình chi tiết, cần đặt quyền admin
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override

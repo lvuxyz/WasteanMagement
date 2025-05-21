@@ -95,6 +95,7 @@ Future<void> main() async {
             create: (context) => AdminCubit(
               userRepository: userRepository,
             )..checkAdminStatus(),
+            lazy: false,
           ),
           BlocProvider(
             create: (context) => TransactionBloc(
