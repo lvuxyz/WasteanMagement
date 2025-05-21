@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
-import 'package:wasteanmagement/blocs/reward/reward_event.dart';
-import 'package:wasteanmagement/blocs/reward/reward_state.dart';
-import 'package:wasteanmagement/models/reward.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/services/reward_service.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
