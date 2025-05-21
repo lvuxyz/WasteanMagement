@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
+import '../../blocs/admin/admin_cubit.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common/custom_tab_bar.dart';
 import '../../widgets/waste_type/waste_type_info_tab.dart';
@@ -24,7 +25,6 @@ class WasteTypeDetailsScreen extends StatefulWidget {
 
 class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isAdmin = true; // Thực tế cần lấy từ context hoặc user repository
 
   @override
   void initState() {
@@ -73,24 +73,29 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                       onPressed: () => Navigator.pop(context),
                     ),
                     actions: [
-                      if (_isAdmin)
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.white),
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/waste-type/edit',
-                              arguments: widget.wasteTypeId,
-                            ).then((value) {
-                              // Reload details after edit
-                              if (value == true) {
-                                context.read<WasteTypeBloc>().add(
-                                  LoadWasteTypeDetails(widget.wasteTypeId),
-                                );
-                              }
-                            });
-                          },
-                        ),
+                      BlocBuilder<AdminCubit, bool>(
+                        builder: (context, isAdmin) {
+                          return isAdmin
+                            ? IconButton(
+                                icon: Icon(Icons.edit, color: Colors.white),
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/waste-type/edit',
+                                    arguments: widget.wasteTypeId,
+                                  ).then((value) {
+                                    // Reload details after edit
+                                    if (value == true) {
+                                      context.read<WasteTypeBloc>().add(
+                                        LoadWasteTypeDetails(widget.wasteTypeId),
+                                      );
+                                    }
+                                  });
+                                },
+                              )
+                            : SizedBox.shrink();
+                        },
+                      ),
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       title: Text(
@@ -222,7 +227,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                   WasteTypeCollectionPointsTab(
                     wasteTypeId: widget.wasteTypeId,
                     collectionPoints: collectionPoints,
-                    isAdmin: _isAdmin,
+                    isAdmin: true,
                   ),
                 ],
               ),
@@ -247,7 +252,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
           );
         },
       ),
-      floatingActionButton: _isAdmin ? BlocBuilder<WasteTypeBloc, WasteTypeState>(
+      floatingActionButton: BlocBuilder<WasteTypeBloc, WasteTypeState>(
         builder: (context, state) {
           if (state is WasteTypeDetailLoaded && _tabController.index == 1) {
             return FloatingActionButton.extended(
@@ -273,7 +278,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
           }
           return SizedBox.shrink();
         },
-      ) : null,
+      ),
     );
   }
   
