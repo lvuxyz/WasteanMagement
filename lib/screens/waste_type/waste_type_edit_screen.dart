@@ -34,6 +34,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _isAdmin = false;
   List<String> _examples = [''];
   
   @override
@@ -145,6 +146,18 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
 
   void _submitForm() {
     if (!_validateForm()) return;
+    
+    // Check if user is admin before proceeding
+    if (!_isAdmin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn không có quyền cập nhật loại rác'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     
     final finalExamples = _examples.where((example) => example.isNotEmpty).toList();
     
