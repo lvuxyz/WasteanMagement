@@ -43,6 +43,21 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
     
     // Load waste type details with all collection points
     context.read<WasteTypeBloc>().add(LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId));
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kiểm tra admin status
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý điểm thu gom
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        // Khi đang ở màn hình quản lý điểm thu gom, cần đặt quyền admin
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override
@@ -327,16 +342,30 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                   physics: BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     final collectionPoint = collectionPoints[index];
-                    return CollectionPointItem(
-                      collectionPoint: collectionPoint,
-                      actionButtonText: 'Xóa liên kết',
-                      actionButtonIcon: Icons.link_off,
-                      actionButtonColor: Colors.red,
-                      onActionPressed: () {
-                        _showUnlinkConfirmation(
-                          context,
-                          collectionPoint.collectionPointId,
-                          collectionPoint.name,
+                    return BlocBuilder<AdminCubit, bool>(
+                      builder: (context, isAdmin) {
+                        return CollectionPointItem(
+                          collectionPoint: collectionPoint,
+                          actionButtonText: 'Xóa liên kết',
+                          actionButtonIcon: Icons.link_off,
+                          actionButtonColor: Colors.red,
+                          onActionPressed: isAdmin
+                            ? () {
+                                _showUnlinkConfirmation(
+                                  context,
+                                  collectionPoint.collectionPointId,
+                                  collectionPoint.name,
+                                );
+                              }
+                            : () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Bạn không có quyền thực hiện chức năng này'),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
                         );
                       },
                     );

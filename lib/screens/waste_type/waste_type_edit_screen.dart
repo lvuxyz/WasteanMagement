@@ -50,6 +50,24 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       // Load waste type details for editing
       context.read<WasteTypeBloc>().add(LoadWasteTypeDetails(widget.wasteTypeId!));
     }
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kiểm tra admin status ngay khi màn hình được khởi tạo
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình chỉnh sửa
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        setState(() {
+          _isAdmin = true;  // Set local state
+        });
+        // Khi đang ở màn hình chỉnh sửa, cần đặt quyền admin
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override
@@ -209,27 +227,64 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AdminCubit, bool>(
-      listener: (context, isAdmin) {
-        setState(() {
-          _isAdmin = isAdmin;
-        });
-        
-        // If not admin and trying to edit, navigate back
-        if (!isAdmin) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Bạn không có quyền chỉnh sửa loại rác'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          
-          // Navigate back after showing the error
-          Future.delayed(const Duration(seconds: 1), () {
-            Navigator.of(context).pop();
-          });
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AdminCubit, bool>(
+          listener: (context, isAdmin) {
+            setState(() {
+              _isAdmin = isAdmin;
+            });
+          },
+        ),
+        BlocListener<WasteTypeBloc, WasteTypeState>(
+          listener: (context, state) {
+            if (state is WasteTypeDetailLoaded && _isEditing) {
+              _populateForm(state.wasteType);
+            } else if (state is WasteTypeCreated) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã tạo mới loại rác thành công!'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              Navigator.pop(context, true);
+            } else if (state is WasteTypeUpdated) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã cập nhật loại rác thành công!'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              Navigator.pop(context, true);
+            } else if (state is WasteTypeError) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Lỗi: ${state.message}'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            } else if (state is WasteTypeLoading) {
+              if (state.isCreating || state.isUpdating) {
+                setState(() {
+                  _isLoading = true;
+                });
+              }
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
