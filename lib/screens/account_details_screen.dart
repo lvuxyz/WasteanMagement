@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
 import '../blocs/profile/profile_event.dart';
 import '../blocs/profile/profile_state.dart';
-import '../models/user_model.dart';
+import '../models/user_profile.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   const AccountDetailsScreen({Key? key}) : super(key: key);
@@ -38,11 +38,11 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     super.dispose();
   }
 
-  void _setControllerValues(User user) {
-    _fullNameController.text = user.fullName;
-    _emailController.text = user.email;
-    _phoneController.text = user.phone ?? '';
-    _addressController.text = user.address ?? '';
+  void _setControllerValues(BasicInfo basicInfo) {
+    _fullNameController.text = basicInfo.fullName;
+    _emailController.text = basicInfo.email;
+    _phoneController.text = basicInfo.phone;
+    _addressController.text = basicInfo.address;
   }
 
   @override
@@ -124,7 +124,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProfileLoaded) {
             if (!_isEditing) {
-              _setControllerValues(state.user);
+              _setControllerValues(state.userProfile.basicInfo);
             }
             return SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -134,7 +134,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    _buildProfileHeader(state.user),
+                    _buildProfileHeader(state.userProfile.basicInfo),
                     const SizedBox(height: 24),
                     _buildDivider('Personal Information'),
                     const SizedBox(height: 16),
@@ -185,15 +185,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     const SizedBox(height: 24),
                     _buildDivider('Account Information'),
                     const SizedBox(height: 16),
-                    _buildInfoRow('Username', state.user.username),
+                    _buildInfoRow('Username', state.userProfile.basicInfo.username),
                     const SizedBox(height: 12),
-                    _buildInfoRow('Account Status', state.user.status ?? 'Active'),
+                    _buildInfoRow('Account Status', state.userProfile.accountStatus.status),
                     const SizedBox(height: 12),
                     _buildInfoRow(
                       'Member Since',
-                      state.user.createdAt != null 
-                          ? '${state.user.createdAt!.day}/${state.user.createdAt!.month}/${state.user.createdAt!.year}'
-                          : 'Not available',
+                      state.userProfile.accountStatus.createdAt
                     ),
                   ],
                 ),
@@ -206,7 +204,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     );
   }
 
-  Widget _buildProfileHeader(User user) {
+  Widget _buildProfileHeader(BasicInfo basicInfo) {
     return Center(
       child: Column(
         children: [
@@ -221,7 +219,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            user.fullName,
+            basicInfo.fullName,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -229,7 +227,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            user.email,
+            basicInfo.email,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],

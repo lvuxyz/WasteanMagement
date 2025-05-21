@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
-import '../blocs/profile/profile_bloc.dart';
-import '../blocs/profile/profile_event.dart';
 import '../utils/app_colors.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'map_screen.dart';
 import 'recycling_progress_screen.dart';
+import 'reward/reward_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String username;
@@ -190,94 +187,48 @@ class _MainScreenState extends State<MainScreen> {
           const MapScreen(),
           // Trang Thống kê
           const RecyclingProgressScreen(),
-          // Trang thống kê cũ
-          // Container(
-          //   color: Colors.white,
-          //   child: Center(
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         Icon(Icons.bar_chart, size: 80, color: AppColors.primaryGreen),
-          //         const SizedBox(height: 20),
-          //         const Text(
-          //           'Thống Kê',
-          //           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          //         ),
-          //         const SizedBox(height: 16),
-          //         const Text(
-          //           'Tính năng đang được phát triển',
-          //           style: TextStyle(fontSize: 16, color: Colors.grey),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-          // Trang Tài khoản
-          BlocProvider(
-            create: (context) => ProfileBloc(
-              userRepository: RepositoryProvider.of<UserRepository>(context),
-            )..add(LoadUserProfile()),
-            child: const ProfileScreen(),
-          ),
+          // Trang Điểm thưởng - Truyền tham số isInTabView = true
+          const RewardScreen(isInTabView: true),
+          // Trang Cá nhân
+          const ProfileScreen(),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 60, // Giảm chiều cao của thanh điều hướng
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            spreadRadius: 1,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.primaryGreen,
+        unselectedItemColor: Colors.grey,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Trang chủ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'Bản đồ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart_outlined),
+            activeIcon: Icon(Icons.bar_chart),
+            label: 'Thống kê',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.stars_outlined),
+            activeIcon: Icon(Icons.stars),
+            label: 'Điểm thưởng',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Cá nhân',
           ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.primaryGreen,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white.withOpacity(0.7),
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Trang chủ',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.location_on),
-              label: 'Địa điểm',
-            ),
-            // Tạo khoảng trống cho FloatingActionButton
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: 'Thống kê',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Cá nhân',
-            ),
-          ],
-        ),
       ),
     );
   }
