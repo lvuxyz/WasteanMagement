@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'dart:developer' as developer;
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
@@ -15,7 +14,6 @@ import '../../widgets/collection_point/collection_point_item.dart';
 import '../../widgets/common/loading_view.dart';
 import '../../widgets/common/error_view.dart';
 import '../../widgets/common/confirmation_dialog.dart';
-import '../../repositories/user_repository.dart';
 
 class WasteTypeCollectionPointsScreen extends StatefulWidget {
   final int wasteTypeId;
@@ -35,7 +33,6 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
   final TextEditingController _availableSearchController = TextEditingController();
   String _linkedSearchQuery = '';
   String _availableSearchQuery = '';
-  bool _isAdmin = false;
   
   @override
   void initState() {
@@ -91,151 +88,144 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AdminCubit, bool>(
-      listener: (context, isAdmin) {
-        setState(() {
-          _isAdmin = isAdmin;
-        });
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.primaryGreen,
-          title: BlocBuilder<WasteTypeBloc, WasteTypeState>(
-            builder: (context, state) {
-              if (state is WasteTypeDetailLoaded) {
-                return Text(
-                  'Quản lý điểm thu gom: ${state.wasteType.name}',
-                  style: TextStyle(color: Colors.white),
-                );
-              }
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryGreen,
+        title: BlocBuilder<WasteTypeBloc, WasteTypeState>(
+          builder: (context, state) {
+            if (state is WasteTypeDetailLoaded) {
               return Text(
-                'Quản lý điểm thu gom',
+                'Quản lý điểm thu gom: ${state.wasteType.name}',
                 style: TextStyle(color: Colors.white),
               );
-            },
-          ),
-          bottom: CustomTabBar(
-            controller: _tabController,
-            backgroundColor: AppColors.primaryGreen,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3,
-            tabs: [
-              Tab(text: 'Đã liên kết'),
-              Tab(text: 'Sẵn có'),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.refresh, color: Colors.white),
-              onPressed: () {
-                context.read<WasteTypeBloc>().add(
-                  LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
-                );
-              },
-            ),
-          ],
-        ),
-        body: BlocConsumer<WasteTypeBloc, WasteTypeState>(
-          listener: (context, state) {
-            if (state is CollectionPointLinked) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Đã thêm điểm thu gom thành công'),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              // Reload to get updated list
-              context.read<WasteTypeBloc>().add(
-                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
-              );
-            } else if (state is CollectionPointUnlinked) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Đã xóa liên kết điểm thu gom thành công'),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              // Reload to get updated list
-              context.read<WasteTypeBloc>().add(
-                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
-              );
-            } else if (state is WasteTypeError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
             }
-          },
-          builder: (context, state) {
-            if (state is WasteTypeLoading || state is CollectionPointsLoading) {
-              return LoadingView(message: 'Đang tải điểm thu gom...');
-            }
-
-            if (state is WasteTypeDetailLoaded) {
-              final wasteType = state.wasteType;
-              final linkedCollectionPoints = state.collectionPoints;
-              final allCollectionPoints = state.allCollectionPoints ?? [];
-
-              // Filter out already linked collection points
-              final availableCollectionPoints = allCollectionPoints
-                  .where((cp) => !linkedCollectionPoints.any((lcp) => lcp.id == cp.id))
-                  .toList();
-                  
-              // Filter linked points by search query
-              final filteredLinkedPoints = _linkedSearchQuery.isEmpty
-                  ? linkedCollectionPoints
-                  : linkedCollectionPoints.where((cp) => 
-                      cp.name.toLowerCase().contains(_linkedSearchQuery.toLowerCase()) ||
-                      cp.address.toLowerCase().contains(_linkedSearchQuery.toLowerCase())
-                    ).toList();
-                    
-              // Filter available points by search query
-              final filteredAvailablePoints = _availableSearchQuery.isEmpty
-                  ? availableCollectionPoints
-                  : availableCollectionPoints.where((cp) => 
-                      cp.name.toLowerCase().contains(_availableSearchQuery.toLowerCase()) ||
-                      cp.address.toLowerCase().contains(_availableSearchQuery.toLowerCase())
-                    ).toList();
-
-              return TabBarView(
-                controller: _tabController,
-                children: [
-                  // Tab Điểm thu gom đã liên kết
-                  _buildLinkedCollectionPointsTab(filteredLinkedPoints, wasteType),
-
-                  // Tab Điểm thu gom sẵn có
-                  _buildAvailableCollectionPointsTab(filteredAvailablePoints, wasteType),
-                ],
-              );
-            }
-
-            if (state is WasteTypeError || state is CollectionPointsError) {
-              final message = state is WasteTypeError ? state.message : (state as CollectionPointsError).message;
-              return ErrorView(
-                icon: Icons.error_outline,
-                title: 'Đã xảy ra lỗi',
-                message: message,
-                buttonText: 'Thử lại',
-                onRetry: () {
-                  context.read<WasteTypeBloc>().add(
-                    LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId),
-                  );
-                },
-              );
-            }
-
-            return Center(
-              child: Text('Không tìm thấy dữ liệu'),
+            return Text(
+              'Quản lý điểm thu gom',
+              style: TextStyle(color: Colors.white),
             );
           },
         ),
+        bottom: CustomTabBar(
+          controller: _tabController,
+          backgroundColor: AppColors.primaryGreen,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          tabs: [
+            Tab(text: 'Đã liên kết'),
+            Tab(text: 'Sẵn có'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: Colors.white),
+            onPressed: () {
+              context.read<WasteTypeBloc>().add(
+                LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+              );
+            },
+          ),
+        ],
+      ),
+      body: BlocConsumer<WasteTypeBloc, WasteTypeState>(
+        listener: (context, state) {
+          if (state is CollectionPointLinked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã thêm điểm thu gom thành công'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            // Reload to get updated list
+            context.read<WasteTypeBloc>().add(
+              LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+            );
+          } else if (state is CollectionPointUnlinked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Đã xóa liên kết điểm thu gom thành công'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            // Reload to get updated list
+            context.read<WasteTypeBloc>().add(
+              LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId)
+            );
+          } else if (state is WasteTypeError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is WasteTypeLoading || state is CollectionPointsLoading) {
+            return LoadingView(message: 'Đang tải điểm thu gom...');
+          }
+
+          if (state is WasteTypeDetailLoaded) {
+            final wasteType = state.wasteType;
+            final linkedCollectionPoints = state.collectionPoints;
+            final allCollectionPoints = state.allCollectionPoints ?? [];
+
+            // Filter out already linked collection points
+            final availableCollectionPoints = allCollectionPoints
+                .where((cp) => !linkedCollectionPoints.any((lcp) => lcp.id == cp.id))
+                .toList();
+                
+            // Filter linked points by search query
+            final filteredLinkedPoints = _linkedSearchQuery.isEmpty
+                ? linkedCollectionPoints
+                : linkedCollectionPoints.where((cp) => 
+                    cp.name.toLowerCase().contains(_linkedSearchQuery.toLowerCase()) ||
+                    cp.address.toLowerCase().contains(_linkedSearchQuery.toLowerCase())
+                  ).toList();
+                    
+            // Filter available points by search query
+            final filteredAvailablePoints = _availableSearchQuery.isEmpty
+                ? availableCollectionPoints
+                : availableCollectionPoints.where((cp) => 
+                    cp.name.toLowerCase().contains(_availableSearchQuery.toLowerCase()) ||
+                    cp.address.toLowerCase().contains(_availableSearchQuery.toLowerCase())
+                  ).toList();
+
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                // Tab Điểm thu gom đã liên kết
+                _buildLinkedCollectionPointsTab(filteredLinkedPoints, wasteType),
+
+                // Tab Điểm thu gom sẵn có
+                _buildAvailableCollectionPointsTab(filteredAvailablePoints, wasteType),
+              ],
+            );
+          }
+
+          if (state is WasteTypeError || state is CollectionPointsError) {
+            final message = state is WasteTypeError ? state.message : (state as CollectionPointsError).message;
+            return ErrorView(
+              icon: Icons.error_outline,
+              title: 'Đã xảy ra lỗi',
+              message: message,
+              buttonText: 'Thử lại',
+              onRetry: () {
+                context.read<WasteTypeBloc>().add(
+                  LoadWasteTypeDetailsWithAvailablePoints(widget.wasteTypeId),
+                );
+              },
+            );
+          }
+
+          return Center(
+            child: Text('Không tìm thấy dữ liệu'),
+          );
+        },
       ),
     );
   }
@@ -461,14 +451,24 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
                           actionButtonText: 'Thêm liên kết',
                           actionButtonIcon: Icons.link,
                           actionButtonColor: Colors.blue,
-                          onActionPressed: isAdmin ? () {
-                            context.read<WasteTypeBloc>().add(
-                              LinkCollectionPoint(
-                                wasteTypeId: widget.wasteTypeId,
-                                collectionPointId: collectionPoint.collectionPointId,
-                              ),
-                            );
-                          } : null,
+                          onActionPressed: isAdmin 
+                              ? () {
+                                  context.read<WasteTypeBloc>().add(
+                                    LinkCollectionPoint(
+                                      wasteTypeId: widget.wasteTypeId,
+                                      collectionPointId: collectionPoint.collectionPointId,
+                                    ),
+                                  );
+                                }
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Bạn không có quyền thực hiện chức năng này'),
+                                      backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
                         );
                       },
                     );

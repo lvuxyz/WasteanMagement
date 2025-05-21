@@ -5,9 +5,7 @@ import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../blocs/admin/admin_cubit.dart';
 import '../../models/waste_type_model.dart';
-import '../../repositories/user_repository.dart';
 import '../../utils/app_colors.dart';
-import 'dart:developer' as developer;
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
 
@@ -36,7 +34,6 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
-  bool _isAdmin = false;
   List<String> _examples = [''];
   
   @override

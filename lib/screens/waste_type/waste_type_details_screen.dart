@@ -224,10 +224,14 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                   WasteTypeInfoTab(wasteType: wasteType),
 
                   // Tab Điểm thu gom
-                  WasteTypeCollectionPointsTab(
-                    wasteTypeId: widget.wasteTypeId,
-                    collectionPoints: collectionPoints,
-                    isAdmin: true,
+                  BlocBuilder<AdminCubit, bool>(
+                    builder: (context, isAdmin) {
+                      return WasteTypeCollectionPointsTab(
+                        wasteTypeId: widget.wasteTypeId,
+                        collectionPoints: collectionPoints,
+                        isAdmin: isAdmin,
+                      );
+                    },
                   ),
                 ],
               ),
