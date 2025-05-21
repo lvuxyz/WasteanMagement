@@ -3,8 +3,6 @@ import '../models/collection_point.dart';
 import '../core/api/api_constants.dart';
 import '../core/api/api_client.dart';
 import 'dart:developer' as developer;
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class WasteTypeRepository {
   final ApiClient apiClient;

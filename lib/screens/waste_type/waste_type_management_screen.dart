@@ -4,8 +4,6 @@ import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
 import '../../blocs/admin/admin_cubit.dart';
-import '../../repositories/waste_type_repository.dart';
-import '../../repositories/user_repository.dart';
 import '../../widgets/waste_type/waste_type_list_item.dart';
 import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
