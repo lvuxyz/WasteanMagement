@@ -61,9 +61,18 @@ class User extends Equatable {
 
   bool get isAdmin {
     if (roles == null || roles!.isEmpty) {
+      print('[DEBUG] isAdmin check - roles is null or empty: ${roles}');
       return false;
     }
-    return roles!.contains('ADMIN') || roles!.contains('admin');
+    
+    // Log all roles for debugging
+    print('[DEBUG] isAdmin check - roles: ${roles}');
+    
+    // Check if any admin role exists
+    final hasAdminRole = roles!.contains('ADMIN') || roles!.contains('admin');
+    print('[DEBUG] isAdmin result: $hasAdminRole');
+    
+    return hasAdminRole;
   }
 
   @override

@@ -9,7 +9,6 @@ import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
 import 'waste_type_edit_screen.dart';
 import 'waste_type_collection_points_screen.dart';
-import 'dart:developer' as developer;
 
 class WasteTypeManagementScreen extends StatefulWidget {
   const WasteTypeManagementScreen({Key? key}) : super(key: key);
@@ -185,6 +184,21 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         ),
         body: Column(
           children: [
+            // Debug text to show admin status
+            BlocBuilder<AdminCubit, bool>(
+              builder: (context, isAdmin) {
+                return Container(
+                  padding: EdgeInsets.all(8),
+                  color: isAdmin ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+                  width: double.infinity,
+                  child: Text(
+                    'Admin status: ${isAdmin ? "YES" : "NO"}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
+            ),
             // Search and filter bar
             Container(
               padding: const EdgeInsets.all(16),
