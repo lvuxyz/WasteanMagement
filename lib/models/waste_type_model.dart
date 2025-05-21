@@ -78,7 +78,20 @@ class WasteType extends Equatable {
     );
   }
 
-    Map<String, dynamic> toJson() {    return {      'name': name,      'description': description,      'recyclable': recyclable ? 1 : 0,      'handling_instructions': handlingInstructions,      'unit_price': unitPrice,      'unit': unit,      'examples': examples,      'category': category,      // We don't send icon and color as they're derived properties      // We don't send id as it's used in the URL path    };  }
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'recyclable': recyclable ? 1 : 0,
+      'handling_instructions': handlingInstructions,
+      'unit_price': unitPrice,
+      'unit': unit,
+      'examples': examples,
+      'category': category,
+      // We don't send icon and color as they're derived properties
+      // We don't send id as it's used in the URL path
+    };
+  }
 
   @override
   List<Object> get props => [
