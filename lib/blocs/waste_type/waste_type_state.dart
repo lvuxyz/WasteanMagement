@@ -11,7 +11,35 @@ abstract class WasteTypeState extends Equatable {
 
 class WasteTypeInitial extends WasteTypeState {}
 
-class WasteTypeLoading extends WasteTypeState {}
+class WasteTypeLoading extends WasteTypeState {
+  final bool isDeleting;
+  final int? deletingId;
+  final bool isUpdating;
+  final int? updatingId;
+  final bool isCreating;
+
+  const WasteTypeLoading({
+    this.isDeleting = false,
+    this.deletingId,
+    this.isUpdating = false,
+    this.updatingId,
+    this.isCreating = false,
+  });
+
+  @override
+  List<Object?> get props => [isDeleting, deletingId, isUpdating, updatingId, isCreating];
+}
+
+class CollectionPointsLoading extends WasteTypeState {}
+
+class CollectionPointsError extends WasteTypeState {
+  final String message;
+  
+  const CollectionPointsError(this.message);
+  
+  @override
+  List<Object> get props => [message];
+}
 
 class WasteTypeLoaded extends WasteTypeState {
   final List<WasteType> wasteTypes;

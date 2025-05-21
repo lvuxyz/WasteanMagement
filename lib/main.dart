@@ -22,6 +22,7 @@ import 'blocs/auth/auth_bloc.dart';
 import 'blocs/auth/auth_event.dart';
 import 'blocs/language/language_bloc.dart';
 import 'blocs/language/language_event.dart';
+import 'blocs/admin/admin_cubit.dart';
 import 'core/network/network_info.dart';
 import 'routes.dart';
 import 'generated/l10n.dart';
@@ -89,6 +90,11 @@ Future<void> main() async {
             create: (context) => WasteTypeBloc(
               repository: wasteTypeRepository,
             ),
+          ),
+          BlocProvider(
+            create: (context) => AdminCubit(
+              userRepository: userRepository,
+            )..checkAdminStatus(),
           ),
           BlocProvider(
             create: (context) => TransactionBloc(

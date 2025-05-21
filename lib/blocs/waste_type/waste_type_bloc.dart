@@ -28,7 +28,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypes event,
       Emitter<WasteTypeState> emit,
       ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteTypes = await repository.getWasteTypes();
       emit(WasteTypeLoaded(
@@ -164,6 +164,10 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       Emitter<WasteTypeState> emit,
       ) async {
     try {
+      emit(WasteTypeLoading(
+        isDeleting: true,
+        deletingId: event.wasteTypeId,
+      ));
       final result = await repository.deleteWasteType(event.wasteTypeId);
       if (result) {
         emit(WasteTypeDeleted(
@@ -234,7 +238,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     CreateWasteType event,
     Emitter<WasteTypeState> emit,
   ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading(isCreating: true));
     try {
       final Map<String, dynamic> wasteTypeData = {
         'name': event.name,
