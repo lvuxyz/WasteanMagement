@@ -194,15 +194,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       
       context.read<WasteTypeBloc>().add(UpdateWasteType(wasteType));
     } else {
-      context.read<WasteTypeBloc>().add(
-        CreateWasteType(
-          name: _nameController.text.trim(),
-          description: _descriptionController.text.trim(),
-          recyclable: _isRecyclable,
-          handlingInstructions: _handlingInstructionsController.text.trim(),
-          unitPrice: unitPrice,
-        ),
-      );
+            // Get examples and filter out empty ones      final finalExamples = _examples.where((example) => example.isNotEmpty).toList();            context.read<WasteTypeBloc>().add(        CreateWasteType(          name: _nameController.text.trim(),          description: _descriptionController.text.trim(),          recyclable: _isRecyclable,          handlingInstructions: _handlingInstructionsController.text.trim(),          unitPrice: unitPrice,          category: _selectedCategory,          examples: finalExamples,          unit: _unitController.text,        ),      );
     }
   }
 

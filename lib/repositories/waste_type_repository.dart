@@ -320,7 +320,23 @@ class WasteTypeRepository {
       developer.log('Đang gọi API tạo loại rác mới: ${ApiConstants.wasteTypes}');
       developer.log('Dữ liệu gửi đi: $wasteTypeData');
       
-      final response = await apiClient.post(ApiConstants.wasteTypes, body: wasteTypeData);
+      // Ensure API consistency by transforming the data if needed
+      Map<String, dynamic> apiData = {
+        'name': wasteTypeData['name'],
+        'description': wasteTypeData['description'],
+        'recyclable': wasteTypeData['recyclable'],
+        'handling_instructions': wasteTypeData['handling_instructions'],
+        'unit_price': wasteTypeData['unit_price'],
+        'category': wasteTypeData['category'],
+        'unit': wasteTypeData['unit'] ?? 'kg',
+      };
+      
+      // Convert examples list to proper format for API
+      if (wasteTypeData['examples'] != null) {
+        apiData['examples'] = wasteTypeData['examples'];
+      }
+      
+      final response = await apiClient.post(ApiConstants.wasteTypes, body: apiData);
       
       developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
       

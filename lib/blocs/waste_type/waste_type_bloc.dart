@@ -242,6 +242,9 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         'recyclable': event.recyclable ? 1 : 0,
         'handling_instructions': event.handlingInstructions,
         'unit_price': event.unitPrice,
+        'category': event.category,
+        'examples': event.examples,
+        'unit': event.unit,
       };
       
       final wasteType = await repository.createWasteType(wasteTypeData);
