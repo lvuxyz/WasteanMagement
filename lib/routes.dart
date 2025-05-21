@@ -5,6 +5,11 @@ import 'package:wasteanmagement/screens/transaction/transaction_management_scree
 import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_edit_screen.dart';
 import 'package:wasteanmagement/screens/waste_type/waste_type_management_screen.dart';
+import 'package:wasteanmagement/screens/reward/reward_screen.dart';
+import 'package:wasteanmagement/screens/reward/reward_statistics_screen.dart';
+import 'package:wasteanmagement/screens/reward/reward_rankings_screen.dart';
+import 'package:wasteanmagement/screens/reward/admin_reward_management_screen.dart';
+import 'package:wasteanmagement/screens/reward/add_reward_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -17,9 +22,16 @@ import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
 import 'screens/waste_type/waste_type_collection_points_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/view_profile_screen.dart';
+import 'screens/about_app_screen.dart';
+import 'screens/help_and_guidance_screen.dart';
+import 'screens/change_password.dart';
+import 'screens/edit_profile_screen.dart';
 
 class AppRoutes {
-  static const String welcome = '/welcome';
+  static const String welcome = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String main = '/main';
@@ -38,9 +50,35 @@ class AppRoutes {
   static const String addTransaction = '/add-transaction';
   static const String transactionDetails = '/transaction-details';
   static const String editTransaction = '/edit-transaction';
+  static const String home = '/home';
+  static const String profile = '/profile';
+  static const String viewProfile = '/view-profile';
+  static const String editProfile = '/edit-profile';
+  static const String about = '/about';
+  static const String help = '/help';
+  static const String changePassword = '/change-password';
+  
+  // Reward routes
+  static const String rewards = '/rewards';
+  static const String rewardStatistics = '/rewards/statistics';
+  static const String rewardRankings = '/rewards/rankings';
+  static const String adminRewardManagement = '/admin/rewards';
+  static const String addReward = '/admin/rewards/add';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // Reward routes
+      case rewards:
+        return MaterialPageRoute(builder: (_) => const RewardScreen(isInTabView: false));
+      case rewardStatistics:
+        return MaterialPageRoute(builder: (_) => const RewardStatisticsScreen());
+      case rewardRankings:
+        return MaterialPageRoute(builder: (_) => const RewardRankingsScreen());
+      case adminRewardManagement:
+        return MaterialPageRoute(builder: (_) => const AdminRewardManagementScreen());
+      case addReward:
+        return MaterialPageRoute(builder: (_) => const AddRewardScreen());
+        
       case transactions:
         return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
       case createTransaction:
@@ -96,7 +134,20 @@ class AppRoutes {
             collectionPointName: args['collectionPointName'],
           ),
         );
-
+      case home:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case viewProfile:
+        return MaterialPageRoute(builder: (_) => const ViewProfileScreen());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case about:
+        return MaterialPageRoute(builder: (_) => const AboutAppScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpAndGuidanceScreen());
+      case changePassword:
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

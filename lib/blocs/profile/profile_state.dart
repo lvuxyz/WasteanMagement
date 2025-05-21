@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../models/user_model.dart';
+import '../../models/user_profile.dart';
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -13,21 +13,12 @@ class ProfileInitial extends ProfileState {}
 class ProfileLoading extends ProfileState {}
 
 class ProfileLoaded extends ProfileState {
-  final User user;
+  final UserProfile userProfile;
 
-  const ProfileLoaded(this.user);
-
-  @override
-  List<Object> get props => [user];
-}
-
-class ProfileUpdateSuccess extends ProfileState {
-  final User user;
-
-  const ProfileUpdateSuccess(this.user);
+  const ProfileLoaded({required this.userProfile});
 
   @override
-  List<Object> get props => [user];
+  List<Object?> get props => [userProfile];
 }
 
 class ProfileError extends ProfileState {
@@ -36,5 +27,14 @@ class ProfileError extends ProfileState {
   const ProfileError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
+}
+
+class ProfileUpdateSuccess extends ProfileState {
+  final String message;
+
+  const ProfileUpdateSuccess({this.message = 'Cập nhật thông tin thành công'});
+
+  @override
+  List<Object?> get props => [message];
 }

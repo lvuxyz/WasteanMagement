@@ -434,18 +434,13 @@ class WasteTypeRepository {
     try {
       developer.log('Đang gọi API ${ApiConstants.wasteTypes}');
       
-      // Bỏ qua phần xác thực token
-      final response = await http.get(
-        Uri.parse(ApiConstants.wasteTypes),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+      // Sử dụng apiClient thay vì http trực tiếp để đảm bảo token được gửi kèm
+      final response = await apiClient.get(ApiConstants.wasteTypes);
       
       developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
       
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = response.data;
         
         developer.log('Dữ liệu phản hồi: $data');
         

@@ -69,7 +69,7 @@ class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
       emit(SimpleProfileLoaded(menuItems: menuItems));
     } catch (e) {
       developer.log('Error loading profile menu items: $e');
-      emit(SimpleProfileError(error: 'Failed to load profile menu items'));
+      emit(const SimpleProfileError(error: 'Failed to load profile menu items'));
     }
   }
 

@@ -8,11 +8,14 @@ import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
+import 'package:wasteanmagement/routes.dart';
 import 'package:wasteanmagement/screens/profile_screen.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/app_colors.dart';
+import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
+import 'package:wasteanmagement/blocs/reward/reward_event.dart';
+import 'package:wasteanmagement/blocs/reward/reward_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() {
       final profileState = context.read<ProfileBloc>().state;
       if (profileState is! ProfileLoaded) {
-        context.read<ProfileBloc>().add(FetchProfile());
+        context.read<ProfileBloc>().add(LoadProfile());
       }
     });
   }
@@ -115,6 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildUserSummaryCard(),
             const SizedBox(height: 24),
+            _buildRewardPointsCard(),
+            const SizedBox(height: 24),
             _buildSectionTitle('Điểm thu gom gần bạn'),
             const SizedBox(height: 16),
             _buildCollectionPointsList(),
@@ -159,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, state) {
                 String userName = 'Người dùng';
                 if (state is ProfileLoaded) {
-                  userName = state.user.fullName;
+                  userName = state.userProfile.basicInfo.fullName;
                 }
                 return Text(
                   userName,
@@ -345,73 +350,70 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Thêm Quick Actions ở đây
-  Widget _buildQuickActions({required int height}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Hành động nhanh',
+  Widget _buildQuickActions({required double height}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            'Truy cập nhanh',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
             children: [
-              _buildQuickAction(
-                icon: Icons.calendar_today_outlined,
-                title: 'Lịch hẹn',
-                onTap: () {},
+              _buildQuickActionCard(
+                icon: Icons.map,
+                title: 'Bản đồ\nđiểm thu gom',
+                color: Colors.blue,
+                onTap: () {
+                  Navigator.pushNamed(context, '/map');
+                },
               ),
-              _buildQuickAction(
+              _buildQuickActionCard(
                 icon: Icons.recycling,
-                title: 'Loại rác',
-                onTap: () {
-                  Navigator.pushNamed(context, '/waste-type');
-                },
-              ),
-              _buildQuickAction(
-                icon: Icons.location_on_outlined,
-                title: 'Điểm thu gom',
-                onTap: () {
-                  // This navigation is for a future functionality
-                  // Currently, we navigate to the collection points list screen
-                  // In the future, this will be changed to a different functionality
-                  Navigator.pushNamed(context, '/collection-points');
-                },
-              ),
-              _buildQuickAction(
-                icon: Icons.assignment_outlined,
-                title: 'Hướng dẫn',
+                title: 'Hướng dẫn\nphân loại',
+                color: Colors.green,
                 onTap: () {
                   Navigator.pushNamed(context, '/waste-guide');
                 },
               ),
+              _buildQuickActionCard(
+                icon: Icons.stars,
+                title: 'Điểm thưởng\ncủa tôi',
+                color: Colors.amber,
+                onTap: () {
+                  Navigator.pushNamed(context, '/rewards');
+                },
+              ),
+              _buildQuickActionCard(
+                icon: Icons.bar_chart,
+                title: 'Thống kê\ntiến độ',
+                color: Colors.purple,
+                onTap: () {
+                  Navigator.pushNamed(context, '/recycling-progress');
+                },
+              ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildQuickAction({
+  Widget _buildQuickActionCard({
     required IconData icon,
     required String title,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -423,12 +425,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
-              color: AppColors.primaryGreen,
+              color: color,
               size: 24,
             ),
           ),
@@ -1384,9 +1386,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfilePage() {
     return BlocProvider(
-      create: (context) => ProfileBloc(
-        userRepository: context.read<UserRepository>(),
-      )..add(FetchProfile()), // Sử dụng đúng tên event
+      create: (context) => ProfileBloc()..add(LoadProfile()),
       child: const ProfileScreen(username: '',),
     );
   }
@@ -1438,6 +1438,108 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(8),
       highlightColor: Colors.white24,
       splashColor: Colors.white24,
+    );
+  }
+
+  // Add reward points card
+  Widget _buildRewardPointsCard() {
+    return BlocBuilder<RewardBloc, RewardState>(
+      builder: (context, state) {
+        int totalPoints = 0;
+        bool isLoading = state is RewardLoading;
+        
+        if (state is MyRewardsLoaded) {
+          totalPoints = state.totalPoints;
+        } else if (!(state is RewardLoading)) {
+          // Nếu chưa load dữ liệu thì load
+          context.read<RewardBloc>().add(LoadMyRewards(page: 1));
+        }
+        
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).pushNamed(AppRoutes.rewards);
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.stars,
+                          color: Colors.amber,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Điểm thưởng',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white70,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                isLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        '$totalPoints',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Tham gia các hoạt động để tích lũy điểm thưởng',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
