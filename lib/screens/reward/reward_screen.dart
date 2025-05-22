@@ -20,17 +20,42 @@ class RewardScreen extends StatefulWidget {
   State<RewardScreen> createState() => _RewardScreenState();
 }
 
-class _RewardScreenState extends State<RewardScreen> {
+class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver {
   late RewardBloc _rewardBloc;
   int _currentPage = 1;
   DateTime? _selectedFromDate;
   DateTime? _selectedToDate;
+  late FocusNode _screenFocusNode;
   
   @override
   void initState() {
     super.initState();
     _rewardBloc = BlocProvider.of<RewardBloc>(context);
+    _screenFocusNode = FocusNode();
+    WidgetsBinding.instance.addObserver(this);
     _loadRewards();
+  }
+  
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _screenFocusNode.dispose();
+    super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came to foreground
+      _loadRewards();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure we have focus to detect when returning to this screen
+    FocusScope.of(context).requestFocus(_screenFocusNode);
   }
   
   void _loadRewards() {
@@ -93,7 +118,7 @@ class _RewardScreenState extends State<RewardScreen> {
           child: const RewardStatisticsScreen(),
         ),
       ),
-    );
+    ).then((_) => _loadRewards()); // Reload data when returning
   }
   
   void _navigateToRankings() {
@@ -105,7 +130,7 @@ class _RewardScreenState extends State<RewardScreen> {
           child: const RewardRankingsScreen(),
         ),
       ),
-    );
+    ).then((_) => _loadRewards()); // Reload data when returning
   }
 
   @override
