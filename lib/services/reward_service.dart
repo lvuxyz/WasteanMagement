@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/reward.dart';
 import '../core/api/api_constants.dart';
 import '../services/auth_service.dart';
+import 'dart:developer' as developer;
 
 class RewardService {
   final AuthService _authService = AuthService();
@@ -25,14 +26,42 @@ class RewardService {
   }) async {
     final headers = await _getHeaders();
     
-    String url = '${ApiConstants.rewards}/my-rewards?page=$page&limit=$limit';
-    if (fromDate != null) url += '&from_date=$fromDate';
-    if (toDate != null) url += '&to_date=$toDate';
+    // Use a more structured way to build query parameters
+    final Uri uri = Uri.parse('${ApiConstants.rewards}/my-rewards');
     
-    final response = await http.get(Uri.parse(url), headers: headers);
+    // Build query parameters with proper encoding
+    final Map<String, dynamic> queryParams = {
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    
+    // Add date parameters if provided
+    if (fromDate != null) queryParams['from_date'] = fromDate;
+    if (toDate != null) queryParams['to_date'] = toDate;
+    
+    // Create the final URL with encoded parameters
+    final finalUri = uri.replace(queryParameters: queryParams);
+    
+    // Log the URL for debugging
+    developer.log('Requesting rewards with URL: $finalUri');
+    
+    final response = await http.get(finalUri, headers: headers);
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['data'];
+      
+      // Log received data for debugging
+      developer.log('Received ${(data['rewards'] as List).length} rewards');
+      if (fromDate != null || toDate != null) {
+        developer.log('Filter applied - From: $fromDate, To: $toDate');
+        
+        // Check the first and last dates in the response to confirm filtering worked
+        if ((data['rewards'] as List).isNotEmpty) {
+          final firstReward = Reward.fromJson((data['rewards'] as List).first);
+          final lastReward = Reward.fromJson((data['rewards'] as List).last);
+          developer.log('First reward date: ${firstReward.earnedDate}, Last reward date: ${lastReward.earnedDate}');
+        }
+      }
       
       return {
         'rewards': (data['rewards'] as List).map((e) => Reward.fromJson(e)).toList(),
@@ -40,6 +69,7 @@ class RewardService {
         'pagination': Pagination.fromJson(data['pagination']),
       };
     } else {
+      developer.log('Error loading rewards: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to load rewards: ${response.body}');
     }
   }

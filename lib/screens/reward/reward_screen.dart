@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'dart:developer' as developer;
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
@@ -62,14 +63,23 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   }
   
   void _loadRewards() {
+    // Format dates in yyyy-MM-dd format for API
+    final String? fromDateStr = _selectedFromDate != null 
+        ? DateFormat('yyyy-MM-dd').format(_selectedFromDate!) 
+        : null;
+    final String? toDateStr = _selectedToDate != null 
+        ? DateFormat('yyyy-MM-dd').format(_selectedToDate!) 
+        : null;
+    
+    // Debug logs to verify filter values
+    if (fromDateStr != null || toDateStr != null) {
+      developer.log('Applying date filter - From: $fromDateStr, To: $toDateStr');
+    }
+    
     _rewardBloc.add(LoadMyRewards(
       page: _currentPage,
-      fromDate: _selectedFromDate != null 
-          ? DateFormat('yyyy-MM-dd').format(_selectedFromDate!) 
-          : null,
-      toDate: _selectedToDate != null 
-          ? DateFormat('yyyy-MM-dd').format(_selectedToDate!) 
-          : null,
+      fromDate: fromDateStr,
+      toDate: toDateStr,
     ));
   }
   
@@ -99,11 +109,13 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
     
     if (picked != null) {
       setState(() {
-        _selectedFromDate = picked.start;
-        _selectedToDate = picked.end;
+        // Set the time to start of day for fromDate and end of day for toDate for more accurate filtering
+        _selectedFromDate = DateTime(picked.start.year, picked.start.month, picked.start.day, 0, 0, 0);
+        _selectedToDate = DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
         _currentPage = 1; // Reset to first page when filter changes
       });
-      _loadRewards();
+      // We'll wait for the Apply button instead of loading immediately
+      developer.log('Date range selected: ${_selectedFromDate!.toIso8601String()} - ${_selectedToDate!.toIso8601String()}');
     }
   }
   
@@ -428,13 +440,41 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Bộ lọc',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.grey[800],
-                      ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.filter_list_rounded,
+                          color: AppColors.primaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Bộ lọc',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                        if (_selectedFromDate != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryGreen.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Đã áp dụng',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.primaryGreen,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     AnimatedRotation(
                       turns: _isFilterExpanded ? 0.5 : 0,
@@ -452,68 +492,121 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           
           if (_isFilterExpanded) ...[
             const Divider(height: 1),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Khoảng thời gian',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.calendar_today, size: 16),
+                        label: Text(
+                          dateRangeText,
+                          style: const TextStyle(fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primaryGreen,
+                          side: const BorderSide(color: AppColors.primaryGreen),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                        onPressed: () => _selectDateRange(context),
+                      ),
+                    ),
+                    
+                    if (_selectedFromDate != null) ...[
+                      const SizedBox(width: 8),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          onTap: _clearDateFilter,
+                          customBorder: const CircleBorder(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.clear,
+                              color: Colors.grey[600],
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.calendar_today, size: 16),
-                    label: Text(
-                      dateRangeText,
-                      style: const TextStyle(fontSize: 13),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _isFilterExpanded = false;
+                        _selectedFromDate = null;
+                        _selectedToDate = null;
+                        _currentPage = 1;
+                      });
+                      _loadRewards();
+                    },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryGreen,
-                      side: const BorderSide(color: AppColors.primaryGreen),
+                      foregroundColor: Colors.grey[700],
+                      side: BorderSide(color: Colors.grey[300]!),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    onPressed: () => _selectDateRange(context),
+                    child: const Text('Đặt lại'),
                   ),
                 ),
-                
-                if (_selectedFromDate != null) ...[
-                  const SizedBox(width: 8),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: _clearDateFilter,
-                      customBorder: const CircleBorder(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.clear,
-                          color: Colors.grey[600],
-                          size: 20,
-                        ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() => _isFilterExpanded = false);
+                      
+                      // Provide feedback when filter is applied
+                      if (_selectedFromDate != null && _selectedToDate != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Đã lọc từ ${DateFormat('dd/MM/yyyy').format(_selectedFromDate!)} đến ${DateFormat('dd/MM/yyyy').format(_selectedToDate!)}'),
+                            duration: const Duration(seconds: 2),
+                            backgroundColor: AppColors.primaryGreen,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                      
+                      _loadRewards();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
+                    child: const Text('Áp dụng'),
                   ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() => _isFilterExpanded = false);
-                  _loadRewards();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text('Áp dụng'),
-              ),
+              ],
             ),
           ],
         ],
@@ -563,13 +656,15 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.hourglass_empty,
+            _selectedFromDate != null ? Icons.filter_list : Icons.hourglass_empty,
             size: 64,
             color: Colors.grey[300],
           ),
           const SizedBox(height: 16),
           Text(
-            'Chưa có lịch sử điểm thưởng',
+            _selectedFromDate != null 
+                ? 'Không tìm thấy kết quả'
+                : 'Chưa có lịch sử điểm thưởng',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -578,13 +673,27 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           ),
           const SizedBox(height: 8),
           Text(
-            'Tích điểm bằng cách tham gia các hoạt động',
+            _selectedFromDate != null
+                ? 'Không có điểm thưởng nào trong khoảng thời gian đã chọn'
+                : 'Tích điểm bằng cách tham gia các hoạt động',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
             ),
             textAlign: TextAlign.center,
           ),
+          if (_selectedFromDate != null) ...[
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Đặt lại bộ lọc'),
+              onPressed: _clearDateFilter,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryGreen,
+                side: const BorderSide(color: AppColors.primaryGreen),
+              ),
+            ),
+          ],
         ],
       ),
     );
