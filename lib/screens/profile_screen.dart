@@ -178,8 +178,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildOptionsSection(BuildContext context) {
-    final l10n = S.of(context);
-
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(

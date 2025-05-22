@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'dart:io';
 
 abstract class TransactionEvent extends Equatable {
   @override
@@ -52,18 +53,18 @@ class CreateTransaction extends TransactionEvent {
   final int wasteTypeId;
   final double quantity;
   final String unit;
-  final String? proofImageUrl;
+  final File? proofImage;
 
   CreateTransaction({
     required this.collectionPointId,
     required this.wasteTypeId,
     required this.quantity,
     required this.unit,
-    this.proofImageUrl,
+    this.proofImage,
   });
 
   @override
-  List<Object?> get props => [collectionPointId, wasteTypeId, quantity, unit, proofImageUrl];
+  List<Object?> get props => [collectionPointId, wasteTypeId, quantity, unit, proofImage];
 }
 
 class UpdateTransactionStatus extends TransactionEvent {
@@ -103,7 +104,7 @@ class UpdateTransaction extends TransactionEvent {
   final int wasteTypeId;
   final double quantity;
   final String unit;
-  final String? proofImageUrl;
+  final File? proofImage;
 
   UpdateTransaction({
     required this.transactionId,
@@ -111,11 +112,11 @@ class UpdateTransaction extends TransactionEvent {
     required this.wasteTypeId,
     required this.quantity,
     required this.unit,
-    this.proofImageUrl,
+    this.proofImage,
   });
 
   @override
-  List<Object?> get props => [transactionId, collectionPointId, wasteTypeId, quantity, unit, proofImageUrl];
+  List<Object?> get props => [transactionId, collectionPointId, wasteTypeId, quantity, unit, proofImage];
 }
 
 class FetchTransactionHistory extends TransactionEvent {

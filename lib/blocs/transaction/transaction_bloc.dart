@@ -184,7 +184,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         wasteTypeId: event.wasteTypeId,
         quantity: event.quantity,
         unit: event.unit,
-        proofImageUrl: event.proofImageUrl,
+        proofImage: event.proofImage,
       );
       
       if (!response['success']) {
@@ -288,7 +288,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         wasteTypeId: event.wasteTypeId,
         quantity: event.quantity,
         unit: event.unit,
-        proofImageUrl: event.proofImageUrl,
+        proofImage: event.proofImage,
       );
 
       if (!result['success']) {

@@ -162,7 +162,7 @@ class UserRepository {
             developer.log('Dữ liệu người dùng nhận được: $response');
             
             // Add detailed logging for roles
-            if (response is Map<String, dynamic>) {
+            if (response is Map) {
               developer.log('Raw roles data in response: ${response['roles']}');
               
               if (response.containsKey('basic_info') && response['basic_info'] != null) {
@@ -171,7 +171,7 @@ class UserRepository {
             }
             
             // Check if we have the new response format with 'success' and 'data' fields
-            if (response is Map<String, dynamic> && response.containsKey('success') && response.containsKey('data')) {
+            if (response is Map && response.containsKey('success') && response.containsKey('data')) {
               if (response['success'] && response['data'] != null) {
                 // For new profile format, just return the raw data to be processed by ProfileBloc
                 // We'll create a minimal User object to satisfy the return type

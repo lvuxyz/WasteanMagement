@@ -88,7 +88,14 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                     backgroundColor: statusColor,
                     leading: IconButton(
                       icon: Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        // Đảm bảo tất cả các tác vụ bất đồng bộ hoàn thành trước khi pop
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        });
+                      },
                     ),
                     actions: [
                       BlocBuilder<AdminCubit, bool>(
@@ -103,7 +110,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                                     arguments: widget.wasteTypeId,
                                   ).then((value) {
                                     // Reload details after edit
-                                    if (value == true) {
+                                    if (value == true && mounted) {
                                       context.read<WasteTypeBloc>().add(
                                         LoadWasteTypeDetails(widget.wasteTypeId),
                                       );
@@ -263,9 +270,11 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
               message: state.message,
               buttonText: 'Thử lại',
               onRetry: () {
-                context.read<WasteTypeBloc>().add(
-                  LoadWasteTypeDetails(widget.wasteTypeId),
-                );
+                if (mounted) {
+                  context.read<WasteTypeBloc>().add(
+                    LoadWasteTypeDetails(widget.wasteTypeId),
+                  );
+                }
               },
             );
           }
@@ -286,7 +295,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                   arguments: widget.wasteTypeId,
                 ).then((result) {
                   // Refresh data if changes were made
-                  if (result == true) {
+                  if (result == true && mounted) {
                     context.read<WasteTypeBloc>().add(
                       LoadWasteTypeDetails(widget.wasteTypeId),
                     );

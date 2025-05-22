@@ -59,13 +59,16 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
       // để đảm bảo có thể sử dụng được chức năng trong màn hình chỉnh sửa
       await Future.delayed(Duration(seconds: 2));
-      final currentState = context.read<AdminCubit>().state;
-      if (!currentState) {
-        setState(() {
-          _isAdmin = true;  // Set local state
-        });
-        // Khi đang ở màn hình chỉnh sửa, cần đặt quyền admin
-        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      // Kiểm tra xem widget còn mounted không trước khi truy cập context
+      if (mounted) {
+        final currentState = context.read<AdminCubit>().state;
+        if (!currentState) {
+          setState(() {
+            _isAdmin = true;  // Set local state
+          });
+          // Khi đang ở màn hình chỉnh sửa, cần đặt quyền admin
+          context.read<AdminCubit>().forceUpdateAdminStatus(true);
+        }
       }
     });
   }

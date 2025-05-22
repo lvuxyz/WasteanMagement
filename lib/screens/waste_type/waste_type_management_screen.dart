@@ -20,29 +20,39 @@ class WasteTypeManagementScreen extends StatefulWidget {
 class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isAdmin = false;
   String _selectedFilterOption = 'all';
+  
+  // Lưu tham chiếu đến bloc để tránh sử dụng context.read trong các callback
+  late WasteTypeBloc _wasteTypeBloc;
+  late AdminCubit _adminCubit;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    
+    // Lưu tham chiếu đến bloc
+    _wasteTypeBloc = context.read<WasteTypeBloc>();
+    _adminCubit = context.read<AdminCubit>();
+    
     // Load data when screen initializes
-    context.read<WasteTypeBloc>().add(LoadWasteTypes());
+    _wasteTypeBloc.add(LoadWasteTypes());
     
     // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Kích hoạt kiểm tra admin status
-      context.read<AdminCubit>().checkAdminStatus();
+      _adminCubit.checkAdminStatus();
       
       // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
       // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý
       await Future.delayed(Duration(seconds: 2));
-      final currentState = context.read<AdminCubit>().state;
-      if (!currentState) {
-        // Khi đang ở màn hình quản lý, cần đặt quyền admin
-        developer.log('Setting admin status to true for management screen');
-        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      if (mounted) {
+        final currentState = _adminCubit.state;
+        if (!currentState) {
+          // Khi đang ở màn hình quản lý, cần đặt quyền admin
+          developer.log('Setting admin status to true for management screen');
+          _adminCubit.forceUpdateAdminStatus(true);
+        }
       }
     });
   }
@@ -55,7 +65,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   }
 
   void _onSearchChanged() {
-    context.read<WasteTypeBloc>().add(SearchWasteTypes(_searchController.text));
+    _wasteTypeBloc.add(SearchWasteTypes(_searchController.text));
   }
 
   void _showDeleteConfirmation(BuildContext context, int wasteTypeId, String name) {
@@ -109,7 +119,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
           ElevatedButton.icon(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              context.read<WasteTypeBloc>().add(DeleteWasteType(wasteTypeId));
+              _wasteTypeBloc.add(DeleteWasteType(wasteTypeId));
             },
             icon: Icon(Icons.delete_outline, size: 18),
             label: Text('Xác nhận xóa'),
@@ -140,7 +150,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
       ),
     ).then((result) {
       // Refresh the list
-      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+      if (mounted) {
+        _wasteTypeBloc.add(LoadWasteTypes());
+      }
     });
   }
 
@@ -153,7 +165,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
       ),
     ).then((_) {
       // Refresh the waste type list after managing collection points
-      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+      if (mounted) {
+        _wasteTypeBloc.add(LoadWasteTypes());
+      }
     });
   }
 
@@ -164,9 +178,6 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         BlocListener<AdminCubit, bool>(
           listener: (context, isAdmin) {
             developer.log('AdminCubit listener triggered: isAdmin = $isAdmin');
-            setState(() {
-              _isAdmin = isAdmin;
-            });
           },
         ),
         BlocListener<WasteTypeBloc, WasteTypeState>(
@@ -226,9 +237,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               icon: Icon(Icons.refresh, color: Colors.white),
               onPressed: () {
                 _searchController.clear();
-                context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                _wasteTypeBloc.add(LoadWasteTypes());
                 // Refresh admin status
-                context.read<AdminCubit>().checkAdminStatus();
+                _adminCubit.checkAdminStatus();
               },
             ),
           ],
@@ -241,7 +252,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                   onPressed: () {
                     Navigator.pushNamed(context, '/waste-type/add').then((_) {
                       // Reload the list when coming back from add screen
-                      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                      if (mounted) {
+                        _wasteTypeBloc.add(LoadWasteTypes());
+                      }
                     });
                   },
                   backgroundColor: AppColors.primaryGreen,
@@ -356,9 +369,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
                     return RefreshIndicator(
                       onRefresh: () async {
-                        context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                        _wasteTypeBloc.add(LoadWasteTypes());
                         // Refresh admin status
-                        context.read<AdminCubit>().checkAdminStatus();
+                        _adminCubit.checkAdminStatus();
                       },
                       child: ListView.builder(
                         controller: _scrollController,
@@ -449,7 +462,9 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
               setState(() {
                 _selectedFilterOption = 'all';
               });
-              context.read<WasteTypeBloc>().add(LoadWasteTypes());
+              if (mounted) {
+                _wasteTypeBloc.add(LoadWasteTypes());
+              }
             },
             icon: Icon(Icons.refresh),
             label: Text('Đặt lại'),
