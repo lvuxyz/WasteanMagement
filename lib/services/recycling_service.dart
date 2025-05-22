@@ -160,10 +160,13 @@ class RecyclingService {
       if (response.isSuccess) {
         final data = response.body;
         
+        // Kiểm tra nếu API trả về dữ liệu quy trình đã cập nhật
         if (data['data'] != null) {
           return RecyclingProcess.fromJson(data['data']);
         } else {
-          throw Exception('Không nhận được dữ liệu quy trình tái chế sau khi cập nhật');
+          // Nếu API không trả về dữ liệu quy trình, lấy lại từ API
+          developer.log('API không trả về dữ liệu quy trình, lấy lại từ API');
+          return await getRecyclingProcessDetail(id);
         }
       } else {
         throw Exception('Lỗi khi cập nhật quy trình tái chế: ${response.message}');
