@@ -87,7 +87,8 @@ class WasteType extends Equatable {
       'unit_price': unitPrice,
       'unit': unit,
       'examples': examples,
-      // We don't send icon, color, or category as they're derived from recyclable
+      'category': category,
+      // We don't send icon and color as they're derived properties
       // We don't send id as it's used in the URL path
     };
   }

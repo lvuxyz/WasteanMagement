@@ -110,61 +110,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     // context.read<TransactionBloc>().add(SearchTransactions(_searchController.text));
   }
 
-  void _showDeleteConfirmation(BuildContext context, int transactionId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return Builder(
-          builder: (innerContext) {
-            return AlertDialog(
-              title: const Text('Xác nhận xóa'),
-              content: const Text('Bạn có chắc chắn muốn xóa giao dịch này không?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('Hủy'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                    
-                    // Đánh dấu là đang xóa để hiển thị loading
-                    setState(() {
-                      _deletingItems[transactionId] = true;
-                    });
-                    
-                    // Thực hiện xóa qua BlocProvider
-                    try {
-                      innerContext.read<TransactionBloc>().add(
-                        DeleteTransaction(transactionId: transactionId)
-                      );
-                    } catch (e) {
-                      print("Error sending delete event: $e");
-                    }
-                    
-                    // Xóa trạng thái loading sau 2 giây
-                    Future.delayed(const Duration(seconds: 2), () {
-                      if (mounted) {
-                        setState(() {
-                          _deletingItems.remove(transactionId);
-                        });
-                      }
-                    });
-                  },
-                  child: const Text(
-                    'Xóa',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            );
-          }
-        );
-      },
-    );
-  }
 
   void _updateTransactionStatus(int transactionId, String status) {
     // Đánh dấu là đang cập nhật để hiển thị loading
@@ -282,20 +227,25 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   }
 
   Widget _buildFilterTabs() {
+    // Define all available statuses
+    final List<Map<String, String>> statuses = [
+      {'value': 'all', 'label': 'Tất cả'},
+      {'value': 'pending', 'label': 'Chờ xử lý'},
+      {'value': 'verified', 'label': 'Đã xác nhận'},
+      {'value': 'processing', 'label': 'Đang xử lý'},
+      {'value': 'completed', 'label': 'Hoàn thành'},
+      {'value': 'rejected', 'label': 'Đã hủy'},
+    ];
+    
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: [
-            _buildFilterTab('all', 'Tất cả'),
-            _buildFilterTab('pending', 'Chờ xử lý'),
-            _buildFilterTab('verified', 'Đã xác nhận'),
-            _buildFilterTab('processing', 'Đang xử lý'),
-            _buildFilterTab('completed', 'Hoàn thành'),
-            _buildFilterTab('rejected', 'Đã hủy'),
-          ],
+          children: statuses.map((status) => 
+            _buildFilterTab(status['value']!, status['label']!)
+          ).toList(),
         ),
       ),
     );
@@ -304,65 +254,66 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   Widget _buildFilterTab(String value, String label) {
     final bool isSelected = _selectedFilterOption == value;
     
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedFilterOption = value;
-        });
-            
-        // Thêm sự kiện FetchTransactions hoặc FetchMyTransactions
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final builderWidget = Builder(
-            builder: (context) {
-              try {
-                if (_isAdmin) {
-                  context.read<TransactionBloc>().add(FetchTransactions(
-                    status: value == 'all' ? null : value,
-                  ));
-                } else {
-                  context.read<TransactionBloc>().add(FetchMyTransactions(
-                    status: value == 'all' ? null : value,
-                  ));
+    return Builder(
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // Only proceed if this isn't already selected
+                if (_selectedFilterOption != value) {
+                  setState(() {
+                    _selectedFilterOption = value;
+                  });
+                  
+                  // Fetch transactions with the new filter
+                  try {
+                    if (_isAdmin) {
+                      context.read<TransactionBloc>().add(FetchTransactions(
+                        status: value == 'all' ? null : value,
+                      ));
+                    } else {
+                      context.read<TransactionBloc>().add(FetchMyTransactions(
+                        status: value == 'all' ? null : value,
+                      ));
+                    }
+                  } catch (e) {
+                    print('Error applying filter: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi khi lọc giao dịch: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-              } catch (e) {
-                print('Error in filter tab: $e');
-              }
-              return const SizedBox.shrink();
-            }
-          );
-          
-          // Chèn builder widget vào widget tree
-          final overlay = Overlay.of(context);
-          final entry = OverlayEntry(
-            builder: (context) => Positioned(
-              child: builderWidget,
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryGreen : Colors.grey.shade300,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-          );
-          
-          overlay.insert(entry);
-          
-          // Xóa sau khi đã thực hiện
-          Future.microtask(() {
-            entry.remove();
-          });
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryGreen : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -618,8 +569,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                           '/edit-transaction',
                           arguments: transaction.transactionId,
                         );
-                      } else if (value == 'delete' && _isAdmin) {
-                        _showDeleteConfirmation(innerContext, transaction.transactionId);
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -640,28 +589,11 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                             children: [
                               Icon(Icons.edit, color: AppColors.primaryGreen),
                               SizedBox(width: 8),
-                              Text('Chỉnh sửa'),
+                              Text('Chỉnh sửa trạng thái giao dịch'),
                             ],
                           ),
                         ),
                       ];
-                      
-                      // Only add delete option for admin
-                      if (_isAdmin) {
-                        menuItems.add(
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Xóa giao dịch'),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      
                       return menuItems;
                     },
                   ),
@@ -678,32 +610,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                             height: 24,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        else 
-                          Row(
-                            children: [
-                              _buildStatusButton(innerContext, transaction, 'pending', 'Chờ xử lý'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'verified', 'Xác nhận'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'completed', 'Hoàn thành'),
-                              const SizedBox(width: 8),
-                              _buildStatusButton(innerContext, transaction, 'rejected', 'Hủy bỏ'),
-                            ],
-                          ),
-                        ElevatedButton.icon(
-                          onPressed: () => _showDeleteConfirmation(innerContext, transaction.transactionId),
-                          icon: const Icon(Icons.delete_outline, size: 16),
-                          label: const Text('Xóa'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade50,
-                            foregroundColor: Colors.red,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

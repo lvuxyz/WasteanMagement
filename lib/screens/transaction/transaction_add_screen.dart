@@ -16,7 +16,6 @@ import '../../services/upload_service.dart';
 import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../core/api/api_constants.dart';
-import '../../services/auth_service.dart';
 import 'package:intl/intl.dart';
 
 // This class will be used only for the transaction screen
@@ -88,7 +87,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   bool _isUploadingImage = false;
   bool _isSubmitting = false;
   DateTime _transactionDate = DateTime.now();
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {

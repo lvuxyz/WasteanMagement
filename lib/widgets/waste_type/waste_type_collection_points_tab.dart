@@ -1,7 +1,9 @@
 // widgets/waste_type/waste_type_collection_points_tab.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/collection_point_model.dart';
 import '../../utils/app_colors.dart';
+import '../../blocs/admin/admin_cubit.dart';
 
 class WasteTypeCollectionPointsTab extends StatelessWidget {
   final int wasteTypeId;
@@ -73,38 +75,44 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            if (isAdmin)
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/waste-type/collection-points',
-                    arguments: wasteTypeId,
-                  ).then((result) {
-                    // Refresh data if changes were made
-                    if (result == true) {
-                      // This is part of waste management functionality
-                      // Reload this screen with updated data
-                      Navigator.of(context).pop();  // Close current screen
-                      Navigator.pushReplacementNamed(
-                        context,
-                        '/waste-type/details',
-                        arguments: wasteTypeId,
-                      );
-                    }
-                  });
-                },
-                icon: const Icon(Icons.add_location_alt),
-                label: const Text('Thêm điểm thu gom'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+            BlocBuilder<AdminCubit, bool>(
+              builder: (context, isAdminState) {
+                final showAdminFeatures = isAdmin || isAdminState;
+                return showAdminFeatures
+                  ? ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/waste-type/collection-points',
+                          arguments: wasteTypeId,
+                        ).then((result) {
+                          // Refresh data if changes were made
+                          if (result == true) {
+                            // This is part of waste management functionality
+                            // Reload this screen with updated data
+                            Navigator.of(context).pop();  // Close current screen
+                            Navigator.pushReplacementNamed(
+                              context,
+                              '/waste-type/details',
+                              arguments: wasteTypeId,
+                            );
+                          }
+                        });
+                      },
+                      icon: const Icon(Icons.add_location_alt),
+                      label: const Text('Thêm điểm thu gom'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    )
+                  : SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),
