@@ -8,6 +8,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/loading_view.dart';
+import '../collection_point/location_picker_screen.dart';
 
 class CollectionPointCreateScreen extends StatefulWidget {
   const CollectionPointCreateScreen({Key? key}) : super(key: key);
@@ -37,6 +38,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
   bool _isCreating = false;
   String? _errorMessage;
   bool _isNavigating = false;
+  bool _locationPickedFromMap = false;
 
   @override
   void dispose() {
@@ -88,6 +90,48 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
       setState(() {
         _errorMessage = 'Lỗi khi tạo điểm thu gom: $e';
       });
+    }
+  }
+  
+  Future<void> _openLocationPicker() async {
+    // Parse current values if they exist
+    double? currentLatitude;
+    double? currentLongitude;
+    
+    try {
+      if (_latitudeController.text.isNotEmpty) {
+        currentLatitude = double.parse(_latitudeController.text);
+      }
+      if (_longitudeController.text.isNotEmpty) {
+        currentLongitude = double.parse(_longitudeController.text);
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+    
+    final LocationData? result = await Navigator.pushNamed(
+      context,
+      '/location-picker',
+      arguments: {
+        'initialLatitude': currentLatitude,
+        'initialLongitude': currentLongitude,
+      },
+    ) as LocationData?;
+    
+    if (result != null) {
+      setState(() {
+        _latitudeController.text = result.latitude.toString();
+        _longitudeController.text = result.longitude.toString();
+        _locationPickedFromMap = true;
+      });
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã chọn vị trí từ bản đồ'),
+          backgroundColor: AppColors.primaryGreen,
+        ),
+      );
     }
   }
 
@@ -195,8 +239,50 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
               const SizedBox(height: 24),
               
               // Khu vực tọa độ
-              _buildSectionTitle('Tọa độ vị trí'),
+              Row(
+                children: [
+                  Expanded(child: _buildSectionTitle('Tọa độ vị trí')),
+                  ElevatedButton.icon(
+                    onPressed: _openLocationPicker,
+                    icon: const Icon(Icons.map, size: 18),
+                    label: const Text('Chọn trên bản đồ'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
+              
+              if (_locationPickedFromMap)
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Vị trí đã được chọn từ bản đồ',
+                          style: TextStyle(
+                            color: Colors.green[700],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              if (_locationPickedFromMap) const SizedBox(height: 16),
               
               // Vĩ độ (Latitude)
               CustomTextField(
