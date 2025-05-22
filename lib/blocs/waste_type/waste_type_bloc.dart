@@ -22,6 +22,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     on<UpdateWasteType>(_onUpdateWasteType);
     on<UpdateWasteTypeData>(_onUpdateWasteTypeData);
     on<LoadWasteTypesForCollectionPoint>(_onLoadWasteTypesForCollectionPoint);
+    on<AddWasteTypeToCollectionPoint>(_onAddWasteTypeToCollectionPoint);
   }
 
   Future<void> _onLoadWasteTypes(
@@ -316,6 +317,37 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       ));
     } catch (e) {
       emit(WasteTypeError('Không thể tải danh sách loại rác cho điểm thu gom: $e'));
+    }
+  }
+
+  Future<void> _onAddWasteTypeToCollectionPoint(
+    AddWasteTypeToCollectionPoint event,
+    Emitter<WasteTypeState> emit,
+  ) async {
+    try {
+      // Since linkCollectionPoint is already implemented, we can reuse it
+      // The API accepts the same parameters, just in a different order
+      final result = await repository.linkCollectionPoint(
+        event.wasteTypeId,
+        event.collectionPointId,
+      );
+      
+      if (result) {
+        emit(WasteTypeAddedToCollectionPoint(
+          wasteTypeId: event.wasteTypeId,
+          collectionPointId: event.collectionPointId,
+        ));
+        
+        // Reload the waste types for this collection point
+        add(LoadWasteTypesForCollectionPoint(
+          collectionPointId: event.collectionPointId,
+          collectionPointName: '', // This will be updated when loaded
+        ));
+      } else {
+        emit(WasteTypeError('Không thể thêm loại rác vào điểm thu gom'));
+      }
+    } catch (e) {
+      emit(WasteTypeError('Đã xảy ra lỗi khi thêm loại rác vào điểm thu gom: $e'));
     }
   }
 }

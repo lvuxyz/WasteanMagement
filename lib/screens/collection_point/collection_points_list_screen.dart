@@ -7,6 +7,7 @@ import '../../widgets/common/loading_view.dart';
 import '../../widgets/common/error_view.dart';
 import '../../repositories/collection_point_repository.dart';
 import '../../core/api/api_client.dart';
+import '../../blocs/admin/admin_cubit.dart';
 
 class CollectionPointsListScreen extends StatefulWidget {
   const CollectionPointsListScreen({Key? key}) : super(key: key);
@@ -376,28 +377,32 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   bottom: Radius.circular(16),
                 ),
               ),
-              child: TextButton.icon(
-                onPressed: () => _navigateToWasteTypes(context, collectionPoint),
-                icon: Icon(
-                  Icons.recycling,
-                  size: 16,
-                  color: Colors.blue,
-                ),
-                label: Text(
-                  'Xem loại rác được thu gom',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(16),
+              child: BlocBuilder<AdminCubit, bool>(
+                builder: (context, isAdmin) {
+                  return TextButton.icon(
+                    onPressed: () => _navigateToWasteTypes(context, collectionPoint),
+                    icon: Icon(
+                      isAdmin ? Icons.edit : Icons.recycling,
+                      size: 16,
+                      color: isAdmin ? AppColors.primaryGreen : Colors.blue,
                     ),
-                  ),
-                ),
+                    label: Text(
+                      isAdmin ? 'Quản lý loại rác thu gom' : 'Xem loại rác được thu gom',
+                      style: TextStyle(
+                        color: isAdmin ? AppColors.primaryGreen : Colors.blue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          bottom: Radius.circular(16),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
