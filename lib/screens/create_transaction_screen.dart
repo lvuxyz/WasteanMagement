@@ -44,24 +44,17 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   }
   
   void _loadData() {
-    // Fetch real data from repositories
-    final transactionBloc = context.read<TransactionBloc>();
-    transactionBloc.add(FetchCollectionPoints());
-    transactionBloc.add(FetchWasteTypes());
+    // TODO: Implement fetch of real collection points and waste types
+    // For now, we'll prepare empty lists until real data sources are ready
     
-    // Listen for updates in the bloc state
-    transactionBloc.stream.listen((state) {
-      if (state.collectionPoints.isNotEmpty && _collectionPoints.isEmpty) {
-        setState(() {
-          _collectionPoints = state.collectionPoints;
-        });
-      }
-      
-      if (state.wasteTypes.isNotEmpty && _wasteTypes.isEmpty) {
-        setState(() {
-          _wasteTypes = state.wasteTypes;
-        });
-      }
+    // The following code would be used when your TransactionBloc is updated:
+    // final transactionBloc = context.read<TransactionBloc>();
+    // transactionBloc.add(LoadCollectionPoints());
+    // transactionBloc.add(LoadWasteTypes());
+    
+    setState(() {
+      _collectionPoints = [];
+      _wasteTypes = [];
     });
   }
   
@@ -89,13 +82,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     });
     
     try {
-      // This is a placeholder for the actual image upload logic
-      String? imageUrl;
-      if (_imageFile != null) {
-        // In a real implementation, we would upload the image to a server and get a URL
-        imageUrl = 'https://example.com/image.jpg';
-      }
-      
       // Create the transaction
       context.read<TransactionBloc>().add(
         CreateTransaction(

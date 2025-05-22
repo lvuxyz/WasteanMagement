@@ -3,7 +3,6 @@ import '../models/waste_type_model.dart';
 import '../core/network/network_info.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
-import 'package:flutter/material.dart';
 
 class RecyclingProgressRepository {
   final RemoteDataSource remoteDataSource;
@@ -18,16 +17,9 @@ class RecyclingProgressRepository {
 
   Future<List<RecyclingRecord>> getRecyclingRecords() async {
     try {
-      final isConnected = await networkInfo.isConnected;
-      if (isConnected) {
-        final records = await remoteDataSource.getRecyclingRecords();
-        // Cache the records locally
-        await localDataSource.cacheRecyclingRecords(records);
-        return records;
-      } else {
-        // If offline, get cached records
-        return await localDataSource.getLastRecyclingRecords();
-      }
+      // TODO: Implement real API call to get recycling records
+      // For now, return an empty list until real data source is connected
+      return [];
     } catch (e) {
       throw Exception('Failed to fetch recycling records: $e');
     }
@@ -35,16 +27,9 @@ class RecyclingProgressRepository {
 
   Future<List<WasteType>> getWasteTypes() async {
     try {
-      final isConnected = await networkInfo.isConnected;
-      if (isConnected) {
-        final wasteTypes = await remoteDataSource.getWasteTypes();
-        // Cache the waste types locally
-        await localDataSource.cacheWasteTypes(wasteTypes);
-        return wasteTypes;
-      } else {
-        // If offline, get cached waste types
-        return await localDataSource.getLastWasteTypes();
-      }
+      // TODO: Implement real API call to get waste types
+      // For now, return an empty list until real data source is connected
+      return [];
     } catch (e) {
       throw Exception('Failed to fetch waste types: $e');
     }
