@@ -75,7 +75,7 @@ class WasteTypeItem extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            
+
                             // Recyclable badge
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -83,9 +83,9 @@ class WasteTypeItem extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: wasteType.recyclable 
-                                  ? Colors.green.withOpacity(0.1) 
-                                  : Colors.grey.withOpacity(0.1),
+                                color: wasteType.recyclable
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.grey.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -97,7 +97,7 @@ class WasteTypeItem extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            
+
                             // Price information
                             if (wasteType.unitPrice > 0)
                               Padding(
@@ -173,7 +173,48 @@ class WasteTypeItem extends StatelessWidget {
                 ],
               ),
             ),
-                ),                    // Action button if provided          if (actionButtonText != null && actionButtonIcon != null && onActionPressed != null)            Container(              width: double.infinity,              decoration: BoxDecoration(                color: actionButtonColor?.withOpacity(0.05) ?? Colors.blue.withOpacity(0.05),                borderRadius: BorderRadius.vertical(                  bottom: Radius.circular(12),                ),                border: Border(                  top: BorderSide(                    color: Colors.grey.withOpacity(0.2),                    width: 1,                  ),                ),              ),              child: TextButton.icon(                onPressed: onActionPressed,                icon: Icon(                  actionButtonIcon,                  size: 16,                  color: actionButtonColor ?? Colors.blue,                ),                label: Text(                  actionButtonText!,                  style: TextStyle(                    color: actionButtonColor ?? Colors.blue,                    fontWeight: FontWeight.w500,                  ),                ),                style: TextButton.styleFrom(                  padding: EdgeInsets.symmetric(vertical: 10),                  shape: RoundedRectangleBorder(                    borderRadius: BorderRadius.vertical(                      bottom: Radius.circular(12),                    ),                  ),                ),              ),            ),        ],
+          ),
+          
+          // Action button if provided
+          if (actionButtonText != null && actionButtonIcon != null && onActionPressed != null)
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: actionButtonColor?.withOpacity(0.05) ?? Colors.blue.withOpacity(0.05),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(12),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: TextButton.icon(
+                onPressed: onActionPressed,
+                icon: Icon(
+                  actionButtonIcon,
+                  size: 16,
+                  color: actionButtonColor ?? Colors.blue,
+                ),
+                label: Text(
+                  actionButtonText!,
+                  style: TextStyle(
+                    color: actionButtonColor ?? Colors.blue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -186,4 +227,4 @@ class WasteTypeItem extends StatelessWidget {
   Color _getTypeColor(bool recyclable) {
     return recyclable ? AppColors.primaryGreen : Colors.grey;
   }
-} 
+}

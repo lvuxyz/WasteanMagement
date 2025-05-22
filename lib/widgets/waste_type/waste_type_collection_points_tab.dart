@@ -30,7 +30,9 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final collectionPoint = collectionPoints[index];
         final capacityPercentage = 
-          ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt();
+          collectionPoint.capacity > 0 
+            ? ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt()
+            : 0;
 
         return _buildCollectionPointCard(collectionPoint, capacityPercentage, context);
       },
@@ -268,7 +270,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
-                        value: (point.currentLoad ?? 0) / point.capacity,
+                        value: point.capacity > 0 ? (point.currentLoad ?? 0) / point.capacity : 0,
                         backgroundColor: Colors.grey[200],
                         minHeight: 8,
                         valueColor: AlwaysStoppedAnimation<Color>(
