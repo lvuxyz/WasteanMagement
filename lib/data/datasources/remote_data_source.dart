@@ -4,6 +4,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/api_constants.dart';
 import '../../core/error/exceptions.dart';
 import '../../utils/secure_storage.dart';
+import '../../models/recycling_statistics_model.dart';
 
 class RemoteDataSource {
   final ApiClient apiClient;
@@ -248,6 +249,42 @@ class RemoteDataSource {
         throw ServerException('Đăng ký tài khoản thất bại: ${response.statusCode}');
       }
     } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  // Lấy thống kê tái chế
+  Future<RecyclingStatisticsData> getRecyclingStatistics({
+    required String fromDate,
+    required String toDate,
+    String? wasteTypeId,
+  }) async {
+    try {
+      String url = ApiConstants.recyclingStatistics;
+      url += '?from=$fromDate&to=$toDate';
+      if (wasteTypeId != null) {
+        url += '&wasteTypeId=$wasteTypeId';
+      }
+      
+      developer.log('Gọi API lấy thống kê tái chế: $url');
+      
+      final response = await apiClient.get(url);
+
+      if (response.isSuccess) {
+        final responseData = response.body;
+        developer.log('Phản hồi lấy thống kê tái chế: ${responseData.toString()}');
+        
+        if (responseData['status'] == 'success' && responseData['data'] != null) {
+          return RecyclingStatisticsData.fromJson(responseData['data']);
+        } else {
+          throw ServerException('Dữ liệu thống kê không hợp lệ');
+        }
+      } else {
+        throw ServerException('Lấy thống kê tái chế thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      developer.log('Lỗi khi lấy thống kê tái chế: ${e.toString()}', error: e);
+      if (e is UnauthorizedException) rethrow;
       throw ServerException(e.toString());
     }
   }

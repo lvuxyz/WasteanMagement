@@ -32,6 +32,7 @@ class ApiConstants {
   static String get transactions => '$baseUrl/transactions';
   static String get schedules => '$baseUrl/waste/schedules';
   static String get rewards => '$baseUrl/rewards';
+  static String get recyclingStatistics => '$baseUrl/recycling/statistics';
 
   // Endpoint mới phát hiện trong quá trình rà soát
   // Endpoint liên quan đến giao dịch
