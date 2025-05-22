@@ -12,9 +12,6 @@ class RecyclingProcess {
   final String? processedBy;
   final String? userId;
   final String? imageUrl;
-  final String? userName;
-  final String? userFullName;
-  final double? transactionQuantity;
 
   RecyclingProcess({
     required this.id,
@@ -30,9 +27,6 @@ class RecyclingProcess {
     this.processedBy,
     this.userId,
     this.imageUrl,
-    this.userName,
-    this.userFullName,
-    this.transactionQuantity,
   });
 
   factory RecyclingProcess.fromJson(Map<String, dynamic> json) {
@@ -56,11 +50,6 @@ class RecyclingProcess {
       processedBy: json['processed_by'],
       userId: json['user_id']?.toString(),
       imageUrl: json['image_url'],
-      userName: json['user_name'],
-      userFullName: json['user_full_name'],
-      transactionQuantity: json['transaction_quantity'] != null 
-          ? double.tryParse(json['transaction_quantity'].toString())
-          : null,
     );
   }
 
@@ -79,9 +68,6 @@ class RecyclingProcess {
       'processed_by': processedBy,
       'user_id': userId,
       'image_url': imageUrl,
-      'user_name': userName,
-      'user_full_name': userFullName,
-      'transaction_quantity': transactionQuantity,
     };
   }
 
@@ -99,9 +85,6 @@ class RecyclingProcess {
     String? processedBy,
     String? userId,
     String? imageUrl,
-    String? userName,
-    String? userFullName,
-    double? transactionQuantity,
   }) {
     return RecyclingProcess(
       id: id ?? this.id,
@@ -117,9 +100,6 @@ class RecyclingProcess {
       processedBy: processedBy ?? this.processedBy,
       userId: userId ?? this.userId,
       imageUrl: imageUrl ?? this.imageUrl,
-      userName: userName ?? this.userName,
-      userFullName: userFullName ?? this.userFullName,
-      transactionQuantity: transactionQuantity ?? this.transactionQuantity,
     );
   }
 
