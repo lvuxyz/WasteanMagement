@@ -20,8 +20,10 @@ class CollectionPointItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final capacityPercentage = 
-        ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt();
+    // Add safety checks to avoid division by zero or Infinity/NaN conversions
+    final capacityPercentage = collectionPoint.capacity > 0
+        ? ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt()
+        : 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
