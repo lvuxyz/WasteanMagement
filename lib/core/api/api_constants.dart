@@ -7,7 +7,7 @@ class ApiConstants {
 
   // URL cho các môi trường khác nhau
   static const String _emulatorBaseUrl = 'http://10.0.2.2:5000/api/v1'; // Localhost trên emulator
-  static const String _physicalDeviceBaseUrl = 'http://192.168.173.102:5000/api/v1'; // IP máy chủ trên mạng LAN
+  static const String _physicalDeviceBaseUrl = 'http://103.27.239.248:3000/api/v1'; // IP máy chủ trên mạng LAN
   //static const String _localhostBaseUrl = 'http://localhost:5000/api/v1'; // Localhost trực tiếp
 
   static String get baseUrl => useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
@@ -25,6 +25,7 @@ class ApiConstants {
   static String get profile => '$baseUrl/auth/me';
   static String get changePassword => '$baseUrl/users/change-password';
   static String get updateProfile => '$baseUrl/users/update-profile';
+  static String get users => '$baseUrl/auth/users';
 
   // Endpoint cho quản lý rác thải
   static String get wasteTypes => '$baseUrl/waste-types';

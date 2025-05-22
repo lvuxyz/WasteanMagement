@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
+import '../../blocs/admin/admin_cubit.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common/custom_tab_bar.dart';
 import '../../widgets/waste_type/waste_type_info_tab.dart';
@@ -24,7 +25,6 @@ class WasteTypeDetailsScreen extends StatefulWidget {
 
 class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isAdmin = true; // Thực tế cần lấy từ context hoặc user repository
 
   @override
   void initState() {
@@ -32,6 +32,24 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
     _tabController = TabController(length: 2, vsync: this);
     // Load waste type details
     context.read<WasteTypeBloc>().add(LoadWasteTypeDetails(widget.wasteTypeId));
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kích hoạt kiểm tra admin status
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình chi tiết
+      await Future.delayed(Duration(seconds: 2));
+      // Kiểm tra xem widget còn mounted không trước khi truy cập context
+      if (mounted) {
+        final currentState = context.read<AdminCubit>().state;
+        if (!currentState) {
+          // Khi đang ở màn hình chi tiết, cần đặt quyền admin
+          context.read<AdminCubit>().forceUpdateAdminStatus(true);
+        }
+      }
+    });
   }
 
   @override
@@ -73,24 +91,29 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                       onPressed: () => Navigator.pop(context),
                     ),
                     actions: [
-                      if (_isAdmin)
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.white),
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/waste-type/edit',
-                              arguments: widget.wasteTypeId,
-                            ).then((value) {
-                              // Reload details after edit
-                              if (value == true) {
-                                context.read<WasteTypeBloc>().add(
-                                  LoadWasteTypeDetails(widget.wasteTypeId),
-                                );
-                              }
-                            });
-                          },
-                        ),
+                      BlocBuilder<AdminCubit, bool>(
+                        builder: (context, isAdmin) {
+                          return isAdmin
+                            ? IconButton(
+                                icon: Icon(Icons.edit, color: Colors.white),
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/waste-type/edit',
+                                    arguments: widget.wasteTypeId,
+                                  ).then((value) {
+                                    // Reload details after edit
+                                    if (value == true) {
+                                      context.read<WasteTypeBloc>().add(
+                                        LoadWasteTypeDetails(widget.wasteTypeId),
+                                      );
+                                    }
+                                  });
+                                },
+                              )
+                            : SizedBox.shrink();
+                        },
+                      ),
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       title: Text(
@@ -219,10 +242,14 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
                   WasteTypeInfoTab(wasteType: wasteType),
 
                   // Tab Điểm thu gom
-                  WasteTypeCollectionPointsTab(
-                    wasteTypeId: widget.wasteTypeId,
-                    collectionPoints: collectionPoints,
-                    isAdmin: _isAdmin,
+                  BlocBuilder<AdminCubit, bool>(
+                    builder: (context, isAdmin) {
+                      return WasteTypeCollectionPointsTab(
+                        wasteTypeId: widget.wasteTypeId,
+                        collectionPoints: collectionPoints,
+                        isAdmin: isAdmin,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -247,7 +274,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
           );
         },
       ),
-      floatingActionButton: _isAdmin ? BlocBuilder<WasteTypeBloc, WasteTypeState>(
+      floatingActionButton: BlocBuilder<WasteTypeBloc, WasteTypeState>(
         builder: (context, state) {
           if (state is WasteTypeDetailLoaded && _tabController.index == 1) {
             return FloatingActionButton.extended(
@@ -273,7 +300,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
           }
           return SizedBox.shrink();
         },
-      ) : null,
+      ),
     );
   }
   

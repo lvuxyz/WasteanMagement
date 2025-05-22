@@ -3,10 +3,14 @@ import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
+import 'package:wasteanmagement/models/transaction.dart';
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository transactionRepository;
   final AuthService _authService = AuthService();
+
+  // ignore: avoid_print
+  void _log(String message) => print(message);
 
   TransactionBloc({required this.transactionRepository}) 
       : super(const TransactionState()) {
@@ -17,6 +21,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<UpdateTransactionStatus>(_onUpdateTransactionStatus);
     on<DeleteTransaction>(_onDeleteTransaction);
     on<SearchTransactions>(_onSearchTransactions);
+    on<UpdateTransaction>(_onUpdateTransaction);
+    on<FetchTransactionHistory>(_onFetchTransactionHistory);
   }
 
   Future<void> _onFetchTransactions(
@@ -34,6 +40,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         page: event.page,
         limit: event.limit,
         status: event.status,
+        isAdmin: event.isAdmin,
       );
 
       if (!response.success) {
@@ -53,7 +60,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         totalPages: response.pagination.pages,
       ));
     } catch (e) {
-      print('Error fetching transactions: $e');
+      _log('Error fetching transactions: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -99,7 +106,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         totalPages: response.pagination.pages,
       ));
     } catch (e) {
-      print('Error fetching my transactions: $e');
+      _log('Error fetching my transactions: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -114,12 +121,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(const TransactionState(status: TransactionStatus.loading));
     
     try {
+      // Lấy token để kiểm tra
+      final token = await _authService.getToken();
+      _log('RefreshTransactions - checking token: ${token != null ? "Token found" : "No token"}');
+      
       final isAdmin = await _authService.isAdmin();
-      print('RefreshTransactions - User is admin: $isAdmin');
+      _log('RefreshTransactions - User is admin: $isAdmin');
       
       if (isAdmin) {
-        print('Fetching all transactions as admin');
-        final response = await transactionRepository.getTransactions(page: 1, limit: 10);
+        _log('Fetching all transactions as admin with admin API endpoint');
+        final response = await transactionRepository.getTransactions(
+          page: 1, 
+          limit: 10,
+          isAdmin: true, // Đảm bảo đặt cờ isAdmin=true
+        );
         
         if (!response.success) {
           throw Exception(response.message);
@@ -133,7 +148,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           totalPages: response.pagination.pages,
         ));
       } else {
-        print('Fetching my transactions as regular user');
+        _log('Fetching my transactions as regular user with my-transactions endpoint');
         final response = await transactionRepository.getMyTransactions(page: 1, limit: 10);
         
         if (!response.success) {
@@ -149,7 +164,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         ));
       }
     } catch (e) {
-      print('Error refreshing transactions: $e');
+      _log('Error refreshing transactions: $e');
       emit(TransactionState(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -179,7 +194,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       // After creating, refresh the list
       add(RefreshTransactions());
     } catch (e) {
-      print('Error creating transaction: $e');
+      _log('Error creating transaction: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -207,7 +222,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       // After updating successfully, refresh the list to get the latest data
       add(RefreshTransactions());
     } catch (e) {
-      print('Error updating transaction status: $e');
+      _log('Error updating transaction status: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -232,7 +247,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       // After deleting successfully, refresh the list to get the latest data
       add(RefreshTransactions());
     } catch (e) {
-      print('Error deleting transaction: $e');
+      _log('Error deleting transaction: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
@@ -251,10 +266,77 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       // For now, just refresh transactions
       add(RefreshTransactions());
     } catch (e) {
-      print('Error searching transactions: $e');
+      _log('Error searching transactions: $e');
       emit(state.copyWith(
         status: TransactionStatus.failure,
         errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onUpdateTransaction(
+    UpdateTransaction event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // Call the actual API endpoint
+      final result = await transactionRepository.updateTransaction(
+        transactionId: event.transactionId,
+        collectionPointId: event.collectionPointId,
+        wasteTypeId: event.wasteTypeId,
+        quantity: event.quantity,
+        unit: event.unit,
+        proofImageUrl: event.proofImageUrl,
+      );
+
+      if (!result['success']) {
+        throw Exception(result['message']);
+      }
+
+      // After updating successfully, refresh the list to get the latest data
+      add(RefreshTransactions());
+    } catch (e) {
+      _log('Error updating transaction: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onFetchTransactionHistory(
+    FetchTransactionHistory event,
+    Emitter<TransactionState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: TransactionStatus.loading));
+
+      // Call the repository to get transaction history
+      final result = await transactionRepository.getTransactionHistory(
+        event.transactionId,
+      );
+
+      List<TransactionHistory> history = [];
+      
+      if (result['success'] && result['data'] != null) {
+        final historyData = result['data'] as List<dynamic>;
+        history = historyData
+            .map((item) => TransactionHistory.fromJson(item))
+            .toList();
+      }
+
+      emit(state.copyWith(
+        status: TransactionStatus.success,
+        transactionHistory: history,
+      ));
+    } catch (e) {
+      _log('Error fetching transaction history: $e');
+      emit(state.copyWith(
+        status: TransactionStatus.failure,
+        errorMessage: e.toString(),
+        transactionHistory: [], // Provide an empty list on error
       ));
     }
   }

@@ -10,6 +10,11 @@ class UserRepository {
   final RemoteDataSource remoteDataSource;
   final LocalDataSource localDataSource;
   final NetworkInfo networkInfo;
+  
+  // Add cache variables
+  User? _cachedUser;
+  DateTime? _lastFetchTime;
+  static const int _cacheDurationSeconds = 10; // Cache for 10 seconds
 
   UserRepository({
     required this.remoteDataSource,
@@ -121,6 +126,18 @@ class UserRepository {
   Future<User> getUserProfile() async {
     try {
       developer.log('Bắt đầu lấy thông tin hồ sơ người dùng');
+      
+      // Check if we have a valid cache
+      final now = DateTime.now();
+      if (_cachedUser != null && _lastFetchTime != null) {
+        final cacheDuration = now.difference(_lastFetchTime!);
+        if (cacheDuration.inSeconds < _cacheDurationSeconds) {
+          developer.log('Sử dụng thông tin người dùng từ cache nội bộ (tuổi cache: ${cacheDuration.inSeconds}s)');
+          return _cachedUser!;
+        }
+      }
+      
+      developer.log('Lấy dữ liệu người dùng mới');
 
       // Kiểm tra kết nối
       if (await networkInfo.isConnected) {
@@ -133,6 +150,7 @@ class UserRepository {
             final cachedUser = await localDataSource.getCachedUserProfile();
             if (cachedUser != null) {
               developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
+              _updateCache(cachedUser);
               return cachedUser;
             }
             throw UnauthorizedException('Người dùng chưa đăng nhập');
@@ -140,16 +158,81 @@ class UserRepository {
 
           developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');
           try {
-            final userData = await remoteDataSource.getUserProfile();
-            developer.log('Dữ liệu người dùng nhận được: $userData');
+            final response = await remoteDataSource.getUserProfile();
+            developer.log('Dữ liệu người dùng nhận được: $response');
             
-            final user = User.fromJson(userData);
+            // Add detailed logging for roles
+            if (response is Map<String, dynamic>) {
+              developer.log('Raw roles data in response: ${response['roles']}');
+              
+              if (response.containsKey('basic_info') && response['basic_info'] != null) {
+                developer.log('Raw roles data in basic_info: ${response['basic_info']['roles']}');
+              }
+            }
+            
+            // Check if we have the new response format with 'success' and 'data' fields
+            if (response is Map<String, dynamic> && response.containsKey('success') && response.containsKey('data')) {
+              if (response['success'] && response['data'] != null) {
+                // For new profile format, just return the raw data to be processed by ProfileBloc
+                // We'll create a minimal User object to satisfy the return type
+                final basicInfo = response['data']['basic_info'] ?? {};
+                print('[DEBUG] Raw profile data from API: ${response['data']}');
+                
+                // Kiểm tra và xử lý trường roles
+                List<String> roles = [];
+                if (basicInfo['roles'] != null) {
+                  if (basicInfo['roles'] is List) {
+                    roles = List<String>.from(basicInfo['roles']);
+                  } else if (basicInfo['roles'] is String) {
+                    // Nếu roles là string, chuyển thành list
+                    roles = [basicInfo['roles']];
+                  }
+                } else if (response['data']['roles'] != null) {
+                  // Thử lấy roles từ cấp cao hơn nếu có
+                  if (response['data']['roles'] is List) {
+                    roles = List<String>.from(response['data']['roles']);
+                  } else if (response['data']['roles'] is String) {
+                    roles = [response['data']['roles']];
+                  }
+                }
+                
+                // Nếu vẫn không có roles, mặc định thêm role USER
+                if (roles.isEmpty) {
+                  roles = ['USER'];
+                  print('[DEBUG] Using default role: USER as no roles were found in API response');
+                }
+                
+                print('[DEBUG] Roles after processing: $roles');
+                
+                final user = User(
+                  id: basicInfo['id'] ?? 0,
+                  username: basicInfo['username'] ?? '',
+                  fullName: basicInfo['full_name'] ?? '',
+                  email: basicInfo['email'] ?? '',
+                  phone: basicInfo['phone'] ?? '',
+                  address: basicInfo['address'] ?? '',
+                  roles: roles,
+                  rawProfileData: response['data'], // Store the raw profile data for later use
+                );
+                
+                print('[DEBUG] Created User object with rawProfileData available');
+                print('[DEBUG] Transaction stats in raw data: ${user.rawProfileData?['transaction_stats']}');
+                
+                await localDataSource.cacheUserProfile(user);
+                developer.log('Đã lấy và cập nhật thông tin người dùng mới: ${user.fullName}');
+                _updateCache(user);
+                return user;
+              }
+            }
+            
+            // Fallback to old format
+            final user = User.fromJson(response);
             developer.log('Đã chuyển đổi dữ liệu thành đối tượng User: ${user.fullName}');
 
             // Cập nhật cache
             await localDataSource.cacheUserProfile(user);
             developer.log('Đã lấy và cập nhật thông tin người dùng: ${user.fullName}');
-
+            _updateCache(user);
             return user;
           } catch (apiError) {
             developer.log('Lỗi khi gọi API lấy thông tin người dùng: ${apiError.toString()}', error: apiError);
@@ -315,5 +398,12 @@ class UserRepository {
   // Hàm tiện ích
   int min(int a, int b) {
     return a < b ? a : b;
+  }
+
+  // Helper method to update internal cache
+  void _updateCache(User user) {
+    _cachedUser = user;
+    _lastFetchTime = DateTime.now();
+    developer.log('Đã cập nhật cache nội bộ người dùng');
   }
 }

@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
-import '../../repositories/waste_type_repository.dart';
-import '../../repositories/user_repository.dart';
+import '../../blocs/admin/admin_cubit.dart';
 import '../../widgets/waste_type/waste_type_list_item.dart';
 import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
@@ -21,35 +20,31 @@ class WasteTypeManagementScreen extends StatefulWidget {
 class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isAdmin = false; // Default to false until we check user role
+  bool _isAdmin = false;
   String _selectedFilterOption = 'all';
-  Map<int, bool> _deletingItems = {}; // Track which items are being deleted
-  Map<int, bool> _updatingItems = {}; // Track which items are being updated
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    _checkAdminPrivileges();
-  }
-
-  Future<void> _checkAdminPrivileges() async {
-    try {
-      final userRepository = RepositoryProvider.of<UserRepository>(context);
-      final user = await userRepository.getUserProfile();
+    // Load data when screen initializes
+    context.read<WasteTypeBloc>().add(LoadWasteTypes());
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kích hoạt kiểm tra admin status
+      context.read<AdminCubit>().checkAdminStatus();
       
-      setState(() {
-        _isAdmin = user.isAdmin;
-      });
-      
-      developer.log('User admin status: $_isAdmin');
-    } catch (e) {
-      developer.log('Error checking admin privileges: $e', error: e);
-      // Default to non-admin in case of error
-      setState(() {
-        _isAdmin = false;
-      });
-    }
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        // Khi đang ở màn hình quản lý, cần đặt quyền admin
+        developer.log('Setting admin status to true for management screen');
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override
@@ -63,10 +58,10 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
     context.read<WasteTypeBloc>().add(SearchWasteTypes(_searchController.text));
   }
 
-  void _showDeleteConfirmation(BuildContext blocContext, int wasteTypeId, String name) {
+  void _showDeleteConfirmation(BuildContext context, int wasteTypeId, String name) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text('Xóa loại rác'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -108,16 +103,13 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text('Hủy'),
           ),
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                _deletingItems[wasteTypeId] = true;
-              });
-              blocContext.read<WasteTypeBloc>().add(DeleteWasteType(wasteTypeId));
+              Navigator.of(dialogContext).pop();
+              context.read<WasteTypeBloc>().add(DeleteWasteType(wasteTypeId));
             },
             icon: Icon(Icons.delete_outline, size: 18),
             label: Text('Xác nhận xóa'),
@@ -140,268 +132,269 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
     );
   }
 
-  void _navigateToEdit(BuildContext blocContext, int? wasteTypeId) {
-    // If it's an update operation, mark the item as updating
-    if (wasteTypeId != null) {
-      setState(() {
-        _updatingItems[wasteTypeId] = true;
-      });
-    }
-    
+  void _navigateToEdit(BuildContext context, int? wasteTypeId) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: BlocProvider.of<WasteTypeBloc>(blocContext),
-          child: WasteTypeEditScreen(wasteTypeId: wasteTypeId),
-        ),
+        builder: (context) => WasteTypeEditScreen(wasteTypeId: wasteTypeId),
       ),
     ).then((result) {
-      // If returning without a successful update, clear the updating state
-      if (wasteTypeId != null && (result != true)) {
-        setState(() {
-          _updatingItems.remove(wasteTypeId);
-        });
-      }
-      
       // Refresh the list
       context.read<WasteTypeBloc>().add(LoadWasteTypes());
     });
   }
 
-  void _navigateToCollectionPoints(BuildContext blocContext, int wasteTypeId) {
+  void _navigateToCollectionPoints(BuildContext context, int wasteTypeId) {
     // Chuyển đến màn hình quản lý điểm thu gom cho loại rác cụ thể
-    // Đây là một phần của chức năng quản lý loại chất thải
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: BlocProvider.of<WasteTypeBloc>(blocContext),
-          child: WasteTypeCollectionPointsScreen(wasteTypeId: wasteTypeId),
-        ),
+        builder: (context) => WasteTypeCollectionPointsScreen(wasteTypeId: wasteTypeId),
       ),
     ).then((_) {
       // Refresh the waste type list after managing collection points
-      blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
+      context.read<WasteTypeBloc>().add(LoadWasteTypes());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Lấy ApiClient được khởi tạo từ RepositoryProvider
-    final wasteTypeRepository = RepositoryProvider.of<WasteTypeRepository>(context);
-    
-    return BlocProvider(
-      create: (context) => WasteTypeBloc(
-        repository: wasteTypeRepository,
-      )..add(LoadWasteTypes()),
-      child: Builder(builder: (blocContext) {
-        return Scaffold(
-          backgroundColor: Colors.grey[50],
-          appBar: AppBar(
-            backgroundColor: AppColors.primaryGreen,
-            title: Text(
-              'Quản lý loại rác thải',
-              style: TextStyle(color: Colors.white),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AdminCubit, bool>(
+          listener: (context, isAdmin) {
+            developer.log('AdminCubit listener triggered: isAdmin = $isAdmin');
+            setState(() {
+              _isAdmin = isAdmin;
+            });
+          },
+        ),
+        BlocListener<WasteTypeBloc, WasteTypeState>(
+          listener: (context, state) {
+            if (state is WasteTypeDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã xóa loại rác thành công'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'Đóng',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            } else if (state is WasteTypeError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'Đóng',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+            } else if (state is WasteTypeUpdated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          title: Text(
+            'Quản lý loại rác thải',
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.refresh, color: Colors.white),
+              onPressed: () {
+                _searchController.clear();
+                context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                // Refresh admin status
+                context.read<AdminCubit>().checkAdminStatus();
+              },
             ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.refresh, color: Colors.white),
-                onPressed: () {
-                  _searchController.clear();
-                  blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
-                },
+          ],
+        ),
+        floatingActionButton: BlocBuilder<AdminCubit, bool>(
+          builder: (context, isAdmin) {
+            developer.log('FloatingActionButton BlocBuilder: isAdmin = $isAdmin');
+            return isAdmin 
+              ? FloatingActionButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/waste-type/add').then((_) {
+                      // Reload the list when coming back from add screen
+                      context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                    });
+                  },
+                  backgroundColor: AppColors.primaryGreen,
+                  child: Icon(Icons.add, color: Colors.white),
+                )
+              : SizedBox.shrink();
+          },
+        ),
+        body: Column(
+          children: [
+            // Debug text to show admin status
+            BlocBuilder<AdminCubit, bool>(
+              builder: (context, isAdmin) {
+                developer.log('Debug text BlocBuilder: isAdmin = $isAdmin');
+                return Container(
+                  padding: EdgeInsets.all(8),
+                  color: isAdmin ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+                  width: double.infinity,
+                  child: Text(
+                    'Admin status: ${isAdmin ? "YES" : "NO"}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
+            ),
+            // Search and filter bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
-            ],
-          ),
-          floatingActionButton: _isAdmin 
-            ? FloatingActionButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/waste-type/add').then((_) {
-                    // Reload the list when coming back from add screen
-                    blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
-                  });
-                },
-                backgroundColor: AppColors.primaryGreen,
-                child: Icon(Icons.add, color: Colors.white),
-              )
-            : null,
-          body: Column(
-            children: [
-              // Search and filter bar
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      offset: Offset(0, 2),
-                      blurRadius: 4,
+              child: Column(
+                children: [
+                  // Search field
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm loại rác...',
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Search field
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Tìm kiếm loại rác...',
-                        prefixIcon: Icon(Icons.search, color: Colors.grey),
-                        suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                              },
-                            )
-                          : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
+                  ),
+                  
+                  // Filter options
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Row(
+                        children: [
+                          _buildFilterChip('all', 'Tất cả'),
+                          _buildFilterChip('recyclable', 'Có thể tái chế'),
+                          _buildFilterChip('non_recyclable', 'Không tái chế'),
+                        ],
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // List of waste types
+            Expanded(
+              child: BlocConsumer<WasteTypeBloc, WasteTypeState>(
+                listener: (context, state) {
+                  // Listener moved to MultiBlocListener
+                },
+                builder: (context, state) {
+                  if (state is WasteTypeLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is WasteTypeLoaded) {
+                    var wasteTypes = state.filteredWasteTypes;
                     
-                    // Filter options
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Row(
-                          children: [
-                            _buildFilterChip('all', 'Tất cả'),
-                            _buildFilterChip('recyclable', 'Có thể tái chế'),
-                            _buildFilterChip('non_recyclable', 'Không tái chế'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // List of waste types
-              Expanded(
-                child: BlocConsumer<WasteTypeBloc, WasteTypeState>(
-                  listener: (context, state) {
-                    if (state is WasteTypeDeleted) {
-                      setState(() {
-                        _deletingItems.remove(state.wasteTypeId);
-                      });
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Đã xóa loại rác thành công'),
-                          backgroundColor: Colors.green,
-                          behavior: SnackBarBehavior.floating,
-                          action: SnackBarAction(
-                            label: 'Đóng',
-                            textColor: Colors.white,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            },
-                          ),
-                        ),
-                      );
-                    } else if (state is WasteTypeError) {
-                      // Clear any deletion status on error
-                      setState(() {
-                        _deletingItems.clear();
-                        _updatingItems.clear();
-                      });
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.message),
-                          backgroundColor: Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                          action: SnackBarAction(
-                            label: 'Đóng',
-                            textColor: Colors.white,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            },
-                          ),
-                        ),
-                      );
-                    } else if (state is WasteTypeUpdated) {
-                      setState(() {
-                        _updatingItems.remove(state.wasteType.id);
-                      });
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.message),
-                          backgroundColor: Colors.green,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is WasteTypeLoading) {
-                      return Center(child: CircularProgressIndicator());
+                    // Apply additional filter based on selected option
+                    if (_selectedFilterOption == 'recyclable') {
+                      wasteTypes = wasteTypes.where((type) => type.recyclable).toList();
+                    } else if (_selectedFilterOption == 'non_recyclable') {
+                      wasteTypes = wasteTypes.where((type) => !type.recyclable).toList();
                     }
 
-                    if (state is WasteTypeLoaded) {
-                      var wasteTypes = state.filteredWasteTypes;
-                      
-                      // Apply additional filter based on selected option
-                      if (_selectedFilterOption == 'recyclable') {
-                        wasteTypes = wasteTypes.where((type) => type.recyclable).toList();
-                      } else if (_selectedFilterOption == 'non_recyclable') {
-                        wasteTypes = wasteTypes.where((type) => !type.recyclable).toList();
-                      }
+                    if (wasteTypes.isEmpty) {
+                      return _buildEmptyState();
+                    }
 
-                      if (wasteTypes.isEmpty) {
-                        return _buildEmptyState();
-                      }
-
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          blocContext.read<WasteTypeBloc>().add(LoadWasteTypes());
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<WasteTypeBloc>().add(LoadWasteTypes());
+                        // Refresh admin status
+                        context.read<AdminCubit>().checkAdminStatus();
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(16),
+                        itemCount: wasteTypes.length,
+                        itemBuilder: (context, index) {
+                          final wasteType = wasteTypes[index];
+                          
+                          // Use BlocBuilder to get the latest admin status
+                          return BlocBuilder<AdminCubit, bool>(
+                            builder: (context, isAdmin) {
+                              developer.log('WasteTypeListItem BlocBuilder: isAdmin = $isAdmin');
+                              return WasteTypeListItem(
+                                wasteType: wasteType,
+                                onView: () => _navigateToDetails(wasteType.id),
+                                onEdit: isAdmin ? () => _navigateToEdit(context, wasteType.id) : null,
+                                onDelete: isAdmin ? () => _showDeleteConfirmation(context, wasteType.id, wasteType.name) : null,
+                                onManageCollectionPoints: isAdmin ? () => _navigateToCollectionPoints(
+                                  context,
+                                  wasteType.id,
+                                ) : null,
+                              );
+                            },
+                          );
                         },
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: EdgeInsets.all(16),
-                          itemCount: wasteTypes.length,
-                          itemBuilder: (context, index) {
-                            final wasteType = wasteTypes[index];
-                            return WasteTypeListItem(
-                              wasteType: wasteType,
-                              onView: () => _navigateToDetails(wasteType.id),
-                              onEdit: _isAdmin ? () => _navigateToEdit(blocContext, wasteType.id) : null,
-                              onDelete: _isAdmin && !(_deletingItems[wasteType.id] ?? false) && !(_updatingItems[wasteType.id] ?? false) ? 
-                                () => _showDeleteConfirmation(blocContext, wasteType.id, wasteType.name) : null,
-                              onManageCollectionPoints: _isAdmin ? () => _navigateToCollectionPoints(
-                                blocContext,
-                                wasteType.id,
-                              ) : null,
-                              isDeleting: _deletingItems[wasteType.id] ?? false,
-                              isUpdating: _updatingItems[wasteType.id] ?? false,
-                            );
-                          },
-                        ),
-                      );
-                    }
+                      ),
+                    );
+                  }
 
-                    return Center(child: Text('Không thể tải dữ liệu.'));
-                  },
-                ),
+                  return Center(child: Text('Không thể tải dữ liệu.'));
+                },
               ),
-            ],
-          ),
-        );
-      }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

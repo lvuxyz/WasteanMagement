@@ -11,7 +11,35 @@ abstract class WasteTypeState extends Equatable {
 
 class WasteTypeInitial extends WasteTypeState {}
 
-class WasteTypeLoading extends WasteTypeState {}
+class WasteTypeLoading extends WasteTypeState {
+  final bool isDeleting;
+  final int? deletingId;
+  final bool isUpdating;
+  final int? updatingId;
+  final bool isCreating;
+
+  const WasteTypeLoading({
+    this.isDeleting = false,
+    this.deletingId,
+    this.isUpdating = false,
+    this.updatingId,
+    this.isCreating = false,
+  });
+
+  @override
+  List<Object?> get props => [isDeleting, deletingId, isUpdating, updatingId, isCreating];
+}
+
+class CollectionPointsLoading extends WasteTypeState {}
+
+class CollectionPointsError extends WasteTypeState {
+  final String message;
+  
+  const CollectionPointsError(this.message);
+  
+  @override
+  List<Object> get props => [message];
+}
 
 class WasteTypeLoaded extends WasteTypeState {
   final List<WasteType> wasteTypes;
@@ -61,6 +89,32 @@ class WasteTypeDetailLoaded extends WasteTypeState {
 
   @override
   List<Object?> get props => [wasteType, collectionPoints, allCollectionPoints];
+}
+
+class WasteTypeCreated extends WasteTypeState {
+  final WasteType wasteType;
+  final String message;
+
+  const WasteTypeCreated({
+    required this.wasteType,
+    this.message = 'Đã tạo loại rác thành công',
+  });
+
+  @override
+  List<Object?> get props => [wasteType, message];
+}
+
+class WasteTypeUpdated extends WasteTypeState {
+  final WasteType wasteType;
+  final String message;
+
+  const WasteTypeUpdated({
+    required this.wasteType,
+    this.message = 'Đã cập nhật loại rác thành công',
+  });
+
+  @override
+  List<Object?> get props => [wasteType, message];
 }
 
 class WasteTypeDeleted extends WasteTypeState {
@@ -161,32 +215,6 @@ class WasteTypeCollectionPointsLoaded extends WasteTypeState {
   }
 }
 
-class WasteTypeCreated extends WasteTypeState {
-  final WasteType wasteType;
-  final String message;
-
-  const WasteTypeCreated({
-    required this.wasteType,
-    this.message = 'Loại rác đã được tạo thành công',
-  });
-
-  @override
-  List<Object?> get props => [wasteType, message];
-}
-
-class WasteTypeUpdated extends WasteTypeState {
-  final WasteType wasteType;
-  final String message;
-
-  const WasteTypeUpdated({
-    required this.wasteType,
-    this.message = 'Loại rác đã được cập nhật thành công',
-  });
-
-  @override
-  List<Object?> get props => [wasteType, message];
-}
-
 class WasteTypesForCollectionPointLoaded extends WasteTypeState {
   final int collectionPointId;
   final String collectionPointName;
@@ -199,5 +227,5 @@ class WasteTypesForCollectionPointLoaded extends WasteTypeState {
   });
 
   @override
-  List<Object?> get props => [collectionPointId, wasteTypes];
+  List<Object?> get props => [collectionPointId, collectionPointName, wasteTypes];
 }

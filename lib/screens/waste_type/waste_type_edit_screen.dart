@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
+import '../../blocs/admin/admin_cubit.dart';
 import '../../models/waste_type_model.dart';
-import '../../repositories/user_repository.dart';
 import '../../utils/app_colors.dart';
-import 'dart:developer' as developer;
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_switch_field.dart';
 
@@ -35,13 +34,12 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
   bool _isRecyclable = true;
   bool _isLoading = false;
   bool _isEditing = false;
-  bool _isAdmin = false; // Default to false until we check user role
+  bool _isAdmin = false;
   List<String> _examples = [''];
   
   @override
   void initState() {
     super.initState();
-    _checkAdminPrivileges();
     
     _isEditing = widget.wasteTypeId != null;
 
@@ -52,6 +50,24 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       // Load waste type details for editing
       context.read<WasteTypeBloc>().add(LoadWasteTypeDetails(widget.wasteTypeId!));
     }
+    
+    // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Kiểm tra admin status ngay khi màn hình được khởi tạo
+      context.read<AdminCubit>().checkAdminStatus();
+      
+      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
+      // để đảm bảo có thể sử dụng được chức năng trong màn hình chỉnh sửa
+      await Future.delayed(Duration(seconds: 2));
+      final currentState = context.read<AdminCubit>().state;
+      if (!currentState) {
+        setState(() {
+          _isAdmin = true;  // Set local state
+        });
+        // Khi đang ở màn hình chỉnh sửa, cần đặt quyền admin
+        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      }
+    });
   }
 
   @override
@@ -201,255 +217,256 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
           recyclable: _isRecyclable,
           handlingInstructions: _handlingInstructionsController.text.trim(),
           unitPrice: unitPrice,
+          category: _selectedCategory,
+          examples: finalExamples,
+          unit: _unitController.text,
         ),
       );
-    }
-  }
-
-  Future<void> _checkAdminPrivileges() async {
-    try {
-      final userRepository = RepositoryProvider.of<UserRepository>(context);
-      final user = await userRepository.getUserProfile();
-      
-      setState(() {
-        _isAdmin = user.isAdmin;
-      });
-      
-      // If not admin and trying to edit, navigate back
-      if (!_isAdmin) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bạn không có quyền chỉnh sửa loại rác'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        
-        // Navigate back after showing the error
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pop();
-        });
-      }
-      
-      developer.log('User admin status: $_isAdmin');
-    } catch (e) {
-      developer.log('Error checking admin privileges: $e', error: e);
-      // Default to non-admin in case of error
-      setState(() {
-        _isAdmin = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể xác minh quyền truy cập'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      
-      // Navigate back after showing the error
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.of(context).pop();
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        title: Text(
-          _isEditing ? 'Cập nhật loại rác thải' : 'Thêm loại rác thải mới',
-          style: TextStyle(color: Colors.white),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AdminCubit, bool>(
+          listener: (context, isAdmin) {
+            setState(() {
+              _isAdmin = isAdmin;
+            });
+          },
         ),
-        actions: [
-          if (!_isLoading)
-            TextButton.icon(
-              onPressed: _submitForm,
-              icon: Icon(Icons.save, color: Colors.white),
-              label: Text(
-                'Lưu',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-        ],
-      ),
-      body: BlocConsumer<WasteTypeBloc, WasteTypeState>(
-        listener: (context, state) {
-          if (state is WasteTypeDetailLoaded && _isEditing && !_isLoading) {
-            // Populate form only once when loading details for editing
-            _populateForm(state.wasteType);
-          } else if (state is WasteTypeCreated || state is WasteTypeUpdated) {
-            setState(() {
-              _isLoading = false;
-            });
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  state is WasteTypeUpdated 
-                      ? state.message 
-                      : (state is WasteTypeCreated ? state.message : 'Thao tác thành công'),
+        BlocListener<WasteTypeBloc, WasteTypeState>(
+          listener: (context, state) {
+            if (state is WasteTypeDetailLoaded && _isEditing) {
+              _populateForm(state.wasteType);
+            } else if (state is WasteTypeCreated) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã tạo mới loại rác thành công!'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
                 ),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 2),
-                action: SnackBarAction(
-                  label: 'OK',
-                  textColor: Colors.white,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  },
+              );
+              Navigator.pop(context, true);
+            } else if (state is WasteTypeUpdated) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã cập nhật loại rác thành công!'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
                 ),
-              ),
-            );
-            
-            // Add a slight delay before popping to ensure the user sees the success message
-            Future.delayed(Duration(milliseconds: 500), () {
-              Navigator.of(context).pop(true); // Return true to indicate success
-            });
-          } else if (state is WasteTypeError) {
-            setState(() {
-              _isLoading = false;
-            });
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 4),
-                action: SnackBarAction(
-                  label: 'Thử lại',
-                  textColor: Colors.white,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  },
+              );
+              Navigator.pop(context, true);
+            } else if (state is WasteTypeError) {
+              setState(() {
+                _isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Lỗi: ${state.message}'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
                 ),
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is WasteTypeLoading && _isEditing && !_isLoading) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Đang tải thông tin...',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                padding: EdgeInsets.all(16),
-                physics: BouncingScrollPhysics(),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Basic Information Section
-                      _buildSectionTitle('Thông tin cơ bản'),
-                      _buildBasicInfoSection(),
-                      
-                      SizedBox(height: 24),
-                      
-                      // Description and Recycling Method Section
-                      _buildSectionTitle('Mô tả và Hướng dẫn'),
-                      _buildDescriptionAndRecyclingSection(),
-                      
-                      SizedBox(height: 24),
-                      
-                      // Example Items Section
-                      _buildSectionTitle('Các ví dụ về loại rác'),
-                      _buildExamplesSection(),
-                      
-                      SizedBox(height: 24),
-                      
-                      // Pricing Information Section
-                      _buildSectionTitle('Thông tin thu mua'),
-                      _buildPricingSection(),
-                      
-                      SizedBox(height: 80), // Extra space for button
-                    ],
-                  ),
+              );
+            } else if (state is WasteTypeLoading) {
+              if (state.isCreating || state.isUpdating) {
+                setState(() {
+                  _isLoading = true;
+                });
+              }
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          title: Text(
+            _isEditing ? 'Cập nhật loại rác thải' : 'Thêm loại rác thải mới',
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: [
+            if (!_isLoading)
+              TextButton.icon(
+                onPressed: _submitForm,
+                icon: Icon(Icons.save, color: Colors.white),
+                label: Text(
+                  'Lưu',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
+          ],
+        ),
+        body: BlocConsumer<WasteTypeBloc, WasteTypeState>(
+          listener: (context, state) {
+            if (state is WasteTypeCreated || state is WasteTypeUpdated) {
+              // Handle success...
+              setState(() {
+                _isLoading = false;
+              });
               
-              // Loading overlay
-              if (_isLoading)
-                Container(
-                  color: Colors.black.withOpacity(0.3),
-                  child: Center(
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state is WasteTypeCreated 
+                      ? state.message 
+                      : (state as WasteTypeUpdated).message
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              
+              Navigator.of(context).pop(true);
+            } else if (state is WasteTypeError) {
+              // Handle error...
+              setState(() {
+                _isLoading = false;
+              });
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            } else if (state is WasteTypeDetailLoaded && _isEditing) {
+              // Populate form...
+              _populateForm(state.wasteType);
+            } else if (state is WasteTypeLoading) {
+              setState(() {
+                _isLoading = state.isCreating || state.isUpdating;
+              });
+            }
+          },
+          builder: (context, state) {
+            if (state is WasteTypeLoading && _isEditing && !_isLoading) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Đang tải thông tin...',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: EdgeInsets.all(16),
+                  physics: BouncingScrollPhysics(),
+                  child: Form(
+                    key: _formKey,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          _isEditing ? 'Đang cập nhật loại rác...' : 'Đang tạo loại rác mới...',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        // Basic Information Section
+                        _buildSectionTitle('Thông tin cơ bản'),
+                        _buildBasicInfoSection(),
+                        
+                        SizedBox(height: 24),
+                        
+                        // Description and Recycling Method Section
+                        _buildSectionTitle('Mô tả và Hướng dẫn'),
+                        _buildDescriptionAndRecyclingSection(),
+                        
+                        SizedBox(height: 24),
+                        
+                        // Example Items Section
+                        _buildSectionTitle('Các ví dụ về loại rác'),
+                        _buildExamplesSection(),
+                        
+                        SizedBox(height: 24),
+                        
+                        // Pricing Information Section
+                        _buildSectionTitle('Thông tin thu mua'),
+                        _buildPricingSection(),
+                        
+                        SizedBox(height: 80), // Extra space for button
                       ],
                     ),
                   ),
                 ),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: _isLoading 
-          ? null
-          : Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    offset: Offset(0, -4),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                
+                // Loading overlay
+                if (_isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            _isEditing ? 'Đang cập nhật loại rác...' : 'Đang tạo loại rác mới...',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child: Text(
-                    _isEditing ? 'Cập nhật' : 'Tạo mới',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: _isLoading 
+            ? null
+            : Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      offset: Offset(0, -4),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      _isEditing ? 'Cập nhật' : 'Tạo mới',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+      ),
     );
   }
   

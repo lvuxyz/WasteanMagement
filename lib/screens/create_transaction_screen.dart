@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_bloc.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_event.dart';
 import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/models/collection_point.dart';
-import 'package:wasteanmagement/models/waste_type.dart';
+import 'package:wasteanmagement/models/waste_type_model.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
 
 class CreateTransactionScreen extends StatefulWidget {
@@ -111,27 +110,17 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
           id: item['id'], 
           name: item['name'], 
           description: item['description'], 
-          unitPrice: item['unit_price'],
+          unitPrice: item['unit_price'].toDouble(),
+          recyclable: true,
+          handlingInstructions: '',
+          icon: Icons.delete_outline,
+          color: Colors.green,
+          category: 'Tái chế',
+          examples: [],
+          unit: 'kg',
+          recentPoints: '',
         )).toList();
     });
-  }
-  
-  Future<void> _pickImage() async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
-      if (image != null) {
-        setState(() {
-          _imageFile = File(image.path);
-        });
-      }
-    } catch (e) {
-      print('Error picking image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể chọn hình ảnh')),
-      );
-    }
   }
   
   Future<void> _submitForm() async {
@@ -230,8 +219,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                       _buildUnitDropdown(),
                       const SizedBox(height: 24),
                       _buildSectionTitle('Hình ảnh minh chứng'),
-                      const SizedBox(height: 16),
-                      _buildImagePicker(),
                       const SizedBox(height: 32),
                       _buildSubmitButton(),
                     ],
@@ -458,76 +445,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       ],
     );
   }
-  
-  Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Hình ảnh minh chứng (tùy chọn)',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: _imageFile != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      _imageFile!,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: 48,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Nhấn để chọn hình ảnh',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-        if (_imageFile != null)
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _imageFile = null;
-              });
-            },
-            icon: const Icon(Icons.delete_outline, size: 16),
-            label: const Text('Xóa hình ảnh'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-              padding: EdgeInsets.zero,
-              alignment: Alignment.centerLeft,
-            ),
-          ),
-      ],
-    );
-  }
-  
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,

@@ -9,15 +9,17 @@ class FetchTransactions extends TransactionEvent {
   final int page;
   final int limit;
   final String? status;
+  final bool isAdmin;
 
   FetchTransactions({
     this.page = 1,
     this.limit = 10,
     this.status,
+    this.isAdmin = false,
   });
 
   @override
-  List<Object?> get props => [page, limit, status];
+  List<Object?> get props => [page, limit, status, isAdmin];
 }
 
 class FetchMyTransactions extends TransactionEvent {
@@ -93,4 +95,34 @@ class SearchTransactions extends TransactionEvent {
 
   @override
   List<Object?> get props => [query];
+}
+
+class UpdateTransaction extends TransactionEvent {
+  final int transactionId;
+  final int collectionPointId;
+  final int wasteTypeId;
+  final double quantity;
+  final String unit;
+  final String? proofImageUrl;
+
+  UpdateTransaction({
+    required this.transactionId,
+    required this.collectionPointId,
+    required this.wasteTypeId,
+    required this.quantity,
+    required this.unit,
+    this.proofImageUrl,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, collectionPointId, wasteTypeId, quantity, unit, proofImageUrl];
+}
+
+class FetchTransactionHistory extends TransactionEvent {
+  final int transactionId;
+
+  FetchTransactionHistory({required this.transactionId});
+
+  @override
+  List<Object?> get props => [transactionId];
 } 
