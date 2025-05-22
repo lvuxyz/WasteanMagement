@@ -65,21 +65,15 @@ class CreateRecyclingProcess extends RecyclingEvent {
 // Cập nhật quy trình tái chế
 class UpdateRecyclingProcess extends RecyclingEvent {
   final String id;
-  final String? status;
-  final double? processedQuantity;
-  final DateTime? endDate;
-  final String? notes;
+  final Map<String, dynamic> updateData;
 
   const UpdateRecyclingProcess({
     required this.id,
-    this.status,
-    this.processedQuantity,
-    this.endDate,
-    this.notes,
+    required this.updateData,
   });
 
   @override
-  List<Object?> get props => [id, status, processedQuantity, endDate, notes];
+  List<Object?> get props => [id, updateData];
 }
 
 // Lấy báo cáo thống kê quy trình tái chế

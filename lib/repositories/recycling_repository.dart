@@ -102,10 +102,7 @@ class RecyclingRepository {
   // Cập nhật quy trình tái chế (chỉ ADMIN)
   Future<RecyclingProcess> updateRecyclingProcess({
     required String id,
-    String? status,
-    double? processedQuantity,
-    DateTime? endDate,
-    String? notes,
+    required Map<String, dynamic> updateData,
   }) async {
     try {
       final isConnected = await _networkInfo.isConnected;
@@ -115,10 +112,7 @@ class RecyclingRepository {
 
       return await _recyclingService.updateRecyclingProcess(
         id: id,
-        status: status,
-        processedQuantity: processedQuantity,
-        endDate: endDate,
-        notes: notes,
+        updateData: updateData,
       );
     } catch (e) {
       developer.log('Lỗi khi cập nhật quy trình tái chế: $e', error: e);
