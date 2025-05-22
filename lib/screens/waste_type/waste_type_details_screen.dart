@@ -41,10 +41,13 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen> with Si
       // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
       // để đảm bảo có thể sử dụng được chức năng trong màn hình chi tiết
       await Future.delayed(Duration(seconds: 2));
-      final currentState = context.read<AdminCubit>().state;
-      if (!currentState) {
-        // Khi đang ở màn hình chi tiết, cần đặt quyền admin
-        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      // Kiểm tra xem widget còn mounted không trước khi truy cập context
+      if (mounted) {
+        final currentState = context.read<AdminCubit>().state;
+        if (!currentState) {
+          // Khi đang ở màn hình chi tiết, cần đặt quyền admin
+          context.read<AdminCubit>().forceUpdateAdminStatus(true);
+        }
       }
     });
   }
