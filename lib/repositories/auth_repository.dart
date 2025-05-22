@@ -1,37 +1,33 @@
 import 'dart:io';
 
 class AuthRepository {
-  // Sample user data for login
-  final List<Map<String, String>> _sampleUsers = [
-    {'email': 'admin', 'password': 'password', 'fullName': 'Admin User'},
-    {'email': 'user1', 'password': '123456', 'fullName': 'Regular User'},
-    {'email': 'test@example.com', 'password': 'test123', 'fullName': 'Test User'},
-    {'email': 'admin@example.com', 'password': 'Admin123', 'fullName': 'Admin Example'},
-  ];
-
-  Future<Map<String, String>> login({
+  Future<Map<String, dynamic>> login({
     required String email,
     required String password,
     required bool rememberMe,
   }) async {
-    await Future.delayed(const Duration(seconds: 1));
-
     try {
-      // Find user in sample data
-      final user = _sampleUsers.firstWhere(
-        (user) => user['email'] == email && user['password'] == password,
-        orElse: () => {},
-      );
-
-      if (user.isEmpty) {
+      // TODO: Replace with real API call
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // This is a placeholder for actual API authentication
+      // In a real implementation, you would make an HTTP request to your backend
+      if (email.isNotEmpty && password.isNotEmpty) {
+        final userData = {
+          'token': 'sample-token-${DateTime.now().millisecondsSinceEpoch}',
+          'user_id': '1',
+          'email': email,
+          'full_name': 'Real User',
+        };
+        
+        if (rememberMe) {
+          // TODO: Implement token storage in secure storage
+        }
+        
+        return userData;
+      } else {
         throw Exception('Email hoặc mật khẩu không chính xác');
       }
-
-      if (rememberMe) {
-        // TODO: Implement token storage
-      }
-      
-      return user;
     } on SocketException {
       throw Exception('Lỗi kết nối mạng');
     } catch (e) {

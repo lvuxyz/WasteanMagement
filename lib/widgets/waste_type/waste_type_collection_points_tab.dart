@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/collection_point_model.dart';
 import '../../utils/app_colors.dart';
 import '../../blocs/admin/admin_cubit.dart';
+import '../../blocs/waste_type/waste_type_bloc.dart';
+import '../../blocs/waste_type/waste_type_event.dart';
+import '../../blocs/waste_type/waste_type_state.dart';
 
 class WasteTypeCollectionPointsTab extends StatelessWidget {
   final int wasteTypeId;
@@ -23,17 +26,47 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
       return _buildEmptyState(context);
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: collectionPoints.length,
-      physics: BouncingScrollPhysics(),
-      itemBuilder: (context, index) {
-        final collectionPoint = collectionPoints[index];
-        final capacityPercentage = 
-          ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt();
-
-        return _buildCollectionPointCard(collectionPoint, capacityPercentage, context);
+    return BlocListener<WasteTypeBloc, WasteTypeState>(
+      listener: (context, state) {
+        if (state is CollectionPointUnlinked) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã xóa liên kết với điểm thu gom thành công'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          
+          // Refresh parent screen
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context, true);
+          }
+        } else if (state is WasteTypeError) {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: collectionPoints.length,
+        physics: BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          final collectionPoint = collectionPoints[index];
+          final capacityPercentage = 
+            collectionPoint.capacity > 0 
+              ? ((collectionPoint.currentLoad ?? 0) / collectionPoint.capacity * 100).toInt()
+              : 0;
+
+          return _buildCollectionPointCard(collectionPoint, capacityPercentage, context);
+        },
+      ),
     );
   }
   
@@ -268,7 +301,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
-                        value: (point.currentLoad ?? 0) / point.capacity,
+                        value: point.capacity > 0 ? (point.currentLoad ?? 0) / point.capacity : 0,
                         backgroundColor: Colors.grey[200],
                         minHeight: 8,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -420,8 +453,37 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              // Handle unlink action
+              // Dispatch UnlinkCollectionPoint event to BLoC
+              context.read<WasteTypeBloc>().add(
+                UnlinkCollectionPoint(
+                  wasteTypeId: wasteTypeId,
+                  collectionPointId: point.id,
+                ),
+              );
+              
+              // Close dialog
               Navigator.pop(context);
+              
+              // Show loading indicator
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Text('Đang xóa liên kết...'),
+                    ],
+                  ),
+                  duration: Duration(seconds: 2),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

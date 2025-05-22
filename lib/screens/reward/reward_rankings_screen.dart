@@ -167,8 +167,20 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     });
 
     return Container(
-      height: 220,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      height: 220, // Increased height for better display
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -178,11 +190,11 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
             _buildTopUserItem(
               paddedRankings[1]!,
               '2',
-              Colors.grey.shade300,
-              0.8,
+              Colors.grey.shade400,
+              0.85,
             )
           else
-            _buildEmptyTopUserItem(0.8),
+            _buildEmptyTopUserItem(0.85, '2'),
             
           // First place
           if (paddedRankings[0] != null)
@@ -193,7 +205,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               1.0,
             )
           else
-            _buildEmptyTopUserItem(1.0),
+            _buildEmptyTopUserItem(1.0, '1'),
             
           // Third place
           if (paddedRankings[2] != null)
@@ -201,10 +213,10 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               paddedRankings[2]!,
               '3',
               Colors.brown.shade300,
-              0.7,
+              0.75,
             )
           else
-            _buildEmptyTopUserItem(0.7),
+            _buildEmptyTopUserItem(0.75, '3'),
         ],
       ),
     );
@@ -213,30 +225,71 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
   Widget _buildTopUserItem(UserRanking ranking, String position, Color color, double scale) {
     return Expanded(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 32 * scale,
-            backgroundColor: color.withOpacity(0.2),
-            child: CircleAvatar(
-              radius: 30 * scale,
-              backgroundColor: Colors.white,
-              child: Text(
-                ranking.name?.substring(0, 1).toUpperCase() ?? 'U',
-                style: TextStyle(
-                  fontSize: 20 * scale,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+          // Top section with avatar and crown for first place
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Avatar
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 30 * scale,
+                  backgroundColor: color.withOpacity(0.2),
+                  child: CircleAvatar(
+                    radius: 28 * scale,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      ranking.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+                      style: TextStyle(
+                        fontSize: 20 * scale,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              
+              // Crown for first place
+              if (position == '1')
+                Positioned(
+                  top: -15 * scale,
+                  child: Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: 24 * scale,
+                  ),
+                ),
+            ],
           ),
+          
           const SizedBox(height: 8),
+          
+          // Position badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 4 * scale),
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12 * scale),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Text(
               position,
@@ -247,42 +300,81 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               ),
             ),
           ),
+          
           const SizedBox(height: 8),
-          Text(
-            ranking.name ?? 'Người dùng ${ranking.userId}',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14 * scale,
-              overflow: TextOverflow.ellipsis,
-            ),
-            maxLines: 1,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.stars, color: color, size: 14 * scale),
-              const SizedBox(width: 4),
-              Text(
-                '${ranking.totalPoints}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14 * scale,
-                  color: color,
+          
+          // Podium and user info
+          Flexible(
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(top: 8 * scale),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(8 * scale),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 60 * scale,
-            width: 40 * scale,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.3),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // User name
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4 * scale),
+                    child: Text(
+                      ranking.fullName ?? 'Người dùng ${ranking.userId}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12 * scale,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 4),
+                  
+                  // Points display
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12 * scale),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.stars, color: color, size: 14 * scale),
+                        SizedBox(width: 4 * scale),
+                        Text(
+                          '${ranking.totalPoints}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13 * scale,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 8),
+                ],
               ),
             ),
           ),
@@ -291,38 +383,67 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     );
   }
 
-  Widget _buildEmptyTopUserItem(double scale) {
+  Widget _buildEmptyTopUserItem(double scale, String position) {
     return Expanded(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Empty avatar
           CircleAvatar(
-            radius: 32 * scale,
+            radius: 30 * scale,
             backgroundColor: Colors.grey.withOpacity(0.1),
             child: Icon(
               Icons.person,
               color: Colors.grey[300],
-              size: 30 * scale,
+              size: 28 * scale,
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Chưa có',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14 * scale,
-            ),
-          ),
-          const SizedBox(height: 16),
+          
+          const SizedBox(height: 8),
+          
+          // Position badge
           Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 60 * scale,
-            width: 40 * scale,
+            padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 4 * scale),
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(12 * scale),
+            ),
+            child: Text(
+              position,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14 * scale,
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Empty podium
+          Flexible(
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(top: 8 * scale),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(8 * scale),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Chưa có',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 12 * scale,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 18),
+                ],
               ),
             ),
           ),
@@ -334,63 +455,97 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
   Widget _buildRankingItem(UserRanking ranking) {
     // Background colors for different positions
     Color getBackgroundColor() {
+      if (ranking.rank <= 3) {
+        return Colors.amber.withOpacity(0.05);
+      }
       if (ranking.rank <= 10) {
         return AppColors.primaryGreen.withOpacity(0.05);
       }
       return Colors.transparent;
     }
 
+    Color getPositionColor() {
+      if (ranking.rank == 1) return Colors.amber;
+      if (ranking.rank == 2) return Colors.grey.shade400;
+      if (ranking.rank == 3) return Colors.brown.shade300;
+      if (ranking.rank <= 10) return AppColors.primaryGreen;
+      return Colors.grey[600]!;
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: getBackgroundColor(),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
-            color: ranking.rank <= 10
-                ? AppColors.primaryGreen.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.1),
+            color: getPositionColor().withOpacity(0.1),
             shape: BoxShape.circle,
+            border: Border.all(
+              color: getPositionColor().withOpacity(0.3),
+              width: 1.5,
+            ),
           ),
           alignment: Alignment.center,
           child: Text(
             '${ranking.rank}',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: ranking.rank <= 10
-                  ? AppColors.primaryGreen
-                  : Colors.grey[600],
+              fontSize: 16,
+              color: getPositionColor(),
             ),
           ),
         ),
         title: Text(
-          ranking.name ?? 'Người dùng ${ranking.userId}',
+          ranking.fullName ?? 'Người dùng ${ranking.userId}',
           style: const TextStyle(
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.stars,
-              color: Colors.amber,
-              size: 20,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '${ranking.totalPoints}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+        subtitle: Text(
+          '@${ranking.username ?? ''}',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: getPositionColor().withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.stars,
+                color: getPositionColor(),
+                size: 18,
               ),
-            ),
-          ],
+              const SizedBox(width: 4),
+              Text(
+                '${ranking.totalPoints}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: getPositionColor(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,12 +1,13 @@
 // widgets/common/search_field.dart
 import 'package:flutter/material.dart';
 
-class SearchField extends StatelessWidget {
+class SearchField extends StatefulWidget {
   final String hintText;
   final TextEditingController? controller;
   final Function()? onClear;
   final String? value;
   final Function(String)? onChanged;
+  final FocusNode? focusNode; // Allow passing an external focusNode
 
   const SearchField({
     Key? key,
@@ -15,7 +16,38 @@ class SearchField extends StatelessWidget {
     this.onClear,
     this.value,
     this.onChanged,
+    this.focusNode,
   }) : super(key: key);
+
+  @override
+  State<SearchField> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends State<SearchField> {
+  FocusNode? _focusNode;
+  bool _isInternalFocusNode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only create a new FocusNode if one wasn't provided
+    if (widget.focusNode == null) {
+      _isInternalFocusNode = true;
+      _focusNode = FocusNode();
+    } else {
+      _focusNode = widget.focusNode;
+    }
+  }
+
+  @override
+  void dispose() {
+    // Only dispose the FocusNode if we created it internally
+    if (_isInternalFocusNode && _focusNode != null) {
+      _focusNode!.dispose();
+    }
+    _focusNode = null;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +65,11 @@ class SearchField extends StatelessWidget {
         ],
       ),
       child: TextField(
-        controller: controller,
-        onChanged: onChanged,
+        controller: widget.controller,
+        focusNode: _focusNode,
+        onChanged: widget.onChanged,
         decoration: InputDecoration(
-          hintText: hintText,
+          hintText: widget.hintText,
           hintStyle: TextStyle(
             color: Colors.grey[400],
             fontSize: 14,
@@ -45,11 +78,11 @@ class SearchField extends StatelessWidget {
             Icons.search,
             color: Colors.grey[400],
           ),
-          suffixIcon: (controller != null && controller!.text.isNotEmpty) || 
-                     (value != null && value!.isNotEmpty)
+          suffixIcon: (widget.controller != null && widget.controller!.text.isNotEmpty) || 
+                     (widget.value != null && widget.value!.isNotEmpty)
               ? IconButton(
                   icon: Icon(Icons.clear, color: Colors.grey[400]),
-                  onPressed: onClear,
+                  onPressed: widget.onClear,
                 )
               : null,
           border: InputBorder.none,

@@ -6,13 +6,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../utils/app_colors.dart';
 import '../../services/mapbox_service.dart';
+import '../../repositories/collection_point_repository.dart';
 import 'map_event.dart';
 import 'map_state.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final MapboxService mapboxService;
+  final CollectionPointRepository collectionPointRepository;
 
-  MapBloc({required this.mapboxService}) : super(const MapState()) {
+  MapBloc({
+    required this.mapboxService, 
+    required this.collectionPointRepository
+  }) : super(const MapState()) {
     on<MapInitialized>(_onMapInitialized);
     on<LoadUserLocation>(_onLoadUserLocation);
     on<LoadCollectionPoints>(_onLoadCollectionPoints);
@@ -89,54 +94,41 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-
   Future<void> _onLoadCollectionPoints(LoadCollectionPoints event, Emitter<MapState> emit) async {
     emit(state.copyWith(isLoading: true));
-
     try {
-      // Mô phỏng việc lấy dữ liệu từ API
-      await Future.delayed(const Duration(seconds: 1));
+      // Lấy dữ liệu từ repository
+      final collectionPoints = await collectionPointRepository.getAllCollectionPoints();
 
-      // Dữ liệu mẫu từ file home_screen.dart
-      final mockCollectionPoints = [
-        {
-          'id': 1,
-          'name': 'Điểm thu gom Nguyễn Trãi',
-          'address': 'Số 123 Nguyễn Trãi, Quận 1, TP.HCM',
-          'latitude': 10.7731,
-          'longitude': 106.6880,
-          'distance': 2.5,
-          'operating_hours': '08:00 - 17:00',
-          'status': 'active',
-          'capacity': 1000,
-          'current_load': 450,
-        },
-        {
-          'id': 2,
-          'name': 'Điểm thu gom Lê Duẩn',
-          'address': 'Số 456 Lê Duẩn, Quận 3, TP.HCM',
-          'latitude': 10.7839,
-          'longitude': 106.7005,
-          'distance': 3.7,
-          'operating_hours': '07:30 - 18:00',
-          'status': 'active',
-          'capacity': 800,
-          'current_load': 650,
-        },
-        {
-          'id': 3,
-          'name': 'Điểm thu gom Nguyễn Đình Chiểu',
-          'address': 'Số 789 Nguyễn Đình Chiểu, Quận 3, TP.HCM',
-          'latitude': 10.7765,
-          'longitude': 106.6902,
-          'distance': 4.2,
-          'operating_hours': '08:00 - 17:30',
-          'status': 'active',
-          'capacity': 1200,
-          'current_load': 300,
-        },
-      ];
-
+      // Chuyển đổi sang dạng Map và tính toán khoảng cách
+      final List<Map<String, dynamic>> processedPoints = [];
+      
+      // Tính khoảng cách nếu có vị trí người dùng
+      final userLocation = state.userLocation;
+      
+      for (var point in collectionPoints) {
+        double distance = 0.0;
+        if (userLocation != null) {
+          // Tính khoảng cách từ vị trí người dùng đến điểm thu gom
+          final userPosition = Position(userLocation.longitude!, userLocation.latitude!);
+          final pointPosition = Position(point.longitude, point.latitude);
+          distance = mapboxService.calculateDistance(userPosition, pointPosition) / 1000; // Chuyển đổi từ mét sang km
+        }
+        
+        processedPoints.add({
+          'id': point.collectionPointId,
+          'name': point.name,
+          'address': point.address,
+          'latitude': point.latitude,
+          'longitude': point.longitude,
+          'distance': distance.toStringAsFixed(1),
+          'operating_hours': point.operatingHours,
+          'status': point.status,
+          'capacity': point.capacity,
+          'current_load': point.currentLoad ?? 0.0,
+        });
+      }
+      
       // Thêm markers cho điểm thu gom
       if (state.controller != null) {
         try {
@@ -145,66 +137,81 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           // Tạo biểu tượng cho điểm thu gom
           final Uint8List markerIcon = await _createCustomMarkerIcon(AppColors.primaryGreen, 32);
 
-          for (final point in mockCollectionPoints) {
-            await pointAnnotationManager.create(
-              PointAnnotationOptions(
-                geometry: Point(
-                  coordinates: Position(
-                    point['longitude'] as double,
-                    point['latitude'] as double,
-                  ),
-                ),
-                textField: point['name'] as String,
-                textOffset: [0.0, 1.5],
-                textColor: Colors.black.value,
-                textSize: 12.0,
-                image: markerIcon, // sử dụng 'image' thay vì 'iconImage'
-                iconSize: 0.5,
-              ),
-            );
-          }
-        } catch (annotationError) {
-          developer.log('Lỗi khi tạo annotation cho điểm thu gom: $annotationError', error: annotationError);
-          // Tiếp tục xử lý mà không hiển thị marker
-        }
-      }
+          // Xóa các markers cũ
+          await pointAnnotationManager.deleteAll();
 
-      emit(state.copyWith(
-        isLoading: false,
-        collectionPoints: mockCollectionPoints,
-      ));
+          // Thêm markers mới
+          for (final point in processedPoints) {
+            final options = PointAnnotationOptions(
+              geometry: Point(
+                coordinates: Position(
+                  point['longitude'],
+                  point['latitude'],
+                ),
+              ),
+              image: markerIcon,
+            );
+            await pointAnnotationManager.create(options);
+          }
+
+          emit(state.copyWith(
+            collectionPoints: processedPoints,
+            isLoading: false,
+          ));
+        } catch (e) {
+          developer.log('Error adding markers: $e', error: e);
+          emit(state.copyWith(
+            isLoading: false,
+            errorMessage: 'Không thể hiển thị điểm thu gom trên bản đồ',
+          ));
+        }
+      } else {
+        emit(state.copyWith(
+          collectionPoints: processedPoints,
+          isLoading: false,
+        ));
+      }
     } catch (e) {
-      developer.log('Lỗi khi tải điểm thu gom: $e', error: e);
+      developer.log('Error loading collection points: $e', error: e);
       emit(state.copyWith(
         isLoading: false,
-        errorMessage: 'Không thể tải điểm thu gom. Vui lòng thử lại sau.',
+        errorMessage: 'Không thể tải danh sách điểm thu gom',
       ));
     }
   }
 
   void _onSelectCollectionPoint(SelectCollectionPoint event, Emitter<MapState> emit) {
-    // Tìm điểm thu gom được chọn
-    final selectedPoint = state.collectionPoints.firstWhere(
-          (point) => point['id'] == event.pointId,
-      orElse: () => {},
-    );
+    try {
+      if (state.collectionPoints.isEmpty) {
+        return;
+      }
 
-    if (selectedPoint.isNotEmpty && state.controller != null) {
-      // Di chuyển camera đến điểm được chọn - thêm tham số thứ hai là null
-      state.controller!.flyTo(
+      final selectedPoint = state.collectionPoints.firstWhere(
+        (point) => point['id'] == event.pointId,
+        orElse: () => state.collectionPoints.first,
+      );
+
+      if (state.controller != null) {
+        state.controller!.flyTo(
           CameraOptions(
             center: Point(
               coordinates: Position(
-                selectedPoint['longitude'] as double,
-                selectedPoint['latitude'] as double,
+                selectedPoint['longitude'],
+                selectedPoint['latitude'],
               ),
             ),
             zoom: 15.0,
           ),
-          null
-      );
+          null,
+        );
+      }
 
-      emit(state.copyWith(selectedPointId: event.pointId));
+      emit(state.copyWith(selectedPointId: selectedPoint['id']));
+    } catch (e) {
+      developer.log('Error selecting collection point: $e', error: e);
+      emit(state.copyWith(
+        errorMessage: 'Không thể hiển thị chi tiết điểm thu gom',
+      ));
     }
   }
 

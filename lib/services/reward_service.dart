@@ -25,14 +25,41 @@ class RewardService {
   }) async {
     final headers = await _getHeaders();
     
-    String url = '${ApiConstants.rewards}/my-rewards?page=$page&limit=$limit';
-    if (fromDate != null) url += '&from_date=$fromDate';
-    if (toDate != null) url += '&to_date=$toDate';
+    // Use a more structured way to build query parameters
+    final Uri uri = Uri.parse('${ApiConstants.rewards}/my-rewards');
     
-    final response = await http.get(Uri.parse(url), headers: headers);
+    // Build query parameters with proper encoding
+    final Map<String, dynamic> queryParams = {
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    
+    // Add date parameters if provided
+    if (fromDate != null) queryParams['from_date'] = fromDate;
+    if (toDate != null) queryParams['to_date'] = toDate;
+    
+    // Create the final URL with encoded parameters
+    final finalUri = uri.replace(queryParameters: queryParams);
+
+    print('Requesting rewards with URL: $finalUri');
+    
+    final response = await http.get(finalUri, headers: headers);
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['data'];
+      
+      // Log received data for debugging
+      print('Received ${(data['rewards'] as List).length} rewards');
+      if (fromDate != null || toDate != null) {
+        print('Filter applied - From: $fromDate, To: $toDate');
+        
+        // Check the first and last dates in the response to confirm filtering worked
+        if ((data['rewards'] as List).isNotEmpty) {
+          final firstReward = Reward.fromJson((data['rewards'] as List).first);
+          final lastReward = Reward.fromJson((data['rewards'] as List).last);
+          print('First reward date: ${firstReward.earnedDate}, Last reward date: ${lastReward.earnedDate}');
+        }
+      }
       
       return {
         'rewards': (data['rewards'] as List).map((e) => Reward.fromJson(e)).toList(),
@@ -40,6 +67,7 @@ class RewardService {
         'pagination': Pagination.fromJson(data['pagination']),
       };
     } else {
+      print('Error loading rewards: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to load rewards: ${response.body}');
     }
   }
@@ -89,9 +117,7 @@ class RewardService {
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['data'] as List;
-      return data.asMap().entries.map((entry) {
-        return UserRanking.fromJson(entry.value, entry.key + 1);
-      }).toList();
+      return data.map((item) => UserRanking.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load rankings: ${response.body}');
     }

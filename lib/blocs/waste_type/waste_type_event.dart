@@ -133,3 +133,16 @@ class LoadWasteTypesForCollectionPoint extends WasteTypeEvent {
   @override
   List<Object?> get props => [collectionPointId, collectionPointName];
 }
+
+class AddWasteTypeToCollectionPoint extends WasteTypeEvent {
+  final int collectionPointId;
+  final int wasteTypeId;
+
+  const AddWasteTypeToCollectionPoint({
+    required this.collectionPointId,
+    required this.wasteTypeId,
+  });
+
+  @override
+  List<Object?> get props => [collectionPointId, wasteTypeId];
+}
