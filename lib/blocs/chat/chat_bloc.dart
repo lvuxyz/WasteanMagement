@@ -54,8 +54,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
 
       try {
-        // Gọi API OpenAI
-        final response = await _openAIService.sendMessage(message: event.message);
+        // Gọi API OpenAI với lịch sử tin nhắn
+        final response = await _openAIService.sendMessage(
+          message: event.message, 
+          previousMessages: currentState.messages,
+        );
         
         final assistantMessage = ChatMessage(
           id: _uuid.v4(),
