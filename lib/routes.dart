@@ -62,7 +62,6 @@ class AppRoutes {
   static const String about = '/about';
   static const String help = '/help';
   static const String changePassword = '/change-password';
-  
   // Reward routes
   static const String rewards = '/rewards';
   static const String rewardStatistics = '/rewards/statistics';
