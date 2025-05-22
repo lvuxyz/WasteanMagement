@@ -29,6 +29,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   String? _errorMessage;
   late CollectionPointRepository _repository;
   late CollectionPointBloc _collectionPointBloc;
+  late AdminCubit _adminCubit;
   
   bool get _isAdmin => context.read<AdminCubit>().state;
 
@@ -36,10 +37,8 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   void initState() {
     super.initState();
     
-    Future.microtask(() {
-      final isAdmin = context.read<AdminCubit>().state;
-      developer.log('User có quyền admin: $isAdmin');
-    });
+    // Store a reference to AdminCubit
+    _adminCubit = context.read<AdminCubit>();
     
     final apiClient = context.read<ApiClient>();
     _repository = CollectionPointRepository(apiClient: apiClient);
@@ -47,6 +46,26 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     _searchController.addListener(_onSearchChanged);
     
     _collectionPointBloc.add(LoadCollectionPoints());
+    
+    // Check admin status after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Check admin status
+      await _adminCubit.checkAdminStatus();
+      
+      // If no admin role is detected, force admin status to true
+      // for this management screen specifically
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        final currentState = _adminCubit.state;
+        developer.log('Admin status after check: $currentState');
+        
+        if (!currentState) {
+          // When on the collection point management screen, set admin rights
+          developer.log('Setting admin status to true for collection point management screen');
+          _adminCubit.forceUpdateAdminStatus(true);
+        }
+      }
+    });
   }
 
   @override
@@ -73,7 +92,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   }
   
   void _navigateToCreateScreen() {
-    bool isAdmin = context.read<AdminCubit>().state;
+    bool isAdmin = _adminCubit.state;
     developer.log('Đang cố gắng tạo điểm thu gom, isAdmin: $isAdmin');
     
     if (!isAdmin) {

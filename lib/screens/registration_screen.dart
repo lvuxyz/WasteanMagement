@@ -42,8 +42,8 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               );
               // Navigate to login screen after successful registration
-              Future.delayed(const Duration(seconds: 2), () {
-                Navigator.of(context).pop();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) Navigator.of(context).pop();
               });
             }
           },
@@ -52,5 +52,4 @@ class RegistrationScreen extends StatelessWidget {
       ),
     );
   }
-} 
-
+}

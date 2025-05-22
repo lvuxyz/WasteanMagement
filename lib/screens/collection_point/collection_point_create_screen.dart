@@ -36,10 +36,11 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   bool _isCreating = false;
   String? _errorMessage;
+  bool _isNavigating = false;
 
   @override
   void dispose() {
-    // Hủy các controller
+    // Dispose controllers
     _nameController.dispose();
     _addressController.dispose();
     _latitudeController.dispose();
@@ -48,7 +49,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
     _capacityController.dispose();
     _statusNotifier.dispose();
     
-    // Hủy các FocusNode
+    // Dispose FocusNodes
     _nameFocus.dispose();
     _addressFocus.dispose();
     _latitudeFocus.dispose();
@@ -66,7 +67,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
   }
 
   void _createCollectionPoint() {
-    // Đảm bảo unfocus khỏi các trường nhập liệu
+    // Ensure unfocus from input fields
     FocusScope.of(context).unfocus();
     
     final CollectionPointBloc collectionPointBloc = context.read<CollectionPointBloc>();
@@ -94,9 +95,9 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Đảm bảo unfocus trước khi pop màn hình
+        // Ensure unfocus before popping screen
         FocusScope.of(context).unfocus();
-        return true;
+        return !_isNavigating;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -108,8 +109,11 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
-              // Đảm bảo unfocus trước khi pop màn hình
+              if (_isNavigating) return;
+              
+              // Ensure unfocus before popping screen
               FocusScope.of(context).unfocus();
+              _isNavigating = true;
               Navigator.of(context).pop();
             },
           ),
@@ -117,7 +121,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
         body: BlocConsumer<CollectionPointBloc, CollectionPointState>(
           listener: (context, state) {
             if (state is CollectionPointCreated) {
-              // Đảm bảo unfocus trước khi hiển thị SnackBar và pop màn hình
+              // Ensure unfocus before showing SnackBar and popping screen
               FocusScope.of(context).unfocus();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -125,10 +129,14 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
                   backgroundColor: Colors.green,
                 ),
               );
-              // Đặt độ trễ nhỏ trước khi pop để tránh lỗi focus
-              Future.delayed(const Duration(milliseconds: 100), () {
-                if (mounted) Navigator.of(context).pop();
-              });
+              
+              // Separate navigation from the callback to avoid FocusNode issues
+              if (!_isNavigating) {
+                _isNavigating = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) Navigator.of(context).pop();
+                });
+              }
             } else if (state is CollectionPointError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

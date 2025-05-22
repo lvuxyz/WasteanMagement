@@ -7,6 +7,7 @@ class SearchField extends StatefulWidget {
   final Function()? onClear;
   final String? value;
   final Function(String)? onChanged;
+  final FocusNode? focusNode; // Allow passing an external focusNode
 
   const SearchField({
     Key? key,
@@ -15,6 +16,7 @@ class SearchField extends StatefulWidget {
     this.onClear,
     this.value,
     this.onChanged,
+    this.focusNode,
   }) : super(key: key);
 
   @override
@@ -23,16 +25,26 @@ class SearchField extends StatefulWidget {
 
 class _SearchFieldState extends State<SearchField> {
   FocusNode? _focusNode;
+  bool _isInternalFocusNode = false;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    // Only create a new FocusNode if one wasn't provided
+    if (widget.focusNode == null) {
+      _isInternalFocusNode = true;
+      _focusNode = FocusNode();
+    } else {
+      _focusNode = widget.focusNode;
+    }
   }
 
   @override
   void dispose() {
-    _focusNode?.dispose();
+    // Only dispose the FocusNode if we created it internally
+    if (_isInternalFocusNode && _focusNode != null) {
+      _focusNode!.dispose();
+    }
     _focusNode = null;
     super.dispose();
   }
