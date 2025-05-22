@@ -89,9 +89,7 @@ class RewardService {
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['data'] as List;
-      return data.asMap().entries.map((entry) {
-        return UserRanking.fromJson(entry.value, entry.key + 1);
-      }).toList();
+      return data.map((item) => UserRanking.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load rankings: ${response.body}');
     }

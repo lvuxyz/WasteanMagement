@@ -51,23 +51,26 @@ class RewardStatistics {
 
 class UserRanking {
   final int userId;
-  final String? name;
+  final String? username;
+  final String? fullName;
   final int totalPoints;
   final int rank;
   
   UserRanking({
     required this.userId,
-    this.name,
+    this.username,
+    this.fullName,
     required this.totalPoints,
     required this.rank,
   });
   
-  factory UserRanking.fromJson(Map<String, dynamic> json, int rank) {
+  factory UserRanking.fromJson(Map<String, dynamic> json) {
     return UserRanking(
       userId: json['user_id'],
-      name: json['name'],
+      username: json['username'],
+      fullName: json['full_name'],
       totalPoints: json['total_points'],
-      rank: rank,
+      rank: json['rank'],
     );
   }
 }
