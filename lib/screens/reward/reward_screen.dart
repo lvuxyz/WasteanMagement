@@ -27,8 +27,12 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   DateTime? _selectedFromDate;
   DateTime? _selectedToDate;
   late FocusNode _screenFocusNode;
+  bool _isDisposed = false;
+  bool _isNavigating = false;
   final _scrollController = ScrollController();
   bool _isFilterExpanded = false;
+  
+  bool get canUseFocus => !_isDisposed && !_isNavigating && mounted && _screenFocusNode.canRequestFocus;
   
   @override
   void initState() {
@@ -41,7 +45,14 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   
   @override
   void dispose() {
+    _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
+    
+    // Cancel any pending focus operations
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This executes after the current frame, canceling any pending focus operations
+    });
+    
     _screenFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -49,8 +60,8 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // App came to foreground
+    if (state == AppLifecycleState.resumed && !_isDisposed) {
+      // App came to foreground - only reload if not disposed
       _loadRewards();
     }
   }
@@ -59,7 +70,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Ensure we have focus to detect when returning to this screen
-    FocusScope.of(context).requestFocus(_screenFocusNode);
+    // Only request focus if not disposed and not navigating
+    if (canUseFocus) {
+      FocusScope.of(context).requestFocus(_screenFocusNode);
+    }
   }
   
   void _loadRewards() {
@@ -130,6 +144,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   }
   
   void _navigateToStatistics() {
+    _isNavigating = true;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -138,10 +153,16 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           child: const RewardStatisticsScreen(),
         ),
       ),
-    ).then((_) => _loadRewards()); // Reload data when returning
+    ).then((_) {
+      if (mounted && !_isDisposed) {
+        _isNavigating = false;
+        _loadRewards(); // Reload data when returning
+      }
+    });
   }
   
   void _navigateToRankings() {
+    _isNavigating = true;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -150,27 +171,41 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           child: const RewardRankingsScreen(),
         ),
       ),
-    ).then((_) => _loadRewards()); // Reload data when returning
+    ).then((_) {
+      if (mounted && !_isDisposed) {
+        _isNavigating = false;
+        _loadRewards(); // Reload data when returning
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      // Chỉ hiển thị AppBar nếu không phải đang trong TabView
-      appBar: widget.isInTabView ? null : AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        title: const Text(
-          'Điểm thưởng',
-          style: TextStyle(color: Colors.white),
+    return WillPopScope(
+      onWillPop: () async {
+        _isNavigating = true;
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        // Chỉ hiển thị AppBar nếu không phải đang trong TabView
+        appBar: widget.isInTabView ? null : AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          title: const Text(
+            'Điểm thưởng',
+            style: TextStyle(color: Colors.white),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              _isNavigating = true;
+              Navigator.of(context).pop();
+            },
+          ),
+          elevation: 0,
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        elevation: 0,
+        body: _buildScreenContent(),
       ),
-      body: _buildScreenContent(),
     );
   }
   

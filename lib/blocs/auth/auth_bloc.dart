@@ -3,6 +3,7 @@ import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../../core/error/exceptions.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UserRepository userRepository;
@@ -62,6 +63,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ) async {
     emit(AuthLoading());
     try {
+      // Clear all chat history for security
+      final prefs = await SharedPreferences.getInstance();
+      final keysToRemove = <String>[];
+      
+      // Find and clear all chat history keys
+      prefs.getKeys().forEach((key) {
+        if (key.startsWith('chat_history_user_')) {
+          keysToRemove.add(key);
+        }
+      });
+      
+      // Remove found keys
+      for (final key in keysToRemove) {
+        await prefs.remove(key);
+      }
+      
+      // Perform regular logout
       await userRepository.logout();
       emit(Unauthenticated());
     } catch (e) {

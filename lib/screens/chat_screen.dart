@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:uuid/uuid.dart';
 import 'package:wasteanmagement/blocs/chat/chat_bloc.dart';
 import 'package:wasteanmagement/blocs/chat/chat_event.dart';
 import 'package:wasteanmagement/blocs/chat/chat_state.dart' as app_states;
@@ -26,6 +23,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final FocusNode _focusNode = FocusNode();
   late AnimationController _typingAnimationController;
   late Animation<double> _typingAnimation;
+  bool _isDisposed = false;
+  bool _isNavigating = false;
+
+  bool get canUseFocus => !_isDisposed && !_isNavigating && mounted && _focusNode.canRequestFocus;
 
   @override
   void initState() {
@@ -48,6 +49,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _isDisposed = true;
+    // Cancel pending operations that might access focus
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This will execute after current frame is complete, canceling any ongoing unfocus operations
+    });
+    
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -55,178 +62,188 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Safe way to unfocus that won't cause errors
+  void _safeUnfocus() {
+    if (canUseFocus) {
+      FocusScope.of(context).unfocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+    return WillPopScope(
+      onWillPop: () async {
+        _isNavigating = true;
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  backgroundColor: AppColors.primaryGreen,
+                  radius: 18,
+                  child: const Text(
+                    '🤖',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'LVuRác AI',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Trợ lý quản lý chất thải',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ],
               ),
-              child: CircleAvatar(
-                backgroundColor: AppColors.primaryGreen,
-                radius: 18,
-                child: const Text(
-                  '🤖',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'LVuRác AI',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  'Trợ lý quản lý chất thải',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.8),
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ],
+            ],
+          ),
+          backgroundColor: AppColors.primaryGreen,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shadowColor: AppColors.primaryGreen.withOpacity(0.3),
+          leadingWidth: 30,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20),
+            padding: EdgeInsets.zero,
+            onPressed: () {
+              _isNavigating = true;
+              Navigator.of(context).pop();
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh_outlined, size: 22),
+              onPressed: () {
+                _showClearChatDialog(context);
+              },
             ),
           ],
         ),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        shadowColor: AppColors.primaryGreen.withOpacity(0.3),
-        leadingWidth: 30,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined, size: 22),
-            onPressed: () {
-              _showClearChatDialog(context);
-            },
-          ),
-        ],
-      ),
-      body: BlocConsumer<ChatBloc, app_states.ChatState>(
-        listener: (context, state) {
-          if (state is app_states.ChatError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
+        body: BlocConsumer<ChatBloc, app_states.ChatState>(
+          listener: (context, state) {
+            if (state is app_states.ChatError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(state.message)),
+                    ],
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+
+            // Điều khiển animation khi typing
+            if (state is app_states.ChatLoaded) {
+              if (state.isTyping) {
+                _typingAnimationController.repeat(reverse: true);
+              } else {
+                _typingAnimationController.stop();
+              }
+            }
+
+            // Scroll to bottom khi có tin nhắn mới
+            if (state is app_states.ChatLoaded && state.messages.isNotEmpty) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                _safeScrollToBottom();
+              });
+            }
+          },
+          builder: (context, state) {
+            if (state is app_states.ChatInitial || state is app_states.ChatLoading) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(state.message)),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: const Text('🤖', style: TextStyle(fontSize: 40)),
+                    ),
+                    const SizedBox(height: 16),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Đang khởi tạo LVuRác...',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-
-          // Điều khiển animation khi typing
-          if (state is app_states.ChatLoaded) {
-            if (state.isTyping) {
-              _typingAnimationController.repeat(reverse: true);
-            } else {
-              _typingAnimationController.stop();
+              );
             }
-          }
 
-          // Scroll to bottom khi có tin nhắn mới
-          if (state is app_states.ChatLoaded && state.messages.isNotEmpty) {
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (_scrollController.hasClients) {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                );
-              }
-            });
-          }
-        },
-        builder: (context, state) {
-          if (state is app_states.ChatInitial || state is app_states.ChatLoading) {
+            if (state is app_states.ChatLoaded) {
+              return Column(
+                children: [
+                  Expanded(
+                    child: state.messages.isEmpty
+                        ? _buildEmptyStateWithSuggestions()
+                        : _buildChatMessages(state.messages),
+                  ),
+                  if (state.isTyping) _buildImprovedTypingIndicator(),
+                  _buildMessageInput(),
+                ],
+              );
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: const Text('🤖', style: TextStyle(fontSize: 40)),
-                  ),
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Đang khởi tạo LVuRác...',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                  const Text('Có lỗi xảy ra'),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      context.read<ChatBloc>().add(const ChatInitialized());
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Thử lại'),
                   ),
                 ],
               ),
             );
-          }
-
-          if (state is app_states.ChatLoaded) {
-            return Column(
-              children: [
-                Expanded(
-                  child: state.messages.isEmpty
-                      ? _buildEmptyStateWithSuggestions()
-                      : _buildChatMessages(state.messages),
-                ),
-                if (state.isTyping) _buildImprovedTypingIndicator(),
-                _buildMessageInput(),
-              ],
-            );
-          }
-
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                const Text('Có lỗi xảy ra'),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.read<ChatBloc>().add(const ChatInitialized());
-                  },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Thử lại'),
-                ),
-              ],
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -539,8 +556,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _sendMessage(String text) {
     final trimmedText = text.trim();
-    if (trimmedText.isNotEmpty) {
-      _focusNode.unfocus();
+    if (trimmedText.isNotEmpty && !_isDisposed && mounted) {
+      _safeUnfocus();
       context.read<ChatBloc>().add(MessageSent(message: trimmedText));
       _textController.clear();
     }
@@ -557,7 +574,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             Text('Làm mới trò chuyện'),
           ],
         ),
-        content: const Text('Bạn có chắc chắn muốn xóa tất cả tin nhắn và bắt đầu lại?'),
+        content: const Text('Bạn có chắc chắn muốn xóa tất cả tin nhắn và bắt đầu lại? Lịch sử trò chuyện của bạn sẽ được xóa khỏi thiết bị này.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -577,6 +594,17 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  // Add this safety method to check if it's safe to scroll
+  void _safeScrollToBottom() {
+    if (_isDisposed || !mounted || !_scrollController.hasClients) return;
+    
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
     );
   }
 }

@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildRewardPointsCard(),
             const SizedBox(height: 24),
-            _buildSectionTitle('Điểm thu gom gần bạn'),
+            _buildSectionTitle('Điểm thu gom'),
             const SizedBox(height: 16),
             _buildCollectionPointsList(),
             const SizedBox(height: 24),
