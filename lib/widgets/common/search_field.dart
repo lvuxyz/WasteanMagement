@@ -26,6 +26,7 @@ class SearchField extends StatefulWidget {
 class _SearchFieldState extends State<SearchField> {
   FocusNode? _focusNode;
   bool _isInternalFocusNode = false;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _SearchFieldState extends State<SearchField> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     // Only dispose the FocusNode if we created it internally
     if (_isInternalFocusNode && _focusNode != null) {
       _focusNode!.dispose();
@@ -66,7 +68,8 @@ class _SearchFieldState extends State<SearchField> {
       ),
       child: TextField(
         controller: widget.controller,
-        focusNode: _focusNode,
+        // Check if _focusNode is valid before using it
+        focusNode: _isDisposed ? null : _focusNode,
         onChanged: widget.onChanged,
         decoration: InputDecoration(
           hintText: widget.hintText,

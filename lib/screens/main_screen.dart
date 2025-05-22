@@ -7,7 +7,6 @@ import 'map_screen.dart';
 import 'recycling_progress_screen.dart';
 import 'reward/reward_screen.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {

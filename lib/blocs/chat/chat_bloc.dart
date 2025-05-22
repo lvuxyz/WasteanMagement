@@ -10,16 +10,21 @@ import 'dart:convert';
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final OpenAIService _openAIService;
   final Uuid _uuid = const Uuid();
-  static const String _chatHistoryKey = 'chat_history';
+  static const String _chatHistoryKeyPrefix = 'chat_history_user_';
+  final String userId;
 
-  ChatBloc({required OpenAIService openAIService})
-      : _openAIService = openAIService,
+  ChatBloc({
+    required OpenAIService openAIService,
+    required this.userId,
+  }) : _openAIService = openAIService,
         super(const ChatInitial()) {
     on<ChatInitialized>(_onChatInitialized);
     on<MessageSent>(_onMessageSent);
     on<MessagesLoaded>(_onMessagesLoaded);
     on<MessagesCleared>(_onMessagesCleared);
   }
+
+  String get _chatHistoryKey => '$_chatHistoryKeyPrefix$userId';
 
   Future<void> _onChatInitialized(
       ChatInitialized event,

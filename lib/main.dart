@@ -22,11 +22,12 @@ import 'package:wasteanmagement/blocs/collection_point/collection_point_bloc.dar
 import 'package:provider/provider.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
-import 'blocs/auth/auth_bloc.dart';
-import 'blocs/auth/auth_event.dart';
-import 'blocs/language/language_bloc.dart';
-import 'blocs/language/language_event.dart';
-import 'blocs/admin/admin_cubit.dart';
+import 'package:wasteanmagement/blocs/auth/auth_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_event.dart';
+import 'package:wasteanmagement/blocs/auth/auth_state.dart';
+import 'package:wasteanmagement/blocs/language/language_bloc.dart';
+import 'package:wasteanmagement/blocs/language/language_event.dart';
+import 'package:wasteanmagement/blocs/admin/admin_cubit.dart';
 import 'core/network/network_info.dart';
 import 'routes.dart';
 import 'generated/l10n.dart';
@@ -134,11 +135,23 @@ Future<void> main() async {
               repository: collectionPointRepository,
             ),
           ),
-          // Add ChatBloc
+          // Add ChatBloc with userId
           BlocProvider(
-            create: (context) => ChatBloc(
-              openAIService: openAIService,
-            ),
+            create: (context) {
+              // We'll use a synchronous approach to get a unique ID for each user
+              final authState = context.read<AuthBloc>().state;
+              String userId = 'guest';
+              
+              // If the user is authenticated, use their ID
+              if (authState is Authenticated) {
+                userId = authState.user.id.toString();
+              }
+              
+              return ChatBloc(
+                openAIService: openAIService,
+                userId: userId,
+              );
+            },
           ),
         ],
         child: const MyApp(),
