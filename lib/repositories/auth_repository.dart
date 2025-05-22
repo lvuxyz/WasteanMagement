@@ -1,56 +1,32 @@
 import 'dart:io';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../core/constants/api_constants.dart';
-import '../models/auth_credentials.dart';
-import '../data/datasources/local_data_source.dart';
 
 class AuthRepository {
-  final LocalDataSource localDataSource;
-  final String apiBaseUrl;
-  
-  AuthRepository({
-    required this.localDataSource,
-    required this.apiBaseUrl,
-  });
-
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
     required bool rememberMe,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$apiBaseUrl${ApiConstants.login}'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
+      // TODO: Replace with real API call
+      await Future.delayed(const Duration(seconds: 1));
       
-      if (response.statusCode == 200) {
-        final userData = data['data'];
-        final token = userData['token'];
+      // This is a placeholder for actual API authentication
+      // In a real implementation, you would make an HTTP request to your backend
+      if (email.isNotEmpty && password.isNotEmpty) {
+        final userData = {
+          'token': 'sample-token-${DateTime.now().millisecondsSinceEpoch}',
+          'user_id': '1',
+          'email': email,
+          'full_name': 'Real User',
+        };
         
         if (rememberMe) {
-          // Store credentials locally
-          await localDataSource.cacheAuthCredentials(
-            AuthCredentials(
-              token: token,
-              userId: userData['user_id'] ?? userData['id'],
-              email: email,
-            ),
-          );
+          // TODO: Implement token storage in secure storage
         }
         
         return userData;
       } else {
-        throw Exception(data['message'] ?? 'Đăng nhập thất bại');
+        throw Exception('Email hoặc mật khẩu không chính xác');
       }
     } on SocketException {
       throw Exception('Lỗi kết nối mạng');
