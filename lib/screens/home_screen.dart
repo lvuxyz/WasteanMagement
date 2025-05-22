@@ -412,13 +412,6 @@ class _HomeScreenState extends State<HomeScreen> {
         'route': '/waste-guide',
       },
       {
-        'icon': Icons.camera_alt_outlined,
-        'title': 'Quét mã',
-        'subtitle': 'QR Code',
-        'color': Colors.purple,
-        'route': '/scan',
-      },
-      {
         'icon': Icons.history_outlined,
         'title': 'Lịch sử',
         'subtitle': 'Giao dịch',
