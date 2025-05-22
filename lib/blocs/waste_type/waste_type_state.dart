@@ -229,3 +229,18 @@ class WasteTypesForCollectionPointLoaded extends WasteTypeState {
   @override
   List<Object?> get props => [collectionPointId, collectionPointName, wasteTypes];
 }
+
+class WasteTypeAddedToCollectionPoint extends WasteTypeState {
+  final int collectionPointId;
+  final int wasteTypeId;
+  final String message;
+
+  const WasteTypeAddedToCollectionPoint({
+    required this.collectionPointId,
+    required this.wasteTypeId,
+    this.message = 'Đã thêm loại rác vào điểm thu gom thành công',
+  });
+
+  @override
+  List<Object?> get props => [collectionPointId, wasteTypeId, message];
+}

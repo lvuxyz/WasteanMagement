@@ -21,6 +21,9 @@ import 'screens/recycling_progress_screen.dart';
 import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
+import 'screens/collection_point/collection_point_create_screen.dart';
+import 'screens/collection_point/collection_point_details_screen.dart';
+import 'screens/collection_point/location_picker_screen.dart';
 import 'screens/waste_type/waste_type_collection_points_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
@@ -29,6 +32,7 @@ import 'screens/about_app_screen.dart';
 import 'screens/help_and_guidance_screen.dart';
 import 'screens/change_password.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/chat_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/';
@@ -45,6 +49,8 @@ class AppRoutes {
   static const String recyclingProgress = '/recycling-progress';
   static const String collectionPointsList = '/collection-points';
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
+  static const String collectionPointCreate = '/collection-points/create';
+  static const String collectionPointDetails = '/collection-points/details';
   static const String transactions = '/transactions';
   static const String createTransaction = '/create-transaction';
   static const String addTransaction = '/add-transaction';
@@ -57,16 +63,21 @@ class AppRoutes {
   static const String about = '/about';
   static const String help = '/help';
   static const String changePassword = '/change-password';
-  
   // Reward routes
   static const String rewards = '/rewards';
   static const String rewardStatistics = '/rewards/statistics';
   static const String rewardRankings = '/rewards/rankings';
   static const String adminRewardManagement = '/admin/rewards';
   static const String addReward = '/admin/rewards/add';
+  static const String locationPicker = '/location-picker';
+  // Chat route
+  static const String chat = '/chat';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // Chat route
+      case chat:
+        return MaterialPageRoute(builder: (_) => const ChatScreen());
       // Reward routes
       case rewards:
         return MaterialPageRoute(builder: (_) => const RewardScreen(isInTabView: false));
@@ -126,6 +137,13 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const RecyclingProgressScreen());
       case collectionPointsList:
         return MaterialPageRoute(builder: (_) => const CollectionPointsListScreen());
+      case collectionPointCreate:
+        return MaterialPageRoute(builder: (_) => const CollectionPointCreateScreen());
+      case collectionPointDetails:
+        final collectionPointId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => CollectionPointDetailsScreen(collectionPointId: collectionPointId),
+        );
       case collectionPointWasteTypes:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
@@ -148,6 +166,14 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HelpAndGuidanceScreen());
       case changePassword:
         return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
+      case locationPicker:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => LocationPickerScreen(
+            initialLatitude: args?['initialLatitude'] as double?,
+            initialLongitude: args?['initialLongitude'] as double?,
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'waste_type_model.dart';
 
 class CollectionPoint extends Equatable {
   final int collectionPointId;
@@ -18,6 +19,7 @@ class CollectionPoint extends Equatable {
   final double? currentLoad;
   final int capacity;
   final String operatingHours;
+  final List<WasteType>? wasteTypes;
 
   const CollectionPoint({
     required this.collectionPointId,
@@ -37,10 +39,19 @@ class CollectionPoint extends Equatable {
     this.currentLoad,
     required this.capacity,
     required this.operatingHours,
+    this.wasteTypes,
   });
 
   // Factory constructor to create from API response
   factory CollectionPoint.fromJson(Map<String, dynamic> json) {
+    // Parse waste types if available
+    List<WasteType>? wasteTypes;
+    if (json['wasteTypes'] != null) {
+      wasteTypes = (json['wasteTypes'] as List)
+          .map((wasteType) => WasteType.fromJson(wasteType))
+          .toList();
+    }
+    
     return CollectionPoint(
       collectionPointId: json['collection_point_id'] ?? json['id'],
       name: json['name'],
@@ -69,6 +80,7 @@ class CollectionPoint extends Equatable {
           ? json['capacity'] 
           : int.tryParse(json['capacity'].toString()) ?? 0,
       operatingHours: json['operating_hours'] ?? json['operatingHours'] ?? '8:00-17:00',
+      wasteTypes: wasteTypes,
     );
   }
 
@@ -79,7 +91,7 @@ class CollectionPoint extends Equatable {
   List<Object?> get props => [
     collectionPointId, name, address, description, latitude, longitude, imageUrl,
     phone, email, website, isActive, createdAt, updatedAt, status,
-    currentLoad, capacity, operatingHours
+    currentLoad, capacity, operatingHours, wasteTypes
   ];
 }
 

@@ -275,6 +275,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.pushNamed(context, '/transactions');
                       },
                     ),
+                    _buildOptionItem(
+                      icon: Icons.location_on,
+                      title: 'Quản lý điểm thu gom',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/collection-points');
+                      },
+                    ),
                   ],
                 );
               }
