@@ -22,6 +22,7 @@ import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
 import 'screens/collection_point/collection_point_create_screen.dart';
+import 'screens/collection_point/collection_point_details_screen.dart';
 import 'screens/collection_point/location_picker_screen.dart';
 import 'screens/waste_type/waste_type_collection_points_screen.dart';
 import 'screens/home_screen.dart';
@@ -48,6 +49,7 @@ class AppRoutes {
   static const String collectionPointsList = '/collection-points';
   static const String collectionPointWasteTypes = '/collection-point/waste-types';
   static const String collectionPointCreate = '/collection-points/create';
+  static const String collectionPointDetails = '/collection-points/details';
   static const String transactions = '/transactions';
   static const String createTransaction = '/create-transaction';
   static const String addTransaction = '/add-transaction';
@@ -132,6 +134,11 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const CollectionPointsListScreen());
       case collectionPointCreate:
         return MaterialPageRoute(builder: (_) => const CollectionPointCreateScreen());
+      case collectionPointDetails:
+        final collectionPointId = settings.arguments as int;
+        return MaterialPageRoute(
+          builder: (_) => CollectionPointDetailsScreen(collectionPointId: collectionPointId),
+        );
       case collectionPointWasteTypes:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
