@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../utils/app_colors.dart';
 import 'dart:developer' as developer;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LocationData {
   final double latitude;
@@ -35,6 +37,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   PointAnnotationManager? _pointAnnotationManager;
   double _currentZoom = 14.0;
   bool _isLoading = false;
+  bool _isLoadingAddress = false;
   double? _selectedLatitude;
   double? _selectedLongitude;
   String? _selectedAddress;
@@ -55,6 +58,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     // Initialize with provided coordinates if available
     _selectedLatitude = widget.initialLatitude;
     _selectedLongitude = widget.initialLongitude;
+    
+    // Fetch address for initial coordinates if available
+    if (_selectedLatitude != null && _selectedLongitude != null) {
+      _fetchAddress(_selectedLatitude!, _selectedLongitude!);
+    }
   }
 
   @override
@@ -93,12 +101,54 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       setState(() {
         _selectedLatitude = point.coordinates.lat.toDouble();
         _selectedLongitude = point.coordinates.lng.toDouble();
-        _selectedAddress = "Vị trí đã chọn";
         _centerPoint = point;
       });
       
+      // Fetch address for these coordinates
+      await _fetchAddress(_selectedLatitude!, _selectedLongitude!);
+      
     } catch (e) {
       developer.log('Error updating map marker: $e', error: e);
+    }
+  }
+  
+  Future<void> _fetchAddress(double latitude, double longitude) async {
+    setState(() {
+      _isLoadingAddress = true;
+      _selectedAddress = "Đang tải địa chỉ...";
+    });
+    
+    try {
+      // Using OpenStreetMap Nominatim for reverse geocoding (free and open source)
+      final response = await http.get(
+        Uri.parse(
+          'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json&accept-language=vi'
+        ),
+        headers: {
+          'User-Agent': 'WasteManagementApp/1.0',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final address = data['display_name'] as String?;
+        
+        setState(() {
+          _selectedAddress = address ?? "Không thể xác định địa chỉ";
+          _isLoadingAddress = false;
+        });
+      } else {
+        setState(() {
+          _selectedAddress = "Không thể xác định địa chỉ";
+          _isLoadingAddress = false;
+        });
+      }
+    } catch (e) {
+      developer.log('Error fetching address: $e', error: e);
+      setState(() {
+        _selectedAddress = "Không thể xác định địa chỉ";
+        _isLoadingAddress = false;
+      });
     }
   }
   
@@ -323,28 +373,63 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   const SizedBox(height: 16),
                   
                   if (_hasSelectedLocation) ...[
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.pin_drop,
-                          color: Colors.grey,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            _selectedAddress ?? 'Vị trí không xác định',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    // Address section
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.home,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'Địa chỉ:',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                              if (_isLoadingAddress)
+                                const SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primaryGreen,
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 24),
+                            child: Text(
+                              _selectedAddress ?? 'Không xác định',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
+                    // Coordinates
                     Row(
                       children: [
                         Expanded(
