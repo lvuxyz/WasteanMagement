@@ -23,10 +23,6 @@ class CollectionPointsListScreen extends StatefulWidget {
 
 class _CollectionPointsListScreenState extends State<CollectionPointsListScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  List<CollectionPoint> _collectionPoints = [];
-  bool _isLoading = true;
-  String? _errorMessage;
   late CollectionPointRepository _repository;
   late CollectionPointBloc _collectionPointBloc;
   late AdminCubit _adminCubit;

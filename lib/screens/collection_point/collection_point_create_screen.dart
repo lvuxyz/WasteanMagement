@@ -35,7 +35,6 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   final List<String> _statusOptions = ['active', 'inactive', 'maintenance'];
 
-  bool _isCreating = false;
   String? _errorMessage;
   bool _isNavigating = false;
   bool _locationPickedFromMap = false;
