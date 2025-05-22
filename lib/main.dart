@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -34,10 +35,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'blocs/profile/profile_bloc.dart';
 
 Future<void> main() async {
-
   await dotenv.dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-
+  
+  // Thiết lập màu sắc cho thanh trạng thái
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // Thanh trạng thái trong suốt
+    statusBarIconBrightness: Brightness.dark, // Icon màu đen phù hợp với nền trắng
+  ));
 
   // Tạo các repository
   final localDataSource = LocalDataSource();
