@@ -17,11 +17,18 @@ class AdminCubit extends Cubit<bool> {
       developer.log('isAdmin check: roles contains ADMIN or admin? ${user.roles?.contains('ADMIN') ?? false} || ${user.roles?.contains('admin') ?? false}');
       developer.log('User isAdmin property: ${user.isAdmin}');
       
-      final bool isAdmin = user.isAdmin;
-      developer.log('Final admin status to emit: $isAdmin');
+      // Kiểm tra quyền admin từ cả hai nguồn
+      final bool isAdminFromProperty = user.isAdmin;
+      final bool hasAdminRole = (user.roles?.any((role) => 
+          role.toLowerCase() == 'admin') ?? false);
+          
+      final bool finalIsAdmin = isAdminFromProperty || hasAdminRole;
+          
+      developer.log('Admin check: isAdminFromProperty=$isAdminFromProperty, hasAdminRole=$hasAdminRole');
+      developer.log('Final admin status to emit: $finalIsAdmin');
       
-      emit(isAdmin);
-      developer.log('User admin status emitted: $isAdmin');
+      emit(finalIsAdmin);
+      developer.log('User admin status emitted: $finalIsAdmin');
     } catch (e) {
       developer.log('Error checking admin privileges: $e', error: e);
       // Ghi log chi tiết hơn
