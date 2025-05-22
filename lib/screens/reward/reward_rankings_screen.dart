@@ -167,7 +167,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     });
 
     return Container(
-      height: 220,
+      height: 190,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
