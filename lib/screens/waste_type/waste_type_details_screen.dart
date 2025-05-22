@@ -9,7 +9,6 @@ import '../../widgets/common/custom_tab_bar.dart';
 import '../../widgets/waste_type/waste_type_info_tab.dart';
 import '../../widgets/waste_type/waste_type_collection_points_tab.dart';
 import '../../widgets/common/error_view.dart';
-import '../../widgets/common/loading_view.dart';
 
 class WasteTypeDetailsScreen extends StatefulWidget {
   final int wasteTypeId;
