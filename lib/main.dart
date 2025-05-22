@@ -93,20 +93,21 @@ Future<void> main() async {
             )..add(const LoadLanguage()),
           ),
           BlocProvider(
+            create: (context) => AdminCubit(
+              userRepository: userRepository,
+            )..checkAdminStatus(),
+            lazy: false,
+          ),
+          BlocProvider(
             create: (context) => AuthBloc(
               userRepository: userRepository,
+              adminCubit: context.read<AdminCubit>(),
             )..add(CheckAuthenticationStatus()),
           ),
           BlocProvider(
             create: (context) => WasteTypeBloc(
               repository: wasteTypeRepository,
             ),
-          ),
-          BlocProvider(
-            create: (context) => AdminCubit(
-              userRepository: userRepository,
-            )..checkAdminStatus(),
-            lazy: false,
           ),
           BlocProvider(
             create: (context) => TransactionBloc(
