@@ -37,13 +37,17 @@ class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointStat
       ) async {
     emit(const CollectionPointLoading());
     try {
+      developer.log('Đang tải chi tiết điểm thu gom với ID: ${event.collectionPointId}');
       final collectionPoint = await repository.getCollectionPointById(event.collectionPointId);
       if (collectionPoint != null) {
-        emit(CollectionPointDetailLoaded(collectionPoint: collectionPoint));
+        developer.log('Đã tải chi tiết điểm thu gom: ${collectionPoint.name}');
+        emit(CollectionPointDetailsLoaded(collectionPoint: collectionPoint));
       } else {
+        developer.log('Không tìm thấy điểm thu gom với ID: ${event.collectionPointId}');
         emit(const CollectionPointError('Không tìm thấy điểm thu gom này'));
       }
     } catch (e) {
+      developer.log('Lỗi khi tải chi tiết điểm thu gom: $e', error: e);
       emit(CollectionPointError('Không thể tải chi tiết điểm thu gom: $e'));
     }
   }
