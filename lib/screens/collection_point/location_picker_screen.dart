@@ -33,10 +33,11 @@ class LocationPickerScreen extends StatefulWidget {
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
   MapboxMap? _mapController;
   PointAnnotationManager? _pointAnnotationManager;
-  double _currentZoom = 13.0;
+  double _currentZoom = 14.0;
   bool _isLoading = false;
   double? _selectedLatitude;
   double? _selectedLongitude;
+  String? _selectedAddress;
 
   // Default to Ho Chi Minh City if no initial location
   final double _defaultLatitude = 10.7731;
@@ -70,16 +71,19 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       // Clear existing annotations
       await _pointAnnotationManager!.deleteAll();
 
-      // Create a new point annotation
+      // Create a simple point annotation
       final options = PointAnnotationOptions(
         geometry: point,
-        iconSize: 1.0,
-        iconOffset: [0.0, -20.0],
+        iconSize: 1.5,
+        iconOffset: [0.0, -10.0],
         symbolSortKey: 10.0,
-        textColor: Colors.red.value,
-        textOffset: [0.0, -2.0],
+        textField: "Vị trí được chọn",
+        textSize: 12.0,
+        textOffset: [0.0, 2.0],
+        textColor: Colors.black.value,
         textAnchor: TextAnchor.TOP,
-        textSize: 16.0,
+        textHaloWidth: 1.0,
+        textHaloColor: Colors.white.value,
       );
 
       // Create the annotation
@@ -91,8 +95,16 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           center: point,
           zoom: _currentZoom,
         ),
-        MapAnimationOptions(duration: 500, startDelay: 0),
+        MapAnimationOptions(duration: 300, startDelay: 0),
       );
+      
+      // Update coordinates
+      setState(() {
+        _selectedLatitude = point.coordinates.lat.toDouble();
+        _selectedLongitude = point.coordinates.lng.toDouble();
+        _selectedAddress = "Vị trí đã chọn";
+      });
+      
     } catch (e) {
       developer.log('Error updating map marker: $e', error: e);
     }
@@ -100,6 +112,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
@@ -118,27 +132,24 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         children: [
           // Map Widget
           SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+            width: screenSize.width,
+            height: screenSize.height,
             child: Builder(
               builder: (context) {
                 try {
-                  return GestureDetector(
-                    onTapUp: (details) => _handleTap(details.localPosition),
-                    child: MapWidget(
-                      key: const ValueKey('mapWidget'),
-                      styleUri: MapboxStyles.MAPBOX_STREETS,
-                      cameraOptions: CameraOptions(
-                        center: Point(
-                          coordinates: Position(
-                            widget.initialLongitude ?? _defaultLongitude,
-                            widget.initialLatitude ?? _defaultLatitude,
-                          ),
+                  return MapWidget(
+                    key: const ValueKey('mapWidget'),
+                    styleUri: MapboxStyles.MAPBOX_STREETS,
+                    cameraOptions: CameraOptions(
+                      center: Point(
+                        coordinates: Position(
+                          widget.initialLongitude ?? _defaultLongitude,
+                          widget.initialLatitude ?? _defaultLatitude,
                         ),
-                        zoom: 13.0,
                       ),
-                      onMapCreated: _onMapCreated,
+                      zoom: _currentZoom,
                     ),
+                    onMapCreated: _onMapCreated,
                   );
                 } catch (e) {
                   developer.log('Error creating MapWidget: $e', error: e);
@@ -148,34 +159,114 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             ),
           ),
           
-          // Center indicator
-          Center(
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
-                shape: BoxShape.circle,
-                border: Border.all(
+          // Target crosshair in the center for easier alignment
+          if (!_hasSelectedLocation) Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.arrow_drop_down,
                   color: AppColors.primaryGreen,
-                  width: 2,
+                  size: 36,
                 ),
-              ),
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primaryGreen,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    'Nhấn vào bản đồ để chọn vị trí',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           
           // Loading indicator
           if (_isLoading)
             Positioned.fill(
-              child: Container(
-                color: Colors.black26,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primaryGreen,
+              child: IgnorePointer(
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryGreen,
+                    ),
                   ),
                 ),
               ),
             ),
+            
+          // Map controls for zoom
+          Positioned(
+            right: 16,
+            bottom: 100,
+            child: Column(
+              children: [
+                FloatingActionButton.small(
+                  heroTag: "zoomIn",
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.add, color: AppColors.primaryGreen),
+                  onPressed: () {
+                    if (_mapController != null) {
+                      _currentZoom += 1;
+                      _mapController!.setCamera(
+                        CameraOptions(
+                          zoom: _currentZoom,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.small(
+                  heroTag: "zoomOut",
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.remove, color: AppColors.primaryGreen),
+                  onPressed: () {
+                    if (_mapController != null) {
+                      _currentZoom -= 1;
+                      _mapController!.setCamera(
+                        CameraOptions(
+                          zoom: _currentZoom,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+            
+          // Location selection button
+          Positioned(
+            left: 16,
+            bottom: 100,
+            child: FloatingActionButton(
+              backgroundColor: AppColors.primaryGreen,
+              child: const Icon(Icons.my_location, color: Colors.white),
+              onPressed: _selectCenterLocation,
+            ),
+          ),
             
           // Bottom info panel
           Positioned(
@@ -184,54 +275,196 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.all(16),
-              color: Colors.white,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Vị trí đã chọn:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: AppColors.primaryGreen,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Vị trí đã chọn',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_hasSelectedLocation)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryGreen.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primaryGreen.withOpacity(0.3),
+                            ),
+                          ),
+                          child: const Text(
+                            'Đã chọn',
+                            style: TextStyle(
+                              color: AppColors.primaryGreen,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
+                  
                   if (_hasSelectedLocation) ...[
-                    Text(
-                      'Vĩ độ: ${_selectedLatitude!.toStringAsFixed(6)}',
-                      style: const TextStyle(fontSize: 14),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.pin_drop,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            _selectedAddress ?? 'Vị trí không xác định',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'Kinh độ: ${_selectedLongitude!.toStringAsFixed(6)}',
-                      style: const TextStyle(fontSize: 14),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Vĩ độ (Latitude)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedLatitude!.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Kinh độ (Longitude)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedLongitude!.toStringAsFixed(6),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ] else
-                    Text(
-                      'Nhấn vào bản đồ để chọn vị trí',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                        fontStyle: FontStyle.italic,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.touch_app,
+                            color: Colors.grey[600],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Nhấn nút vị trí để chọn điểm trên bản đồ',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _hasSelectedLocation ? _confirmLocation : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryGreen,
                       disabledBackgroundColor: Colors.grey[300],
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                      elevation: 0,
                     ),
-                    child: const Text(
-                      'XÁC NHẬN VỊ TRÍ',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'XÁC NHẬN VỊ TRÍ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -243,7 +476,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     );
   }
   
-  Future<void> _handleTap(Offset position) async {
+  void _selectCenterLocation() async {
     if (_mapController == null) return;
     
     setState(() {
@@ -251,19 +484,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     });
     
     try {
-      // Convert screen position to map coordinates
-      final screenCoordinate = ScreenCoordinate(x: position.dx, y: position.dy);
-      final point = await _mapController!.coordinateForPixel(screenCoordinate);
+      // Get the current center of the map
+      CameraState cameraState = await _mapController!.getCameraState();
+      Point centerPoint = cameraState.center;
       
-      if (point != null) {
-        setState(() {
-          _selectedLatitude = point.coordinates.lat.toDouble();
-          _selectedLongitude = point.coordinates.lng.toDouble();
-        });
-        await _updateMapMarker(point);
-      }
+      await _updateMapMarker(centerPoint);
     } catch (e) {
-      developer.log('Error handling tap: $e', error: e);
+      developer.log('Error selecting center location: $e', error: e);
     } finally {
       setState(() {
         _isLoading = false;
@@ -277,7 +504,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     _mapController = mapboxMap;
     
     // Set initial zoom
-    _currentZoom = 13.0;
+    _currentZoom = 14.0;
     
     // Configure gestures
     await mapboxMap.gestures.updateSettings(
@@ -315,6 +542,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         LocationData(
           latitude: _selectedLatitude!,
           longitude: _selectedLongitude!,
+          address: _selectedAddress,
         ),
       );
     }
