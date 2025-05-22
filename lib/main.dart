@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'package:wasteanmagement/blocs/chat/chat_bloc.dart';
 import 'package:wasteanmagement/blocs/language/language_state.dart';
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/core/api/api_client.dart';
@@ -10,6 +11,7 @@ import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
 import 'package:wasteanmagement/repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/repositories/collection_point_repository.dart';
+import 'package:wasteanmagement/services/openai_service.dart';
 import 'package:wasteanmagement/services/reward_service.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/blocs/waste_type/waste_type_bloc.dart';
@@ -58,8 +60,9 @@ Future<void> main() async {
   final collectionPointRepository = CollectionPointRepository(apiClient: apiClient);
   final transactionRepository = TransactionRepository(apiClient: apiClient);
   
-  // Create reward service
+  // Create services
   final rewardService = RewardService();
+  final openAIService = OpenAIService();
 
   runApp(
     MultiProvider(
@@ -74,6 +77,7 @@ Future<void> main() async {
         RepositoryProvider<TransactionRepository>.value(value: transactionRepository),
         // Service providers
         Provider<RewardService>.value(value: rewardService),
+        Provider<OpenAIService>.value(value: openAIService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -123,6 +127,12 @@ Future<void> main() async {
           BlocProvider(
             create: (context) => CollectionPointBloc(
               repository: collectionPointRepository,
+            ),
+          ),
+          // Add ChatBloc
+          BlocProvider(
+            create: (context) => ChatBloc(
+              openAIService: openAIService,
             ),
           ),
         ],
