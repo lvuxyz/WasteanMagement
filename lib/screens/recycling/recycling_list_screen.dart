@@ -54,34 +54,11 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      final bloc = context.read<RecyclingBloc>();
-      final state = bloc.state;
-      if (state is RecyclingProcessesLoaded && state.page < state.totalPages) {
-        _loadMoreData();
-      }
-    }
-  }
-
-  void _loadMoreData() {
-    setState(() {
-      _currentPage++;
-    });
-    
-    _fetchRecyclingProcesses();
+    // Không cần phân trang vì API trả về tất cả dữ liệu
   }
 
   void _fetchRecyclingProcesses() {
-    final fromDate = DateFormat('yyyy-MM-dd').format(_startDate);
-    final toDate = DateFormat('yyyy-MM-dd').format(_endDate);
-    
-    context.read<RecyclingBloc>().add(GetRecyclingProcesses(
-      page: _currentPage,
-      limit: _itemsPerPage,
-      status: _selectedStatus,
-      fromDate: fromDate,
-      toDate: toDate,
-    ));
+    context.read<RecyclingBloc>().add(GetAllRecyclingProcesses());
   }
 
   void _resetFilters() {
@@ -89,7 +66,6 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
       _selectedStatus = null;
       _startDate = DateTime.now().subtract(const Duration(days: 30));
       _endDate = DateTime.now();
-      _currentPage = 1;
     });
     
     _fetchRecyclingProcesses();
@@ -120,7 +96,6 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
       setState(() {
         _startDate = picked.start;
         _endDate = picked.end;
-        _currentPage = 1;
       });
       
       _fetchRecyclingProcesses();
@@ -135,10 +110,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
           recyclingService: RecyclingService(),
           networkInfo: NetworkInfoImpl(),
         ),
-      )..add(GetRecyclingProcesses(
-          page: _currentPage,
-          limit: _itemsPerPage,
-        )),
+      )..add(GetAllRecyclingProcesses()),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Quản lý tái chế'),
@@ -211,27 +183,13 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
                     
                     return RefreshIndicator(
                       onRefresh: () async {
-                        setState(() {
-                          _currentPage = 1;
-                        });
                         _fetchRecyclingProcesses();
                       },
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(8),
-                        itemCount: processes.length + 1,
+                        itemCount: processes.length,
                         itemBuilder: (context, index) {
-                          if (index == processes.length) {
-                            return _currentPage < state.totalPages
-                                ? const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  )
-                                : const SizedBox.shrink();
-                          }
-                          
                           final process = processes[index];
                           return _buildRecyclingProcessCard(process);
                         },
@@ -255,9 +213,6 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
                 builder: (context) => const RecyclingFormScreen(),
               ),
             ).then((_) {
-              setState(() {
-                _currentPage = 1;
-              });
               _fetchRecyclingProcesses();
             });
           },
@@ -327,7 +282,6 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
             onChanged: (value) {
               setState(() {
                 _selectedStatus = value;
-                _currentPage = 1;
               });
               _fetchRecyclingProcesses();
             },
@@ -470,19 +424,26 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Ngày bắt đầu: ${DateFormat('dd/MM/yyyy').format(process.startDate)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  if (process.endDate != null)
-                    Text(
-                      'Ngày kết thúc: ${DateFormat('dd/MM/yyyy').format(process.endDate!)}',
+                  Flexible(
+                    child: Text(
+                      'Ngày bắt đầu: ${DateFormat('dd/MM/yyyy').format(process.startDate)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (process.endDate != null)
+                    Flexible(
+                      child: Text(
+                        'Ngày kết thúc: ${DateFormat('dd/MM/yyyy').format(process.endDate!)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                 ],

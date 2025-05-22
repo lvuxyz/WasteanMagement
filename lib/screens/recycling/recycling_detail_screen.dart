@@ -176,8 +176,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                     if (_isAdmin)
                       Padding(
                         padding: const EdgeInsets.only(top: 24),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Column(
                           children: [
                             ElevatedButton.icon(
                               onPressed: () {
@@ -189,6 +188,40 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                                 backgroundColor: AppColors.primaryGreen,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 2,
+                                minimumSize: const Size(double.infinity, 48),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                // Chia sẻ thông tin quy trình
+                                final String shareText = 'Thông tin quy trình tái chế:\n'
+                                    'Mã quy trình: ${process.id}\n'
+                                    'Loại rác: ${process.wasteTypeName}\n'
+                                    'Trạng thái: ${process.status}\n'
+                                    'Ngày bắt đầu: ${DateFormat('dd/MM/yyyy HH:mm').format(process.startDate)}';
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Đã sao chép thông tin vào clipboard'),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.share),
+                              label: const Text('Chia sẻ thông tin'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primaryGreen,
+                                side: BorderSide(color: AppColors.primaryGreen),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                minimumSize: const Size(double.infinity, 48),
                               ),
                             ),
                           ],
@@ -264,37 +297,94 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Row(
+        child: Column(
           children: [
-            Icon(
-              statusIcon,
-              size: 48,
-              color: Colors.white,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Icon(
+                    statusIcon,
+                    size: 36,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        statusText,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.update,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Cập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(process.endDate ?? process.startDate)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    statusText,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+            if (process.processedQuantity != null && process.quantity != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tiến độ xử lý',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Cập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(process.endDate ?? process.startDate)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: process.processedQuantity! / process.quantity!,
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      minHeight: 10,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      '${process.processedQuantity} / ${process.quantity} kg (${((process.processedQuantity! / process.quantity!) * 100).toStringAsFixed(1)}%)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -312,25 +402,90 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Thông tin quy trình',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            // Thông tin chung
+            Row(
+              children: [
+                Icon(Icons.info_outline, color: AppColors.primaryGreen, size: 22),
+                const SizedBox(width: 8),
+                const Text(
+                  'Thông tin quy trình',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const Divider(),
+            _buildInfoRow('Mã quy trình', process.id),
             _buildInfoRow('Mã giao dịch', process.transactionId),
+            
+            // Thông tin loại rác và số lượng
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.delete_outline, color: AppColors.primaryGreen, size: 22),
+                const SizedBox(width: 8),
+                const Text(
+                  'Thông tin rác thải',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
             _buildInfoRow('Loại rác', process.wasteTypeName),
-            _buildInfoRow('Số lượng ban đầu', '${process.quantity} kg'),
+            _buildInfoRow('Số lượng giao dịch', '${process.transactionQuantity ?? 0} kg'),
+            if (process.quantity != null)
+              _buildInfoRow('Số lượng ban đầu', '${process.quantity} kg'),
             if (process.processedQuantity != null)
               _buildInfoRow('Số lượng đã xử lý', '${process.processedQuantity} kg'),
-            _buildInfoRow('Ngày bắt đầu', DateFormat('dd/MM/yyyy').format(process.startDate)),
+            
+            // Thông tin thời gian
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.calendar_today, color: AppColors.primaryGreen, size: 22),
+                const SizedBox(width: 8),
+                const Text(
+                  'Thông tin thời gian',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            _buildInfoRow('Ngày bắt đầu', DateFormat('dd/MM/yyyy HH:mm').format(process.startDate)),
             if (process.endDate != null)
-              _buildInfoRow('Ngày kết thúc', DateFormat('dd/MM/yyyy').format(process.endDate!)),
+              _buildInfoRow('Ngày kết thúc', DateFormat('dd/MM/yyyy HH:mm').format(process.endDate!)),
+            
+            // Thông tin người dùng
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.person_outline, color: AppColors.primaryGreen, size: 22),
+                const SizedBox(width: 8),
+                const Text(
+                  'Thông tin người dùng',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
             if (process.processedBy != null)
               _buildInfoRow('Người xử lý', process.processedBy!),
-            _buildInfoRow('Mã người dùng', process.userId),
+            _buildInfoRow('Mã người dùng', process.userId ?? 'Không có'),
+            if (process.userName != null)
+              _buildInfoRow('Tên người dùng', process.userName!),
+            if (process.userFullName != null)
+              _buildInfoRow('Họ tên đầy đủ', process.userFullName!),
           ],
         ),
       ),
@@ -348,18 +503,33 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Ghi chú',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Icon(Icons.notes, color: AppColors.primaryGreen, size: 22),
+                const SizedBox(width: 8),
+                const Text(
+                  'Ghi chú',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const Divider(),
-            Text(
-              process.notes!,
-              style: const TextStyle(
-                fontSize: 14,
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Text(
+                process.notes!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                ),
               ),
             ),
           ],

@@ -74,9 +74,9 @@ class RecyclingProgressBloc extends Bloc<RecyclingProgressEvent, RecyclingProgre
         );
         
         emit(RecyclingProgressLoaded(
-          records: [],
-          filteredRecords: [],
-          wasteTypeQuantities: {},
+          records: const [],
+          filteredRecords: const [],
+          wasteTypeQuantities: const {},
           totalWeight: 0,
           statistics: statistics,
         ));

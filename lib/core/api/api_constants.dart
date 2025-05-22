@@ -46,4 +46,10 @@ class ApiConstants {
   static String collectionPointDetail(int id) => '$baseUrl/collection-points/$id';
   static String get wasteTypeCollectionPoint => '$baseUrl/waste-types/collection-point';
   static String wasteTypesForCollectionPoint(int collectionPointId) => '$baseUrl/waste-types/collection-point/$collectionPointId';
+  
+  // Endpoint liên quan đến tái chế
+  static String get recycling => '$baseUrl/recycling';
+  static String get recyclingAll => '$baseUrl/recycling/all';
+  static String recyclingDetail(String id) => '$baseUrl/recycling/$id';
+  static String get recyclingReport => '$baseUrl/recycling/report';
 }

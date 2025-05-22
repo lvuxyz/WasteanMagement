@@ -26,12 +26,7 @@ class RecyclingService {
     String? toDate,
   }) async {
     try {
-      String url = '${ApiConstants.baseUrl}/recycling?page=$page&limit=$limit';
-      
-      if (status != null) url += '&status=$status';
-      if (wasteTypeId != null) url += '&waste_type_id=$wasteTypeId';
-      if (fromDate != null) url += '&from_date=$fromDate';
-      if (toDate != null) url += '&to_date=$toDate';
+      final url = ApiConstants.recyclingAll;
       
       developer.log('Gọi API lấy danh sách quy trình tái chế: $url');
       final response = await _apiClient.get(url);
@@ -48,10 +43,10 @@ class RecyclingService {
         
         return {
           'processes': processes,
-          'total': data['total'] ?? 0,
-          'page': data['page'] ?? 1,
-          'limit': data['limit'] ?? 10,
-          'totalPages': data['totalPages'] ?? 1,
+          'total': processes.length,
+          'page': 1,
+          'limit': processes.length,
+          'totalPages': 1,
         };
       } else {
         throw Exception('Lỗi khi lấy danh sách quy trình tái chế: ${response.message}');
@@ -65,7 +60,7 @@ class RecyclingService {
   // Lấy toàn bộ danh sách quy trình tái chế (không phân trang)
   Future<List<RecyclingProcess>> getAllRecyclingProcesses() async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling/all';
+      final url = ApiConstants.recyclingAll;
       developer.log('Gọi API lấy toàn bộ quy trình tái chế: $url');
       final response = await _apiClient.get(url);
       
@@ -92,7 +87,7 @@ class RecyclingService {
   // Lấy chi tiết quy trình tái chế
   Future<RecyclingProcess> getRecyclingProcessDetail(String id) async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling/$id';
+      final url = ApiConstants.recyclingDetail(id);
       developer.log('Gọi API lấy chi tiết quy trình tái chế: $url');
       final response = await _apiClient.get(url);
       
@@ -121,7 +116,7 @@ class RecyclingService {
     String? notes,
   }) async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling';
+      final url = ApiConstants.recycling;
       developer.log('Gọi API tạo mới quy trình tái chế: $url');
       
       final body = {
@@ -159,7 +154,7 @@ class RecyclingService {
     String? notes,
   }) async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling/$id';
+      final url = ApiConstants.recyclingDetail(id);
       developer.log('Gọi API cập nhật quy trình tái chế: $url');
       
       final body = {
@@ -195,12 +190,12 @@ class RecyclingService {
     String? wasteTypeId,
   }) async {
     try {
-      String url = '${ApiConstants.baseUrl}/recycling/report';
+      String url = ApiConstants.recyclingReport;
       
       if (fromDate != null || toDate != null || wasteTypeId != null) {
         url += '?';
-        if (fromDate != null) url += 'from_date=$fromDate&';
-        if (toDate != null) url += 'to_date=$toDate&';
+        if (fromDate != null) url += 'from=$fromDate&';
+        if (toDate != null) url += 'to=$toDate&';
         if (wasteTypeId != null) url += 'waste_type_id=$wasteTypeId&';
         url = url.substring(0, url.length - 1); // Loại bỏ dấu & cuối cùng
       }
@@ -232,12 +227,12 @@ class RecyclingService {
     String? wasteTypeId,
   }) async {
     try {
-      String url = '${ApiConstants.baseUrl}/recycling/statistics';
+      String url = ApiConstants.recyclingStatistics;
       
       if (fromDate != null || toDate != null || wasteTypeId != null) {
         url += '?';
-        if (fromDate != null) url += 'from_date=$fromDate&';
-        if (toDate != null) url += 'to_date=$toDate&';
+        if (fromDate != null) url += 'from=$fromDate&';
+        if (toDate != null) url += 'to=$toDate&';
         if (wasteTypeId != null) url += 'waste_type_id=$wasteTypeId&';
         url = url.substring(0, url.length - 1); // Loại bỏ dấu & cuối cùng
       }
@@ -265,7 +260,7 @@ class RecyclingService {
   // Lấy danh sách quy trình tái chế theo người dùng
   Future<List<RecyclingProcess>> getUserRecyclingProcesses(String userId) async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling/user/$userId';
+      final url = '${ApiConstants.recycling}/user/$userId';
       developer.log('Gọi API lấy quy trình tái chế của người dùng: $url');
       final response = await _apiClient.get(url);
       
@@ -292,7 +287,7 @@ class RecyclingService {
   // Gửi thông báo cập nhật quy trình tái chế (chỉ ADMIN)
   Future<bool> sendRecyclingNotification(String id, String message) async {
     try {
-      final url = '${ApiConstants.baseUrl}/recycling/notify/$id';
+      final url = '${ApiConstants.recycling}/notify/$id';
       developer.log('Gọi API gửi thông báo cập nhật quy trình tái chế: $url');
       
       final response = await _apiClient.post(url, body: {
