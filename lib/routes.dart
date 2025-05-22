@@ -32,6 +32,7 @@ import 'screens/about_app_screen.dart';
 import 'screens/help_and_guidance_screen.dart';
 import 'screens/change_password.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/chat_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/';
@@ -69,9 +70,14 @@ class AppRoutes {
   static const String adminRewardManagement = '/admin/rewards';
   static const String addReward = '/admin/rewards/add';
   static const String locationPicker = '/location-picker';
+  // Chat route
+  static const String chat = '/chat';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // Chat route
+      case chat:
+        return MaterialPageRoute(builder: (_) => const ChatScreen());
       // Reward routes
       case rewards:
         return MaterialPageRoute(builder: (_) => const RewardScreen(isInTabView: false));
