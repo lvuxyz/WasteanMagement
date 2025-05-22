@@ -1,6 +1,11 @@
 import 'package:wasteanmagement/core/api/api_client.dart';
 import 'package:wasteanmagement/core/api/api_constants.dart';
 import 'package:wasteanmagement/models/transaction.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'dart:convert';
+import 'package:path/path.dart' as path;
 
 class TransactionRepository {
   final ApiClient apiClient;
@@ -112,35 +117,99 @@ class TransactionRepository {
     required int wasteTypeId,
     required double quantity,
     required String unit,
-    String? proofImageUrl,
+    File? proofImage,
   }) async {
     try {
-      final Map<String, dynamic> data = {
-        'collection_point_id': collectionPointId,
-        'waste_type_id': wasteTypeId,
-        'quantity': quantity,
-        'unit': unit,
-      };
+      // If there's no image, use the standard API client
+      if (proofImage == null) {
+        final Map<String, dynamic> data = {
+          'collection_point_id': collectionPointId,
+          'waste_type_id': wasteTypeId,
+          'quantity': quantity,
+          'unit': unit,
+        };
 
-      if (proofImageUrl != null) {
-        data['proof_image_url'] = proofImageUrl;
+        print('Creating transaction with data: $data');
+        final response = await apiClient.post(
+          ApiConstants.transactions,
+          body: data,
+        );
+
+        // Convert response to expected format
+        final bool isSuccess = response.isSuccess;
+        final String message = response.message;
+
+        return {
+          'success': isSuccess,
+          'message': message,
+          'data': response.data['data']
+        };
+      } 
+      // If there's an image, use multipart request
+      else {
+        // Get token
+        final token = await apiClient.secureStorage.getToken();
+        if (token == null) {
+          throw Exception('Không tìm thấy token xác thực');
+        }
+
+        // Create multipart request
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConstants.transactions),
+        );
+
+        // Add authorization header
+        request.headers.addAll({
+          'Authorization': 'Bearer $token',
+        });
+
+        // Add transaction data fields
+        request.fields['collection_point_id'] = collectionPointId.toString();
+        request.fields['waste_type_id'] = wasteTypeId.toString();
+        request.fields['quantity'] = quantity.toString();
+        request.fields['unit'] = unit;
+
+        // Add image file
+        final fileExtension = path.extension(proofImage.path).replaceAll('.', '');
+        final contentType = _getMimeType(fileExtension);
+        
+        request.files.add(await http.MultipartFile.fromPath(
+          'proof_image', // This MUST be 'proof_image', not 'proof_image_url'
+          proofImage.path,
+          contentType: MediaType.parse(contentType),
+        ));
+
+        print('Sending multipart request with image to: ${ApiConstants.transactions}');
+        
+        // Send request
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+
+        print('Transaction API response: ${response.statusCode}, ${response.body}');
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          final responseData = json.decode(response.body);
+          return {
+            'success': true,
+            'message': responseData['message'] ?? 'Tạo giao dịch thành công',
+            'data': responseData['data']
+          };
+        } else {
+          try {
+            final errorData = json.decode(response.body);
+            return {
+              'success': false,
+              'message': errorData['message'] ?? 'Lỗi khi tạo giao dịch',
+            };
+          } catch (e) {
+            return {
+              'success': false,
+              'message': 'Lỗi khi tạo giao dịch: ${response.statusCode}',
+            };
+          }
+        }
       }
-
-      print('Creating transaction with data: $data');
-      final response = await apiClient.post(
-        ApiConstants.transactions,
-        body: data,
-      );
-
-      // Chuyển đổi từ ApiResponse sang dạng tương thích với TransactionResponse
-      final bool isSuccess = response.isSuccess;
-      final String message = response.message;
-
-      return {
-        'success': isSuccess,
-        'message': message,
-        'data': response.data['data']
-      };
     } catch (e) {
       print('Exception in createTransaction: $e');
       throw Exception('Failed to create transaction: $e');
@@ -226,34 +295,98 @@ class TransactionRepository {
     required int wasteTypeId,
     required double quantity,
     required String unit,
-    String? proofImageUrl,
+    File? proofImage,
   }) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
       print('Updating transaction: $url');
       
-      final Map<String, dynamic> data = {
-        'collection_point_id': collectionPointId,
-        'waste_type_id': wasteTypeId,
-        'quantity': quantity,
-        'unit': unit,
-      };
-      
-      if (proofImageUrl != null) {
-        data['proof_image_url'] = proofImageUrl;
+      // If there's no image, use the standard API client
+      if (proofImage == null) {
+        final Map<String, dynamic> data = {
+          'collection_point_id': collectionPointId,
+          'waste_type_id': wasteTypeId,
+          'quantity': quantity,
+          'unit': unit,
+        };
+        
+        final response = await apiClient.put(url, body: data);
+        
+        // Convert response to expected format
+        final bool isSuccess = response.isSuccess;
+        final String message = response.message;
+        
+        return {
+          'success': isSuccess,
+          'message': message,
+          'data': response.data['data']
+        };
+      } 
+      // If there's an image, use multipart request
+      else {
+        // Get token
+        final token = await apiClient.secureStorage.getToken();
+        if (token == null) {
+          throw Exception('Không tìm thấy token xác thực');
+        }
+
+        // Create multipart request
+        final request = http.MultipartRequest(
+          'PUT',
+          Uri.parse(url),
+        );
+
+        // Add authorization header
+        request.headers.addAll({
+          'Authorization': 'Bearer $token',
+        });
+
+        // Add transaction data fields
+        request.fields['collection_point_id'] = collectionPointId.toString();
+        request.fields['waste_type_id'] = wasteTypeId.toString();
+        request.fields['quantity'] = quantity.toString();
+        request.fields['unit'] = unit;
+
+        // Add image file
+        final fileExtension = path.extension(proofImage.path).replaceAll('.', '');
+        final contentType = _getMimeType(fileExtension);
+        
+        request.files.add(await http.MultipartFile.fromPath(
+          'proof_image', // This MUST be 'proof_image', not 'proof_image_url'
+          proofImage.path,
+          contentType: MediaType.parse(contentType),
+        ));
+
+        print('Sending multipart PUT request with image to: $url');
+        
+        // Send request
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+
+        print('Transaction update API response: ${response.statusCode}, ${response.body}');
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          final responseData = json.decode(response.body);
+          return {
+            'success': true,
+            'message': responseData['message'] ?? 'Cập nhật giao dịch thành công',
+            'data': responseData['data']
+          };
+        } else {
+          try {
+            final errorData = json.decode(response.body);
+            return {
+              'success': false,
+              'message': errorData['message'] ?? 'Lỗi khi cập nhật giao dịch',
+            };
+          } catch (e) {
+            return {
+              'success': false,
+              'message': 'Lỗi khi cập nhật giao dịch: ${response.statusCode}',
+            };
+          }
+        }
       }
-      
-      final response = await apiClient.put(url, body: data);
-      
-      // Convert response to expected format
-      final bool isSuccess = response.isSuccess;
-      final String message = response.message;
-      
-      return {
-        'success': isSuccess,
-        'message': message,
-        'data': response.data['data']
-      };
     } catch (e) {
       print('Exception in updateTransaction: $e');
       throw Exception('Failed to update transaction: $e');
@@ -280,6 +413,23 @@ class TransactionRepository {
     } catch (e) {
       print('Exception in getTransactionHistory: $e');
       throw Exception('Failed to load transaction history: $e');
+    }
+  }
+
+  // Helper method to get mime type from file extension
+  String _getMimeType(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
     }
   }
 }
