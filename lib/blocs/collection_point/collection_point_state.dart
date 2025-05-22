@@ -48,6 +48,17 @@ class CollectionPointsLoaded extends CollectionPointState {
   }
 }
 
+class CollectionPointDetailsLoaded extends CollectionPointState {
+  final CollectionPoint collectionPoint;
+
+  const CollectionPointDetailsLoaded({
+    required this.collectionPoint,
+  });
+
+  @override
+  List<Object?> get props => [collectionPoint];
+}
+
 class CollectionPointDetailLoaded extends CollectionPointState {
   final CollectionPoint collectionPoint;
 
