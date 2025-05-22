@@ -22,6 +22,7 @@ import 'screens/waste_type/waste_type_add_screen.dart';
 import 'screens/collection_point/collection_points_list_screen.dart';
 import 'screens/collection_point/collection_point_waste_types_screen.dart';
 import 'screens/collection_point/collection_point_create_screen.dart';
+import 'screens/collection_point/location_picker_screen.dart';
 import 'screens/waste_type/waste_type_collection_points_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
@@ -66,6 +67,7 @@ class AppRoutes {
   static const String rewardRankings = '/rewards/rankings';
   static const String adminRewardManagement = '/admin/rewards';
   static const String addReward = '/admin/rewards/add';
+  static const String locationPicker = '/location-picker';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -152,6 +154,14 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HelpAndGuidanceScreen());
       case changePassword:
         return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
+      case locationPicker:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => LocationPickerScreen(
+            initialLatitude: args?['initialLatitude'] as double?,
+            initialLongitude: args?['initialLongitude'] as double?,
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
