@@ -3,41 +3,47 @@ class RecyclingProcess {
   final String transactionId;
   final String wasteTypeId;
   final String wasteTypeName;
-  final double quantity;
+  final double? quantity;
   final double? processedQuantity;
   final String status;
   final DateTime startDate;
   final DateTime? endDate;
   final String? notes;
   final String? processedBy;
-  final String userId;
+  final String? userId;
   final String? imageUrl;
+  final String? userName;
+  final String? userFullName;
+  final double? transactionQuantity;
 
   RecyclingProcess({
     required this.id,
     required this.transactionId,
     required this.wasteTypeId,
     required this.wasteTypeName,
-    required this.quantity,
+    this.quantity,
     this.processedQuantity,
     required this.status,
     required this.startDate,
     this.endDate,
     this.notes,
     this.processedBy,
-    required this.userId,
+    this.userId,
     this.imageUrl,
+    this.userName,
+    this.userFullName,
+    this.transactionQuantity,
   });
 
   factory RecyclingProcess.fromJson(Map<String, dynamic> json) {
     return RecyclingProcess(
-      id: json['id']?.toString() ?? '',
+      id: json['process_id']?.toString() ?? '',
       transactionId: json['transaction_id']?.toString() ?? '',
       wasteTypeId: json['waste_type_id']?.toString() ?? '',
       wasteTypeName: json['waste_type_name'] ?? '',
-      quantity: (json['quantity'] ?? 0.0).toDouble(),
+      quantity: json['quantity'] != null ? (json['quantity']).toDouble() : null,
       processedQuantity: json['processed_quantity'] != null 
-          ? (json['processed_quantity']).toDouble() 
+          ? double.tryParse(json['processed_quantity'].toString())
           : null,
       status: json['status'] ?? 'pending',
       startDate: json['start_date'] != null 
@@ -48,14 +54,19 @@ class RecyclingProcess {
           : null,
       notes: json['notes'],
       processedBy: json['processed_by'],
-      userId: json['user_id']?.toString() ?? '',
+      userId: json['user_id']?.toString(),
       imageUrl: json['image_url'],
+      userName: json['user_name'],
+      userFullName: json['user_full_name'],
+      transactionQuantity: json['transaction_quantity'] != null 
+          ? double.tryParse(json['transaction_quantity'].toString())
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'process_id': id,
       'transaction_id': transactionId,
       'waste_type_id': wasteTypeId,
       'waste_type_name': wasteTypeName,
@@ -68,6 +79,9 @@ class RecyclingProcess {
       'processed_by': processedBy,
       'user_id': userId,
       'image_url': imageUrl,
+      'user_name': userName,
+      'user_full_name': userFullName,
+      'transaction_quantity': transactionQuantity,
     };
   }
 
@@ -85,6 +99,9 @@ class RecyclingProcess {
     String? processedBy,
     String? userId,
     String? imageUrl,
+    String? userName,
+    String? userFullName,
+    double? transactionQuantity,
   }) {
     return RecyclingProcess(
       id: id ?? this.id,
@@ -100,6 +117,9 @@ class RecyclingProcess {
       processedBy: processedBy ?? this.processedBy,
       userId: userId ?? this.userId,
       imageUrl: imageUrl ?? this.imageUrl,
+      userName: userName ?? this.userName,
+      userFullName: userFullName ?? this.userFullName,
+      transactionQuantity: transactionQuantity ?? this.transactionQuantity,
     );
   }
 

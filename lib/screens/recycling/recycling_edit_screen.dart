@@ -192,9 +192,9 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
             const Divider(),
             _buildInfoRow('Mã giao dịch', widget.process.transactionId),
             _buildInfoRow('Loại rác', widget.process.wasteTypeName),
-            _buildInfoRow('Số lượng ban đầu', '${widget.process.quantity} kg'),
+            _buildInfoRow('Số lượng ban đầu', '${widget.process.quantity ?? 0} kg'),
             _buildInfoRow('Ngày bắt đầu', DateFormat('dd/MM/yyyy').format(widget.process.startDate)),
-            _buildInfoRow('Mã người dùng', widget.process.userId),
+            _buildInfoRow('Mã người dùng', widget.process.userId ?? 'Không có'),
           ],
         ),
       ),
@@ -270,7 +270,8 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
                   if (parsed <= 0) {
                     return 'Số lượng phải lớn hơn 0';
                   }
-                  if (parsed > widget.process.quantity) {
+                  final quantity = widget.process.quantity ?? 0;
+                  if (parsed > quantity) {
                     return 'Số lượng không thể lớn hơn số lượng ban đầu';
                   }
                 }
