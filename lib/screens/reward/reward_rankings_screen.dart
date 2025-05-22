@@ -214,6 +214,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             radius: 32 * scale,
@@ -231,7 +232,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -247,7 +248,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             ranking.name ?? 'Người dùng ${ranking.userId}',
             style: TextStyle(
@@ -275,8 +276,8 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
             ],
           ),
           Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 60 * scale,
+            margin: const EdgeInsets.only(top: 4),
+            height: 50 * scale,
             width: 40 * scale,
             decoration: BoxDecoration(
               color: color.withOpacity(0.3),
@@ -295,6 +296,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             radius: 32 * scale,
@@ -305,7 +307,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               size: 30 * scale,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Text(
             'Chưa có',
             style: TextStyle(
@@ -313,10 +315,10 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               fontSize: 14 * scale,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 60 * scale,
+            margin: const EdgeInsets.only(top: 4),
+            height: 50 * scale,
             width: 40 * scale,
             decoration: BoxDecoration(
               color: Colors.grey.withOpacity(0.1),
