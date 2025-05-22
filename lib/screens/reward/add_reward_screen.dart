@@ -112,13 +112,16 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       
       try {
         final rewardService = RewardService();
-        int? transactionId;
+        setState(() {
+          _isLoading = true;
+          _message = '';
+        });
         
-        if (_transactionIdController.text.isNotEmpty) {
-          transactionId = int.tryParse(_transactionIdController.text);
-        }
+        final transactionId = _transactionIdController.text.isNotEmpty
+            ? int.tryParse(_transactionIdController.text)
+            : null;
         
-        final reward = await rewardService.createReward(
+        await rewardService.createReward(
           _selectedUserId!,
           int.parse(_pointsController.text),
           transactionId: transactionId,
