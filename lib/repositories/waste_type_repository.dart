@@ -229,8 +229,8 @@ class WasteTypeRepository {
     try {
       developer.log('Đang gọi API hủy liên kết loại rác với điểm thu gom');
       
-      // Chuẩn bị query params cho DELETE request
-      final url = '${ApiConstants.baseUrl}/waste-types/collection-point?waste_type_id=$wasteTypeId&collection_point_id=$collectionPointId';
+      // Sử dụng mẫu URL với path parameters thay vì query parameters
+      final url = '${ApiConstants.baseUrl}/waste-types/collection-point/$collectionPointId/$wasteTypeId';
       
       developer.log('URL yêu cầu: $url');
       
@@ -239,6 +239,12 @@ class WasteTypeRepository {
       developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        // For 204 No Content, the response will be empty
+        if (response.statusCode == 204) {
+          return true;
+        }
+        
+        // For other successful status codes, check the response data
         final data = response.data;
         
         developer.log('Dữ liệu phản hồi: $data');
