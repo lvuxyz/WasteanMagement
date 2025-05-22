@@ -8,6 +8,9 @@ import '../../widgets/common/error_view.dart';
 import '../../repositories/collection_point_repository.dart';
 import '../../core/api/api_client.dart';
 import '../../blocs/admin/admin_cubit.dart';
+import '../../blocs/collection_point/collection_point_bloc.dart';
+import '../../blocs/collection_point/collection_point_event.dart';
+import '../../blocs/collection_point/collection_point_state.dart';
 
 class CollectionPointsListScreen extends StatefulWidget {
   const CollectionPointsListScreen({Key? key}) : super(key: key);
@@ -23,6 +26,9 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   bool _isLoading = true;
   String? _errorMessage;
   late CollectionPointRepository _repository;
+  late CollectionPointBloc _collectionPointBloc;
+  
+  bool get _isAdmin => context.read<AdminCubit>().state;
 
   @override
   void initState() {
@@ -31,43 +37,23 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     final apiClient = context.read<ApiClient>();
     // Khởi tạo repository
     _repository = CollectionPointRepository(apiClient: apiClient);
+    _collectionPointBloc = CollectionPointBloc(repository: _repository);
     _searchController.addListener(_onSearchChanged);
-    _loadCollectionPoints();
+    
+    // Load data through BLoC
+    _collectionPointBloc.add(LoadCollectionPoints());
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _collectionPointBloc.close();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text;
-    });
-  }
-
-  Future<void> _loadCollectionPoints() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Lấy dữ liệu từ API thông qua repository
-      final collectionPoints = await _repository.getAllCollectionPoints();
-      
-      setState(() {
-        _collectionPoints = collectionPoints;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
+    _collectionPointBloc.add(SearchCollectionPoints(_searchController.text));
   }
 
   void _navigateToWasteTypes(BuildContext context, CollectionPoint collectionPoint) {
@@ -80,47 +66,79 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
       },
     );
   }
+  
+  void _navigateToCreateScreen() {
+    Navigator.pushNamed(
+      context,
+      '/collection-points/create',
+    ).then((_) {
+      // Refresh data when returning from create screen
+      _collectionPointBloc.add(LoadCollectionPoints());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryGreen,
-        title: Text(
-          'Điểm thu gom',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadCollectionPoints,
+    return BlocProvider.value(
+      value: _collectionPointBloc,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primaryGreen,
+          title: Text(
+            'Điểm thu gom',
+            style: TextStyle(color: Colors.white),
           ),
-        ],
+          actions: [
+            IconButton(
+              icon: Icon(Icons.refresh, color: Colors.white),
+              onPressed: () => _collectionPointBloc.add(LoadCollectionPoints()),
+            ),
+          ],
+        ),
+        body: BlocConsumer<CollectionPointBloc, CollectionPointState>(
+          listener: (context, state) {
+            if (state is CollectionPointError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is CollectionPointLoading) {
+              return LoadingView(message: 'Đang tải điểm thu gom...');
+            } else if (state is CollectionPointError) {
+              return ErrorView(
+                icon: Icons.error_outline,
+                title: 'Đã xảy ra lỗi',
+                message: state.message,
+                buttonText: 'Thử lại',
+                onRetry: () => _collectionPointBloc.add(LoadCollectionPoints()),
+              );
+            } else if (state is CollectionPointsLoaded) {
+              return _buildCollectionPointsList(state);
+            }
+            
+            return const LoadingView(message: 'Đang tải...');
+          },
+        ),
+        floatingActionButton: _isAdmin 
+          ? FloatingActionButton(
+              onPressed: _navigateToCreateScreen,
+              backgroundColor: AppColors.primaryGreen,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       ),
-      body: _isLoading
-          ? LoadingView(message: 'Đang tải điểm thu gom...')
-          : _errorMessage != null
-              ? ErrorView(
-                  icon: Icons.error_outline,
-                  title: 'Đã xảy ra lỗi',
-                  message: _errorMessage!,
-                  buttonText: 'Thử lại',
-                  onRetry: _loadCollectionPoints,
-                )
-              : _buildCollectionPointsList(),
     );
   }
 
-  Widget _buildCollectionPointsList() {
-    // Filter collection points by search query
-    final filteredCollectionPoints = _searchQuery.isEmpty
-        ? _collectionPoints
-        : _collectionPoints.where((cp) => 
-            cp.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            cp.address.toLowerCase().contains(_searchQuery.toLowerCase())
-          ).toList();
+  Widget _buildCollectionPointsList(CollectionPointsLoaded state) {
+    final filteredCollectionPoints = state.filteredCollectionPoints;
 
-    if (_collectionPoints.isEmpty) {
+    if (state.collectionPoints.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -139,6 +157,19 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                 color: Colors.grey[700],
               ),
             ),
+            if (_isAdmin) ...[
+              SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _navigateToCreateScreen,
+                icon: Icon(Icons.add),
+                label: Text('Tạo điểm thu gom mới'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -158,10 +189,11 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
           ),
         ),
         
-        // Counter
+        // Counter and Add button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -178,13 +210,22 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   ),
                 ),
               ),
+              if (_isAdmin)
+                TextButton.icon(
+                  onPressed: _navigateToCreateScreen,
+                  icon: Icon(Icons.add, size: 18),
+                  label: Text('Thêm mới'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primaryGreen,
+                  ),
+                ),
             ],
           ),
         ),
         
         // List of collection points
         Expanded(
-          child: filteredCollectionPoints.isEmpty && _searchQuery.isNotEmpty
+          child: filteredCollectionPoints.isEmpty && state.searchQuery.isNotEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
