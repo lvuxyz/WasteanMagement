@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../blocs/map/map_bloc.dart';
 import '../blocs/map/map_event.dart';
 import '../blocs/map/map_state.dart';
 import '../services/mapbox_service.dart';
 import '../utils/app_colors.dart';
+import '../repositories/collection_point_repository.dart';
+import '../core/api/api_client.dart';
+import '../utils/secure_storage.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -42,7 +46,15 @@ class _MapScreenState extends State<MapScreen> {
     final cardHeight = screenSize.height * 0.18;
     
     return BlocProvider(
-      create: (context) => MapBloc(mapboxService: MapboxService()),
+      create: (context) => MapBloc(
+        mapboxService: MapboxService(),
+        collectionPointRepository: CollectionPointRepository(
+          apiClient: ApiClient(
+            client: http.Client(),
+            secureStorage: SecureStorage(),
+          ),
+        ),
+      ),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
@@ -191,7 +203,6 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ],
                 ),
-
                 // Loading indicator - Đảm bảo không chặn gestures
                 if (state.isLoading)
                   Positioned.fill(
@@ -293,7 +304,18 @@ class _MapScreenState extends State<MapScreen> {
       Map<String, dynamic> point,
       {bool isSelected = false, double cardWidth = 280}
       ) {
-    final capacity = point['current_load'] / point['capacity'] * 100;
+    // Prevent division by zero or invalid values
+    final double currentLoad = point['current_load'] is num ? point['current_load'].toDouble() : 0.0;
+    final double capacity = point['capacity'] is num && point['capacity'] > 0 
+        ? point['capacity'].toDouble() 
+        : 1.0;  // Default to 1 to prevent division by zero
+        
+    final double progressValue = currentLoad / capacity;
+    // Ensure the progress value is between 0.0 and 1.0
+    final double safeProgressValue = progressValue.isFinite ? progressValue.clamp(0.0, 1.0) : 0.0;
+    
+    // Calculate capacity percentage for color
+    final double capacityPercentage = progressValue * 100;
     final screenSize = MediaQuery.of(context).size;
     final fontSize = screenSize.width < 360 ? 10.0 : 12.0;
     final titleSize = screenSize.width < 360 ? 14.0 : 16.0;
@@ -322,13 +344,14 @@ class _MapScreenState extends State<MapScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: capacity > 80
+                color: capacityPercentage > 80
                     ? Colors.red
-                    : capacity > 50
+                    : capacityPercentage > 50
                     ? Colors.orange
                     : AppColors.primaryGreen,
                 borderRadius: const BorderRadius.vertical(
@@ -341,14 +364,16 @@ class _MapScreenState extends State<MapScreen> {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      point['name'],
+                      point['name'] ?? 'Điểm thu gom',
                       style: TextStyle(
                         fontSize: titleSize,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -361,7 +386,7 @@ class _MapScreenState extends State<MapScreen> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            '${point['distance']} km - ${point['address']}',
+                            '${point['distance']} km - ${point['address'] ?? ''}',
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: fontSize,
@@ -374,20 +399,22 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Giờ mở cửa: ${point['operating_hours']}',
+                      'Giờ mở cửa: ${point['operating_hours'] ?? ''}',
                       style: TextStyle(
                         fontSize: fontSize,
                         color: AppColors.textGrey,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const Spacer(),
                     LinearProgressIndicator(
-                      value: point['current_load'] / point['capacity'],
+                      value: safeProgressValue,
                       backgroundColor: Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        capacity > 80
+                        capacityPercentage > 80
                             ? Colors.red
-                            : capacity > 50
+                            : capacityPercentage > 50
                             ? Colors.orange
                             : AppColors.primaryGreen,
                       ),
@@ -404,7 +431,7 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                         ),
                         Text(
-                          '${point['current_load']}/${point['capacity']} kg',
+                          '${currentLoad.toStringAsFixed(0)}/${capacity.toStringAsFixed(0)} kg',
                           style: TextStyle(
                             fontSize: fontSize,
                             color: Colors.grey[600],

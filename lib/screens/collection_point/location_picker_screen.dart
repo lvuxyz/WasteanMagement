@@ -41,7 +41,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   double? _selectedLatitude;
   double? _selectedLongitude;
   String? _selectedAddress;
-  Point? _centerPoint;
 
   // Default to Ho Chi Minh City if no initial location
   final double _defaultLatitude = 10.7731;
@@ -101,7 +100,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       setState(() {
         _selectedLatitude = point.coordinates.lat.toDouble();
         _selectedLongitude = point.coordinates.lng.toDouble();
-        _centerPoint = point;
       });
       
       // Fetch address for these coordinates
