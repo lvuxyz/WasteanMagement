@@ -31,52 +31,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   List<WasteType> _wasteTypes = [];
   final List<String> _unitOptions = ['kg', 'g', 'liter', 'piece'];
   
-  // Temporary mock data - will be replaced with API calls
-  final List<Map<String, dynamic>> _mockCollectionPoints = [
-    {
-      'id': 1,
-      'name': 'Điểm thu gom Nguyễn Trãi',
-      'address': 'Số 123 Nguyễn Trãi, Quận 1, TP.HCM',
-    },
-    {
-      'id': 2,
-      'name': 'Điểm thu gom Lê Duẩn',
-      'address': 'Số 456 Lê Duẩn, Quận 3, TP.HCM',
-    },
-    {
-      'id': 3,
-      'name': 'Điểm thu gom Nguyễn Đình Chiểu',
-      'address': 'Số 789 Nguyễn Đình Chiểu, Quận 3, TP.HCM',
-    },
-  ];
-  
-  final List<Map<String, dynamic>> _mockWasteTypes = [
-    {
-      'id': 1,
-      'name': 'Nhựa tái chế',
-      'description': 'Chai, lọ, hộp nhựa đã qua sử dụng',
-      'unit_price': 5000,
-    },
-    {
-      'id': 2,
-      'name': 'Giấy, bìa carton',
-      'description': 'Sách báo, hộp giấy, bìa carton',
-      'unit_price': 3000,
-    },
-    {
-      'id': 3,
-      'name': 'Kim loại',
-      'description': 'Vỏ lon, đồ kim loại cũ',
-      'unit_price': 7000,
-    },
-    {
-      'id': 4,
-      'name': 'Kính, thủy tinh',
-      'description': 'Chai lọ thủy tinh, đồ thủy tinh vỡ',
-      'unit_price': 2000,
-    },
-  ];
-  
   @override
   void initState() {
     super.initState();
@@ -90,36 +44,24 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   }
   
   void _loadData() {
-    // In a real implementation, this would fetch data from the repositories
-    // For now, we'll use mock data
-    setState(() {
-      _collectionPoints = _mockCollectionPoints.map((item) => 
-        CollectionPoint(
-          collectionPointId: item['id'], 
-          name: item['name'], 
-          address: item['address'],
-          latitude: 0.0,
-          longitude: 0.0,
-          operatingHours: '8:00-17:00',
-          capacity: 1000,
-          status: 'active',
-        )).toList();
+    // Fetch real data from repositories
+    final transactionBloc = context.read<TransactionBloc>();
+    transactionBloc.add(FetchCollectionPoints());
+    transactionBloc.add(FetchWasteTypes());
+    
+    // Listen for updates in the bloc state
+    transactionBloc.stream.listen((state) {
+      if (state.collectionPoints.isNotEmpty && _collectionPoints.isEmpty) {
+        setState(() {
+          _collectionPoints = state.collectionPoints;
+        });
+      }
       
-      _wasteTypes = _mockWasteTypes.map((item) => 
-        WasteType(
-          id: item['id'], 
-          name: item['name'], 
-          description: item['description'], 
-          unitPrice: item['unit_price'].toDouble(),
-          recyclable: true,
-          handlingInstructions: '',
-          icon: Icons.delete_outline,
-          color: Colors.green,
-          category: 'Tái chế',
-          examples: [],
-          unit: 'kg',
-          recentPoints: '',
-        )).toList();
+      if (state.wasteTypes.isNotEmpty && _wasteTypes.isEmpty) {
+        setState(() {
+          _wasteTypes = state.wasteTypes;
+        });
+      }
     });
   }
   
