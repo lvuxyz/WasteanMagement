@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import '../widgets/recycling_progress/recycling_progress_filter.dart';
 import '../widgets/recycling_progress/recycling_record_item.dart';
 import '../widgets/recycling_progress/recycling_statistics.dart';
@@ -49,11 +50,15 @@ class RecyclingProgressView extends StatefulWidget {
 class _RecyclingProgressViewState extends State<RecyclingProgressView> {
   List<WasteType> _wasteTypes = [];
   bool _isFilterExpanded = false;
+  String? _selectedWasteTypeId;
+  DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
+  DateTime _endDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _loadWasteTypes();
+    _fetchStatistics();
   }
 
   Future<void> _loadWasteTypes() async {
@@ -62,6 +67,34 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
     setState(() {
       _wasteTypes = types;
     });
+  }
+
+  void _fetchStatistics() {
+    final formattedStartDate = DateFormat('yyyy-MM-dd').format(_startDate);
+    final formattedEndDate = DateFormat('yyyy-MM-dd').format(_endDate);
+    
+    context.read<RecyclingProgressBloc>().add(
+      FetchRecyclingStatistics(
+        fromDate: formattedStartDate,
+        toDate: formattedEndDate,
+        wasteTypeId: _selectedWasteTypeId,
+      ),
+    );
+  }
+
+  void _onDateRangeChanged(DateTime start, DateTime end) {
+    setState(() {
+      _startDate = start;
+      _endDate = end;
+    });
+    _fetchStatistics();
+  }
+
+  void _onWasteTypeChanged(String? wasteTypeId) {
+    setState(() {
+      _selectedWasteTypeId = wasteTypeId;
+    });
+    _fetchStatistics();
   }
 
   @override
@@ -87,7 +120,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<RecyclingProgressBloc>().add(const LoadRecyclingProgress());
+          _fetchStatistics();
         },
         child: BlocConsumer<RecyclingProgressBloc, RecyclingProgressState>(
           listener: (context, state) {
@@ -105,7 +138,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
               return const Center(child: CircularProgressIndicator());
             }
             
-            if (state is RecyclingProgressLoading) {
+            if (state is RecyclingProgressLoading || state is RecyclingStatisticsLoading) {
               return const Center(child: CircularProgressIndicator());
             }
             
@@ -124,7 +157,14 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                         duration: const Duration(milliseconds: 300),
                         opacity: _isFilterExpanded ? 1.0 : 0.0,
                         child: _isFilterExpanded
-                            ? RecyclingProgressFilter(wasteTypes: _wasteTypes)
+                            ? RecyclingProgressFilter(
+                                wasteTypes: _wasteTypes,
+                                startDate: _startDate,
+                                endDate: _endDate,
+                                selectedWasteTypeId: _selectedWasteTypeId,
+                                onDateRangeChanged: _onDateRangeChanged,
+                                onWasteTypeChanged: _onWasteTypeChanged,
+                              )
                             : const SizedBox.shrink(),
                       ),
                     ),
@@ -135,6 +175,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                     RecyclingStatistics(
                       wasteTypeQuantities: state.wasteTypeQuantities,
                       totalWeight: state.totalWeight,
+                      apiStatistics: state.statistics,
                     ),
                     
                     const SizedBox(height: 24),
