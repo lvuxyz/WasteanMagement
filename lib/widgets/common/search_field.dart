@@ -1,7 +1,7 @@
 // widgets/common/search_field.dart
 import 'package:flutter/material.dart';
 
-class SearchField extends StatelessWidget {
+class SearchField extends StatefulWidget {
   final String hintText;
   final TextEditingController? controller;
   final Function()? onClear;
@@ -16,6 +16,26 @@ class SearchField extends StatelessWidget {
     this.value,
     this.onChanged,
   }) : super(key: key);
+
+  @override
+  State<SearchField> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends State<SearchField> {
+  FocusNode? _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode?.dispose();
+    _focusNode = null;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +53,11 @@ class SearchField extends StatelessWidget {
         ],
       ),
       child: TextField(
-        controller: controller,
-        onChanged: onChanged,
+        controller: widget.controller,
+        focusNode: _focusNode,
+        onChanged: widget.onChanged,
         decoration: InputDecoration(
-          hintText: hintText,
+          hintText: widget.hintText,
           hintStyle: TextStyle(
             color: Colors.grey[400],
             fontSize: 14,
@@ -45,11 +66,11 @@ class SearchField extends StatelessWidget {
             Icons.search,
             color: Colors.grey[400],
           ),
-          suffixIcon: (controller != null && controller!.text.isNotEmpty) || 
-                     (value != null && value!.isNotEmpty)
+          suffixIcon: (widget.controller != null && widget.controller!.text.isNotEmpty) || 
+                     (widget.value != null && widget.value!.isNotEmpty)
               ? IconButton(
                   icon: Icon(Icons.clear, color: Colors.grey[400]),
-                  onPressed: onClear,
+                  onPressed: widget.onClear,
                 )
               : null,
           border: InputBorder.none,
