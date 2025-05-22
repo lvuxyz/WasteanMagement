@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/collection_point.dart';
@@ -33,14 +35,17 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   @override
   void initState() {
     super.initState();
-    // Lấy ApiClient từ context
+    
+    Future.microtask(() {
+      final isAdmin = context.read<AdminCubit>().state;
+      developer.log('User có quyền admin: $isAdmin');
+    });
+    
     final apiClient = context.read<ApiClient>();
-    // Khởi tạo repository
     _repository = CollectionPointRepository(apiClient: apiClient);
     _collectionPointBloc = CollectionPointBloc(repository: _repository);
     _searchController.addListener(_onSearchChanged);
     
-    // Load data through BLoC
     _collectionPointBloc.add(LoadCollectionPoints());
   }
 
@@ -68,29 +73,50 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   }
   
   void _navigateToCreateScreen() {
+    bool isAdmin = context.read<AdminCubit>().state;
+    developer.log('Đang cố gắng tạo điểm thu gom, isAdmin: $isAdmin');
+    
+    if (!isAdmin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn cần quyền admin để thêm điểm thu gom mới'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
     Navigator.pushNamed(
       context,
       '/collection-points/create',
     ).then((_) {
-      // Refresh data when returning from create screen
       _collectionPointBloc.add(LoadCollectionPoints());
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = context.watch<AdminCubit>().state;
+    developer.log('Build UI cho màn hình Collection Points với quyền admin: $isAdmin');
+    
     return BlocProvider.value(
       value: _collectionPointBloc,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primaryGreen,
-          title: Text(
+          title: const Text(
             'Điểm thu gom',
             style: TextStyle(color: Colors.white),
           ),
           actions: [
+            if (isAdmin)
+              IconButton(
+                icon: const Icon(Icons.add_circle, color: Colors.white),
+                tooltip: 'Thêm điểm thu gom mới',
+                onPressed: _navigateToCreateScreen,
+              ),
             IconButton(
-              icon: Icon(Icons.refresh, color: Colors.white),
+              icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: () => _collectionPointBloc.add(LoadCollectionPoints()),
             ),
           ],
@@ -124,11 +150,12 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             return const LoadingView(message: 'Đang tải...');
           },
         ),
-        floatingActionButton: _isAdmin 
-          ? FloatingActionButton(
+        floatingActionButton: isAdmin 
+          ? FloatingActionButton.extended(
               onPressed: _navigateToCreateScreen,
               backgroundColor: AppColors.primaryGreen,
-              child: const Icon(Icons.add, color: Colors.white),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Thêm điểm thu gom', style: TextStyle(color: Colors.white)),
             )
           : null,
       ),
@@ -137,6 +164,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
 
   Widget _buildCollectionPointsList(CollectionPointsLoaded state) {
     final filteredCollectionPoints = state.filteredCollectionPoints;
+    final isAdmin = context.watch<AdminCubit>().state;
 
     if (state.collectionPoints.isEmpty) {
       return Center(
@@ -157,7 +185,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                 color: Colors.grey[700],
               ),
             ),
-            if (_isAdmin) ...[
+            if (isAdmin) ...[
               SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _navigateToCreateScreen,
@@ -177,7 +205,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
 
     return Column(
       children: [
-        // Search box
         Padding(
           padding: const EdgeInsets.all(16),
           child: SearchField(
@@ -189,7 +216,24 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
           ),
         ),
         
-        // Counter and Add button
+        if (isAdmin)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              color: Colors.amber.withOpacity(0.1),
+              child: const Text(
+                '⚠️ Bạn đang đăng nhập với quyền Admin',
+                style: TextStyle(
+                  color: Colors.amber,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
@@ -210,20 +254,20 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   ),
                 ),
               ),
-              if (_isAdmin)
-                TextButton.icon(
+              if (isAdmin)
+                ElevatedButton.icon(
                   onPressed: _navigateToCreateScreen,
                   icon: Icon(Icons.add, size: 18),
                   label: Text('Thêm mới'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryGreen,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryGreen,
+                    foregroundColor: Colors.white,
                   ),
                 ),
             ],
           ),
         ),
         
-        // List of collection points
         Expanded(
           child: filteredCollectionPoints.isEmpty && state.searchQuery.isNotEmpty
               ? Center(
@@ -257,7 +301,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   }
 
   Widget _buildCollectionPointItem(BuildContext context, CollectionPoint collectionPoint) {
-    // Use currentLoad with a fallback to 0 if it's null
     final currentLoad = collectionPoint.currentLoad ?? 0;
     final capacityPercentage = 
         collectionPoint.capacity > 0
@@ -280,7 +323,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         ),
         child: Column(
           children: [
-            // Header with name and status
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Row(
@@ -348,12 +390,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               ),
             ),
             
-            // Info row (hours, capacity)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
                 children: [
-                  // Hours
                   Expanded(
                     child: Row(
                       children: [
@@ -385,7 +425,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     ),
                   ),
                   
-                  // Capacity
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -409,7 +448,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               ),
             ),
             
-            // View waste types button
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
