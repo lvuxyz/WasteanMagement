@@ -161,7 +161,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
           wasteTypeId: _selectedWasteType!.id,
           quantity: double.parse(_quantityController.text),
           unit: _selectedUnit,
-          proofImageUrl: imageUrl,
+          proofImage: _imageFile,
         ),
       );
       

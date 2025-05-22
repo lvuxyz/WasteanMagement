@@ -12,7 +12,6 @@ import '../../blocs/transaction/transaction_event.dart';
 import '../../blocs/transaction/transaction_state.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../repositories/collection_point_repository.dart';
-import '../../services/upload_service.dart';
 import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../core/api/api_constants.dart';
@@ -72,7 +71,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   String? _selectedWasteTypeId;
   String? _selectedCollectionPointId;
   File? _proofImage;
-  String? _proofImageUrl;
   
   List<TransactionWasteType> _wasteTypes = [];
   bool _isLoadingWasteTypes = true;
@@ -84,7 +82,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   
   String _unit = 'kg';
   double _unitPrice = 0;
-  bool _isUploadingImage = false;
   bool _isSubmitting = false;
   DateTime _transactionDate = DateTime.now();
 
@@ -219,30 +216,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (image != null) {
       setState(() {
         _proofImage = File(image.path);
-        _isUploadingImage = true;
       });
-
-      try {
-        final uploadService = UploadService();
-        final uploadResult = await uploadService.uploadImage(_proofImage!);
-        
-        if (uploadResult.success) {
-          setState(() {
-            _proofImageUrl = uploadResult.imageUrl;
-            _isUploadingImage = false;
-          });
-        } else {
-          _showErrorSnackBar('Không thể tải lên hình ảnh: ${uploadResult.message}');
-          setState(() {
-            _isUploadingImage = false;
-          });
-        }
-      } catch (e) {
-        _showErrorSnackBar('Lỗi khi tải lên hình ảnh: $e');
-        setState(() {
-          _isUploadingImage = false;
-        });
-      }
     }
   }
 
@@ -290,11 +264,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      if (_isUploadingImage) {
-        _showErrorSnackBar('Vui lòng đợi cho đến khi hình ảnh được tải lên');
-        return;
-      }
-
       setState(() {
         _isSubmitting = true;
       });
@@ -304,14 +273,14 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         final collectionPointId = int.parse(_selectedCollectionPointId!);
         final wasteTypeId = int.parse(_selectedWasteTypeId!);
         
-        // Gửi sự kiện tạo giao dịch qua BLoC
+        // Gửi sự kiện tạo giao dịch qua BLoC với File trực tiếp
         context.read<TransactionBloc>().add(
           CreateTransaction(
             collectionPointId: collectionPointId,
             wasteTypeId: wasteTypeId,
             quantity: quantity,
             unit: _unit,
-            proofImageUrl: _proofImageUrl,
+            proofImage: _proofImage,
           ),
         );
         
@@ -644,9 +613,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[300]!),
           ),
-          child: _isUploadingImage 
-            ? const Center(child: CircularProgressIndicator())
-            : _proofImage != null
+          child: _proofImage != null
               ? Stack(
                   fit: StackFit.expand,
                   children: [
