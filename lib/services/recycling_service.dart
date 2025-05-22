@@ -148,23 +148,14 @@ class RecyclingService {
   // Cập nhật quy trình tái chế (chỉ ADMIN)
   Future<RecyclingProcess> updateRecyclingProcess({
     required String id,
-    String? status,
-    double? processedQuantity,
-    DateTime? endDate,
-    String? notes,
+    required Map<String, dynamic> updateData,
   }) async {
     try {
       final url = ApiConstants.recyclingDetail(id);
       developer.log('Gọi API cập nhật quy trình tái chế: $url');
+      developer.log('Dữ liệu cập nhật: $updateData');
       
-      final body = {
-        if (status != null) 'status': status,
-        if (processedQuantity != null) 'processed_quantity': processedQuantity,
-        if (endDate != null) 'end_date': endDate.toIso8601String(),
-        if (notes != null) 'notes': notes,
-      };
-      
-      final response = await _apiClient.put(url, body: body);
+      final response = await _apiClient.put(url, body: updateData);
       
       if (response.isSuccess) {
         final data = response.body;

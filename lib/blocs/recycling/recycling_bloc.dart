@@ -114,10 +114,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
       
       final process = await repository.updateRecyclingProcess(
         id: event.id,
-        status: event.status,
-        processedQuantity: event.processedQuantity,
-        endDate: event.endDate,
-        notes: event.notes,
+        updateData: event.updateData,
       );
       
       emit(RecyclingProcessUpdated(process: process));
