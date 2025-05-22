@@ -424,26 +424,19 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Flexible(
-                    child: Text(
-                      'Ngày bắt đầu: ${DateFormat('dd/MM/yyyy').format(process.startDate)}',
+                  Text(
+                    'Ngày bắt đầu: ${DateFormat('dd/MM/yyyy').format(process.startDate)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  if (process.endDate != null)
+                    Text(
+                      'Ngày kết thúc: ${DateFormat('dd/MM/yyyy').format(process.endDate!)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (process.endDate != null)
-                    Flexible(
-                      child: Text(
-                        'Ngày kết thúc: ${DateFormat('dd/MM/yyyy').format(process.endDate!)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                 ],

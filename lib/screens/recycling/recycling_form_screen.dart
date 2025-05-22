@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/recycling/recycling_bloc.dart';
 import '../../blocs/recycling/recycling_event.dart';
 import '../../blocs/recycling/recycling_state.dart';
-import '../../models/transaction.dart';
 import '../../repositories/recycling_repository.dart';
 import '../../services/recycling_service.dart';
 import '../../core/network/network_info.dart';
@@ -53,14 +52,10 @@ class _RecyclingFormScreenState extends State<RecyclingFormScreen> {
         quantity = double.tryParse(_quantityController.text);
       }
       
-      Transaction? selectedTransaction;
-      try {
-        selectedTransaction = _transactions.firstWhere(
-          (t) => t.transactionId.toString() == _selectedTransactionId,
-        );
-      } catch (e) {
-        selectedTransaction = null;
-      }
+      final selectedTransaction = _transactions.firstWhere(
+        (t) => t['id'].toString() == _selectedTransactionId,
+        orElse: () => null,
+      );
       
       if (selectedTransaction != null && _selectedWasteTypeId != null) {
         context.read<RecyclingBloc>().add(CreateRecyclingProcess(
@@ -243,9 +238,9 @@ class _RecyclingFormScreenState extends State<RecyclingFormScreen> {
                   value: _selectedTransactionId,
                   items: _transactions.map((transaction) {
                     return DropdownMenuItem<String>(
-                      value: transaction.transactionId.toString(),
+                      value: transaction['id'].toString(),
                       child: Text(
-                        '${transaction.wasteTypeName} - ${transaction.quantity} ${transaction.unit}',
+                        '${transaction['waste_type_name']} - ${transaction['quantity']} ${transaction['unit']}',
                         overflow: TextOverflow.ellipsis,
                       ),
                     );
