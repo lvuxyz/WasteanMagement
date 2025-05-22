@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../models/reward.dart';
 import '../core/api/api_constants.dart';
 import '../services/auth_service.dart';
-import 'dart:developer' as developer;
 
 class RewardService {
   final AuthService _authService = AuthService();
@@ -41,9 +40,8 @@ class RewardService {
     
     // Create the final URL with encoded parameters
     final finalUri = uri.replace(queryParameters: queryParams);
-    
-    // Log the URL for debugging
-    developer.log('Requesting rewards with URL: $finalUri');
+
+    print('Requesting rewards with URL: $finalUri');
     
     final response = await http.get(finalUri, headers: headers);
     
@@ -51,15 +49,15 @@ class RewardService {
       final data = json.decode(response.body)['data'];
       
       // Log received data for debugging
-      developer.log('Received ${(data['rewards'] as List).length} rewards');
+      print('Received ${(data['rewards'] as List).length} rewards');
       if (fromDate != null || toDate != null) {
-        developer.log('Filter applied - From: $fromDate, To: $toDate');
+        print('Filter applied - From: $fromDate, To: $toDate');
         
         // Check the first and last dates in the response to confirm filtering worked
         if ((data['rewards'] as List).isNotEmpty) {
           final firstReward = Reward.fromJson((data['rewards'] as List).first);
           final lastReward = Reward.fromJson((data['rewards'] as List).last);
-          developer.log('First reward date: ${firstReward.earnedDate}, Last reward date: ${lastReward.earnedDate}');
+          print('First reward date: ${firstReward.earnedDate}, Last reward date: ${lastReward.earnedDate}');
         }
       }
       
@@ -69,7 +67,7 @@ class RewardService {
         'pagination': Pagination.fromJson(data['pagination']),
       };
     } else {
-      developer.log('Error loading rewards: ${response.statusCode} - ${response.body}');
+      print('Error loading rewards: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to load rewards: ${response.body}');
     }
   }

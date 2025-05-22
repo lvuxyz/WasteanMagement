@@ -36,6 +36,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -217,7 +218,9 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
     // Use currentLoad with a fallback to 0 if it's null
     final currentLoad = collectionPoint.currentLoad ?? 0;
     final capacityPercentage = 
-        ((currentLoad / collectionPoint.capacity) * 100).toInt();
+        collectionPoint.capacity > 0
+          ? ((currentLoad / collectionPoint.capacity) * 100).clamp(0.0, 100.0).toInt()
+          : 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),

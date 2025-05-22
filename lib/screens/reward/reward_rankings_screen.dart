@@ -384,12 +384,6 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
   }
 
   Widget _buildEmptyTopUserItem(double scale, String position) {
-    final Color color = position == '1'
-        ? Colors.amber.withOpacity(0.5)
-        : position == '2'
-            ? Colors.grey.shade400.withOpacity(0.5)
-            : Colors.brown.shade300.withOpacity(0.5);
-            
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
