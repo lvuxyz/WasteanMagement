@@ -262,10 +262,6 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex != 0 ? null : AppBar(
-        title: const Text('LVuRác'),
-        backgroundColor: AppColors.primaryGreen,
-      ),
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
