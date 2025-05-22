@@ -4,11 +4,16 @@ import '../../core/error/exceptions.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../admin/admin_cubit.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UserRepository userRepository;
+  final AdminCubit? adminCubit;
 
-  AuthBloc({required this.userRepository}) : super(AuthInitial()) {
+  AuthBloc({
+    required this.userRepository, 
+    this.adminCubit,
+  }) : super(AuthInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<ForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
@@ -77,6 +82,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // Remove found keys
       for (final key in keysToRemove) {
         await prefs.remove(key);
+      }
+      
+      // Clear admin status if AdminCubit is available
+      if (adminCubit != null) {
+        adminCubit!.clearAdminStatus();
       }
       
       // Perform regular logout

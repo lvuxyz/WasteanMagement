@@ -56,18 +56,23 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
       // Kiểm tra admin status ngay khi màn hình được khởi tạo
       context.read<AdminCubit>().checkAdminStatus();
       
-      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
-      // để đảm bảo có thể sử dụng được chức năng trong màn hình chỉnh sửa
-      await Future.delayed(Duration(seconds: 2));
-      // Kiểm tra xem widget còn mounted không trước khi truy cập context
+      // Lấy trạng thái admin hiện tại
       if (mounted) {
-        final currentState = context.read<AdminCubit>().state;
-        if (!currentState) {
-          setState(() {
-            _isAdmin = true;  // Set local state
-          });
-          // Khi đang ở màn hình chỉnh sửa, cần đặt quyền admin
-          context.read<AdminCubit>().forceUpdateAdminStatus(true);
+        final isAdmin = context.read<AdminCubit>().state;
+        setState(() {
+          _isAdmin = isAdmin;
+        });
+        
+        // Nếu không phải admin, hiển thị thông báo
+        if (!isAdmin && _isEditing) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bạn không có quyền chỉnh sửa loại rác. Chỉ hiển thị chế độ xem.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
       }
     });
