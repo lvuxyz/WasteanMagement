@@ -15,7 +15,6 @@ import 'package:wasteanmagement/repositories/collection_point_repository.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/repositories/waste_type_repository.dart';
 import 'package:wasteanmagement/routes.dart';
-import 'package:wasteanmagement/screens/profile_screen.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import '../utils/app_colors.dart';
