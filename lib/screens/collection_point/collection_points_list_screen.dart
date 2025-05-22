@@ -86,6 +86,14 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
       },
     );
   }
+
+  void _navigateToDetails(BuildContext context, CollectionPoint collectionPoint) {
+    Navigator.pushNamed(
+      context,
+      '/collection-points/details',
+      arguments: collectionPoint.collectionPointId,
+    );
+  }
   
   void _navigateToCreateScreen() {
     bool isAdmin = _adminCubit.state;
@@ -322,184 +330,223 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
           ? ((currentLoad / collectionPoint.capacity) * 100).clamp(0.0, 100.0).toInt()
           : 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: () => _navigateToDetails(context, collectionPoint),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 1,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
-            width: 1,
-          ),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _getStatusIcon(collectionPoint.status),
-                      color: _getStatusColor(collectionPoint.status),
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          collectionPoint.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          collectionPoint.address,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      _getStatusText(collectionPoint.status),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: _getStatusColor(collectionPoint.status),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+              width: 1,
             ),
-            
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.access_time_outlined,
-                            color: Colors.orange,
-                            size: 14,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            collectionPoint.operatingHours,
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _getStatusIcon(collectionPoint.status),
+                        color: _getStatusColor(collectionPoint.status),
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            collectionPoint.name,
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[700],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
-                            maxLines: 1,
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            collectionPoint.address,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+                          width: 1,
                         ),
-                      ],
-                    ),
-                  ),
-                  
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _getCapacityColor(capacityPercentage).withOpacity(0.3),
-                        width: 1,
+                      ),
+                      child: Text(
+                        _getStatusText(collectionPoint.status),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _getStatusColor(collectionPoint.status),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      '$capacityPercentage% đầy',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: _getCapacityColor(capacityPercentage),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.05),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(16),
+                  ],
                 ),
               ),
-              child: BlocBuilder<AdminCubit, bool>(
-                builder: (context, isAdmin) {
-                  return TextButton.icon(
-                    onPressed: () => _navigateToWasteTypes(context, collectionPoint),
-                    icon: Icon(
-                      isAdmin ? Icons.edit : Icons.recycling,
-                      size: 16,
-                      color: isAdmin ? AppColors.primaryGreen : Colors.blue,
-                    ),
-                    label: Text(
-                      isAdmin ? 'Quản lý loại rác thu gom' : 'Xem loại rác được thu gom',
-                      style: TextStyle(
-                        color: isAdmin ? AppColors.primaryGreen : Colors.blue,
-                        fontWeight: FontWeight.w500,
+              
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.access_time_outlined,
+                              color: Colors.orange,
+                              size: 14,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              collectionPoint.operatingHours,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(16),
+                    
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _getCapacityColor(capacityPercentage).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '$capacityPercentage% đầy',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _getCapacityColor(capacityPercentage),
                         ),
                       ),
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
-            ),
-          ],
+              
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.05),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => _navigateToDetails(context, collectionPoint),
+                        icon: const Icon(
+                          Icons.visibility,
+                          size: 16,
+                          color: Colors.blue,
+                        ),
+                        label: const Text(
+                          'Xem chi tiết',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 24,
+                      color: Colors.grey.withOpacity(0.2),
+                    ),
+                    Expanded(
+                      child: BlocBuilder<AdminCubit, bool>(
+                        builder: (context, isAdmin) {
+                          return TextButton.icon(
+                            onPressed: () => _navigateToWasteTypes(context, collectionPoint),
+                            icon: Icon(
+                              isAdmin ? Icons.edit : Icons.recycling,
+                              size: 16,
+                              color: isAdmin ? AppColors.primaryGreen : Colors.blue,
+                            ),
+                            label: Text(
+                              isAdmin ? 'Quản lý rác' : 'Loại rác',
+                              style: TextStyle(
+                                color: isAdmin ? AppColors.primaryGreen : Colors.blue,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(16),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

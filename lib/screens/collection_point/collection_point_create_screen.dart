@@ -121,6 +121,12 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
       setState(() {
         _latitudeController.text = result.latitude.toString();
         _longitudeController.text = result.longitude.toString();
+        
+        // Also update the address field if an address was returned
+        if (result.address != null && result.address!.isNotEmpty) {
+          _addressController.text = result.address!;
+        }
+        
         _locationPickedFromMap = true;
       });
       
