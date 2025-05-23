@@ -56,33 +56,35 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocConsumer<RewardBloc, RewardState>(
-        listener: (context, state) {
-          if (state is StatisticsLoaded) {
-            setState(() {
-              _isLoading = false;
-            });
-          } else if (state is RewardError) {
-            setState(() {
-              _isLoading = false;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (_isLoading) {
+      body: SafeArea(
+        child: BlocConsumer<RewardBloc, RewardState>(
+          listener: (context, state) {
+            if (state is StatisticsLoaded) {
+              setState(() {
+                _isLoading = false;
+              });
+            } else if (state is RewardError) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+          builder: (context, state) {
+            if (_isLoading) {
+              return const Center(child: LoadingIndicator());
+            } else if (state is StatisticsLoaded) {
+              return _buildStatisticsContent(state);
+            } else if (state is RewardError) {
+              return ErrorView(
+                message: state.message,
+                onRetry: _loadStatistics,
+                title: 'Lỗi tải dữ liệu',
+              );
+            }
+            // Initial state or unexpected state
             return const Center(child: LoadingIndicator());
-          } else if (state is StatisticsLoaded) {
-            return _buildStatisticsContent(state);
-          } else if (state is RewardError) {
-            return ErrorView(
-              message: state.message,
-              onRetry: _loadStatistics,
-              title: 'Lỗi tải dữ liệu',
-            );
-          }
-          // Initial state or unexpected state
-          return const Center(child: LoadingIndicator());
-        },
+          },
+        ),
       ),
     );
   }
@@ -194,6 +196,9 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
         break;
     }
     
+    // Get the bottom padding to account for navigation bar
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -213,6 +218,8 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           ),
           const SizedBox(height: 16),
           _buildStatsSummary(state.statistics),
+          // Add extra padding at the bottom to prevent content from being hidden by the navigation bar
+          SizedBox(height: bottomPadding > 0 ? bottomPadding : 16),
         ],
       ),
     );

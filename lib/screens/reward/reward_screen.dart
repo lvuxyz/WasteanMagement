@@ -163,7 +163,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         ),
         elevation: 0,
       ),
-      body: _buildScreenContent(),
+      body: SafeArea(
+        bottom: !widget.isInTabView, // Only add bottom padding if not in tab view
+        child: _buildScreenContent(),
+      ),
     );
   }
 
@@ -256,6 +259,9 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   }
 
   Widget _buildRewardsContent(MyRewardsLoaded state) {
+    // Get the bottom padding to account for navigation bar
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return CustomScrollView(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -289,7 +295,8 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           child: Column(
             children: [
               _buildCompactPagination(state.pagination),
-              const SizedBox(height: 16),
+              // Add extra padding at the bottom to prevent content from being hidden by the navigation bar
+              SizedBox(height: bottomPadding > 0 ? bottomPadding : 16),
             ],
           ),
         ),
