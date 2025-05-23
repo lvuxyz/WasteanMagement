@@ -111,13 +111,13 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          _buildPeriodButton('daily', 'Hàng ngày'),
+          Expanded(child: _buildPeriodButton('daily', 'Hàng ngày')),
           const SizedBox(width: 8),
-          _buildPeriodButton('weekly', 'Hàng tuần'),
+          Expanded(child: _buildPeriodButton('weekly', 'Hàng tuần')),
           const SizedBox(width: 8),
-          _buildPeriodButton('monthly', 'Hàng tháng'),
+          Expanded(child: _buildPeriodButton('monthly', 'Hàng tháng')),
           const SizedBox(width: 8),
-          _buildPeriodButton('yearly', 'Hàng năm'),
+          Expanded(child: _buildPeriodButton('yearly', 'Hàng năm')),
         ],
       ),
     );
@@ -138,8 +138,17 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       ),
-      child: Text(label),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
   
