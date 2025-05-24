@@ -11,6 +11,21 @@ class LoadRecyclingProgress extends RecyclingProgressEvent {
   const LoadRecyclingProgress();
 }
 
+class FetchRecyclingStatistics extends RecyclingProgressEvent {
+  final String fromDate;
+  final String toDate;
+  final String? wasteTypeId;
+
+  const FetchRecyclingStatistics({
+    required this.fromDate,
+    required this.toDate,
+    this.wasteTypeId,
+  });
+
+  @override
+  List<Object?> get props => [fromDate, toDate, wasteTypeId];
+}
+
 class FilterRecyclingProgressByTimeRange extends RecyclingProgressEvent {
   final DateTime startDate;
   final DateTime endDate;

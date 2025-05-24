@@ -56,33 +56,35 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocConsumer<RewardBloc, RewardState>(
-        listener: (context, state) {
-          if (state is StatisticsLoaded) {
-            setState(() {
-              _isLoading = false;
-            });
-          } else if (state is RewardError) {
-            setState(() {
-              _isLoading = false;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (_isLoading) {
+      body: SafeArea(
+        child: BlocConsumer<RewardBloc, RewardState>(
+          listener: (context, state) {
+            if (state is StatisticsLoaded) {
+              setState(() {
+                _isLoading = false;
+              });
+            } else if (state is RewardError) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+          builder: (context, state) {
+            if (_isLoading) {
+              return const Center(child: LoadingIndicator());
+            } else if (state is StatisticsLoaded) {
+              return _buildStatisticsContent(state);
+            } else if (state is RewardError) {
+              return ErrorView(
+                message: state.message,
+                onRetry: _loadStatistics,
+                title: 'Lỗi tải dữ liệu',
+              );
+            }
+            // Initial state or unexpected state
             return const Center(child: LoadingIndicator());
-          } else if (state is StatisticsLoaded) {
-            return _buildStatisticsContent(state);
-          } else if (state is RewardError) {
-            return ErrorView(
-              message: state.message,
-              onRetry: _loadStatistics,
-              title: 'Lỗi tải dữ liệu',
-            );
-          }
-          // Initial state or unexpected state
-          return const Center(child: LoadingIndicator());
-        },
+          },
+        ),
       ),
     );
   }
@@ -109,13 +111,13 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          _buildPeriodButton('daily', 'Hàng ngày'),
+          Expanded(child: _buildPeriodButton('daily', 'Hàng ngày')),
           const SizedBox(width: 8),
-          _buildPeriodButton('weekly', 'Hàng tuần'),
+          Expanded(child: _buildPeriodButton('weekly', 'Hàng tuần')),
           const SizedBox(width: 8),
-          _buildPeriodButton('monthly', 'Hàng tháng'),
+          Expanded(child: _buildPeriodButton('monthly', 'Hàng tháng')),
           const SizedBox(width: 8),
-          _buildPeriodButton('yearly', 'Hàng năm'),
+          Expanded(child: _buildPeriodButton('yearly', 'Hàng năm')),
         ],
       ),
     );
@@ -136,8 +138,17 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       ),
-      child: Text(label),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
   
@@ -194,6 +205,9 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
         break;
     }
     
+    // Get the bottom padding to account for navigation bar
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -213,6 +227,8 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
           ),
           const SizedBox(height: 16),
           _buildStatsSummary(state.statistics),
+          // Add extra padding at the bottom to prevent content from being hidden by the navigation bar
+          SizedBox(height: bottomPadding > 0 ? bottomPadding : 16),
         ],
       ),
     );

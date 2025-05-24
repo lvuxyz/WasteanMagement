@@ -43,15 +43,20 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
       // Kích hoạt kiểm tra admin status
       _adminCubit.checkAdminStatus();
       
-      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
-      // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý
-      await Future.delayed(Duration(seconds: 2));
+      // Hiển thị thông báo nếu không phải admin
+      await Future.delayed(Duration(seconds: 1));
       if (mounted) {
-        final currentState = _adminCubit.state;
-        if (!currentState) {
-          // Khi đang ở màn hình quản lý, cần đặt quyền admin
-          developer.log('Setting admin status to true for management screen');
-          _adminCubit.forceUpdateAdminStatus(true);
+        final isAdmin = _adminCubit.state;
+        if (!isAdmin) {
+          developer.log('User is not admin, showing view-only mode');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bạn đang ở chế độ xem. Chỉ quản trị viên mới có thể thêm, sửa hoặc xóa.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
       }
     });
@@ -265,22 +270,6 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         ),
         body: Column(
           children: [
-            // Debug text to show admin status
-            BlocBuilder<AdminCubit, bool>(
-              builder: (context, isAdmin) {
-                developer.log('Debug text BlocBuilder: isAdmin = $isAdmin');
-                return Container(
-                  padding: EdgeInsets.all(8),
-                  color: isAdmin ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
-                  width: double.infinity,
-                  child: Text(
-                    'Admin status: ${isAdmin ? "YES" : "NO"}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                );
-              },
-            ),
             // Search and filter bar
             Container(
               padding: const EdgeInsets.all(16),

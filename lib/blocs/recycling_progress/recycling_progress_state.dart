@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../models/recycling_record_model.dart';
+import '../../models/recycling_statistics_model.dart';
 
 abstract class RecyclingProgressState extends Equatable {
   const RecyclingProgressState();
@@ -20,6 +21,7 @@ class RecyclingProgressLoaded extends RecyclingProgressState {
   final String? selectedWasteTypeId;
   final Map<String, double> wasteTypeQuantities;
   final double totalWeight;
+  final RecyclingStatisticsData? statistics;
 
   const RecyclingProgressLoaded({
     required this.records,
@@ -29,6 +31,7 @@ class RecyclingProgressLoaded extends RecyclingProgressState {
     this.selectedWasteTypeId,
     required this.wasteTypeQuantities,
     required this.totalWeight,
+    this.statistics,
   });
 
   @override
@@ -39,7 +42,8 @@ class RecyclingProgressLoaded extends RecyclingProgressState {
     endDate, 
     selectedWasteTypeId, 
     wasteTypeQuantities,
-    totalWeight
+    totalWeight,
+    statistics,
   ];
 
   RecyclingProgressLoaded copyWith({
@@ -50,6 +54,7 @@ class RecyclingProgressLoaded extends RecyclingProgressState {
     String? selectedWasteTypeId,
     Map<String, double>? wasteTypeQuantities,
     double? totalWeight,
+    RecyclingStatisticsData? statistics,
   }) {
     return RecyclingProgressLoaded(
       records: records ?? this.records,
@@ -59,8 +64,20 @@ class RecyclingProgressLoaded extends RecyclingProgressState {
       selectedWasteTypeId: selectedWasteTypeId ?? this.selectedWasteTypeId,
       wasteTypeQuantities: wasteTypeQuantities ?? this.wasteTypeQuantities,
       totalWeight: totalWeight ?? this.totalWeight,
+      statistics: statistics ?? this.statistics,
     );
   }
+}
+
+class RecyclingStatisticsLoading extends RecyclingProgressState {}
+
+class RecyclingStatisticsLoaded extends RecyclingProgressState {
+  final RecyclingStatisticsData statistics;
+
+  const RecyclingStatisticsLoaded(this.statistics);
+
+  @override
+  List<Object?> get props => [statistics];
 }
 
 class RecyclingProgressError extends RecyclingProgressState {

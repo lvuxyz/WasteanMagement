@@ -49,13 +49,20 @@ class _WasteTypeCollectionPointsScreenState extends State<WasteTypeCollectionPoi
       // Kiểm tra admin status
       context.read<AdminCubit>().checkAdminStatus();
       
-      // Nếu không phát hiện được vai trò, áp dụng trạng thái admin
-      // để đảm bảo có thể sử dụng được chức năng trong màn hình quản lý điểm thu gom
-      await Future.delayed(Duration(seconds: 2));
-      final currentState = context.read<AdminCubit>().state;
-      if (!currentState) {
-        // Khi đang ở màn hình quản lý điểm thu gom, cần đặt quyền admin
-        context.read<AdminCubit>().forceUpdateAdminStatus(true);
+      // Hiển thị thông báo nếu không phải admin
+      await Future.delayed(Duration(seconds: 1));
+      if (mounted) {
+        final isAdmin = context.read<AdminCubit>().state;
+        if (!isAdmin) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bạn đang ở chế độ xem. Chỉ quản trị viên mới có thể thêm hoặc xóa liên kết.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     });
   }

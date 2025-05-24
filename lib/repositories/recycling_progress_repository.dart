@@ -3,6 +3,8 @@ import '../models/waste_type_model.dart';
 import '../core/network/network_info.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
+import '../models/recycling_statistics_model.dart';
+import 'dart:developer' as developer;
 
 class RecyclingProgressRepository {
   final RemoteDataSource remoteDataSource;
@@ -32,6 +34,30 @@ class RecyclingProgressRepository {
       return [];
     } catch (e) {
       throw Exception('Failed to fetch waste types: $e');
+    }
+  }
+  
+  // Fetch recycling statistics from the API
+  Future<RecyclingStatisticsData> getRecyclingStatistics({
+    required String fromDate,
+    required String toDate,
+    String? wasteTypeId,
+  }) async {
+    try {
+      final isConnected = await networkInfo.isConnected;
+      if (!isConnected) {
+        throw Exception('Không có kết nối internet');
+      }
+      
+      developer.log('Đang lấy thống kê tái chế từ API...');
+      return await remoteDataSource.getRecyclingStatistics(
+        fromDate: fromDate,
+        toDate: toDate,
+        wasteTypeId: wasteTypeId,
+      );
+    } catch (e) {
+      developer.log('Lỗi khi lấy thống kê tái chế: $e');
+      throw Exception('Không thể lấy thống kê tái chế: $e');
     }
   }
 

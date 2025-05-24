@@ -37,10 +37,20 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   String? _errorMessage;
   bool _isNavigating = false;
+  bool _isDisposed = false;
   bool _locationPickedFromMap = false;
+  
+  bool get canUseFocus => !_isDisposed && !_isNavigating && mounted;
 
   @override
   void dispose() {
+    _isDisposed = true;
+    
+    // Cancel any pending focus operations
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This executes after the current frame, canceling any pending focus operations
+    });
+    
     // Dispose controllers
     _nameController.dispose();
     _addressController.dispose();
@@ -61,6 +71,13 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
     super.dispose();
   }
 
+  // Safely unfocus without causing FocusNode errors
+  void _safeUnfocus() {
+    if (canUseFocus) {
+      FocusScope.of(context).unfocus();
+    }
+  }
+
   void _submitForm() {
     if (_formKey.currentState?.validate() == true) {
       _createCollectionPoint();
@@ -69,7 +86,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   void _createCollectionPoint() {
     // Ensure unfocus from input fields
-    FocusScope.of(context).unfocus();
+    _safeUnfocus();
     
     final CollectionPointBloc collectionPointBloc = context.read<CollectionPointBloc>();
     
@@ -144,9 +161,9 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Ensure unfocus before popping screen
-        FocusScope.of(context).unfocus();
-        return !_isNavigating;
+        // Mark as navigating before pop to avoid focus issues
+        _isNavigating = true;
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -160,8 +177,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
             onPressed: () {
               if (_isNavigating) return;
               
-              // Ensure unfocus before popping screen
-              FocusScope.of(context).unfocus();
+              // Mark as navigating to prevent focus operations during pop
               _isNavigating = true;
               Navigator.of(context).pop();
             },
@@ -170,8 +186,6 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
         body: BlocConsumer<CollectionPointBloc, CollectionPointState>(
           listener: (context, state) {
             if (state is CollectionPointCreated) {
-              // Ensure unfocus before showing SnackBar and popping screen
-              FocusScope.of(context).unfocus();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
@@ -183,7 +197,9 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
               if (!_isNavigating) {
                 _isNavigating = true;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) Navigator.of(context).pop();
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                  }
                 });
               }
             } else if (state is CollectionPointError) {
@@ -209,8 +225,8 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   Widget _buildForm() {
     return GestureDetector(
-      // Unfocus khi nhấn vào khoảng trống
-      onTap: () => FocusScope.of(context).unfocus(),
+      // Use safe unfocus method
+      onTap: _safeUnfocus,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(

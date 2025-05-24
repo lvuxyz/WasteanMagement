@@ -7,10 +7,20 @@ import 'package:intl/intl.dart';
 
 class RecyclingProgressFilter extends StatefulWidget {
   final List<WasteType> wasteTypes;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String? selectedWasteTypeId;
+  final Function(DateTime, DateTime)? onDateRangeChanged;
+  final Function(String?)? onWasteTypeChanged;
   
   const RecyclingProgressFilter({
     Key? key,
     required this.wasteTypes,
+    required this.startDate,
+    required this.endDate,
+    this.selectedWasteTypeId,
+    this.onDateRangeChanged,
+    this.onWasteTypeChanged,
   }) : super(key: key);
 
   @override
@@ -18,11 +28,19 @@ class RecyclingProgressFilter extends StatefulWidget {
 }
 
 class _RecyclingProgressFilterState extends State<RecyclingProgressFilter> {
-  DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
-  DateTime _endDate = DateTime.now();
-  String _selectedWasteTypeId = '';
+  late DateTime _startDate;
+  late DateTime _endDate;
+  late String _selectedWasteTypeId;
   
   final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
+  
+  @override
+  void initState() {
+    super.initState();
+    _startDate = widget.startDate;
+    _endDate = widget.endDate;
+    _selectedWasteTypeId = widget.selectedWasteTypeId ?? '';
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -151,6 +169,10 @@ class _RecyclingProgressFilterState extends State<RecyclingProgressFilter> {
                 _selectedWasteTypeId = value ?? '';
               });
               _applyWasteTypeFilter();
+              
+              if (widget.onWasteTypeChanged != null) {
+                widget.onWasteTypeChanged!(value);
+              }
             },
           ),
           const SizedBox(height: 16),
@@ -202,6 +224,10 @@ class _RecyclingProgressFilterState extends State<RecyclingProgressFilter> {
         endDate: _endDate,
       ),
     );
+    
+    if (widget.onDateRangeChanged != null) {
+      widget.onDateRangeChanged!(_startDate, _endDate);
+    }
   }
   
   void _applyWasteTypeFilter() {

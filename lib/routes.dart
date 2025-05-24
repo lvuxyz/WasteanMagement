@@ -33,6 +33,13 @@ import 'screens/help_and_guidance_screen.dart';
 import 'screens/change_password.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/chat_screen.dart';
+// Import recycling management screens
+import 'screens/recycling/recycling_list_screen.dart';
+import 'screens/recycling/recycling_detail_screen.dart';
+import 'screens/recycling/recycling_form_screen.dart';
+import 'screens/recycling/recycling_edit_screen.dart';
+import 'screens/recycling/recycling_statistics_screen.dart';
+import '../../models/recycling_process_model.dart';
 
 class AppRoutes {
   static const String welcome = '/';
@@ -72,9 +79,34 @@ class AppRoutes {
   static const String locationPicker = '/location-picker';
   // Chat route
   static const String chat = '/chat';
+  
+  // Recycling management routes
+  static const String recyclingList = '/recycling';
+  static const String recyclingDetail = '/recycling/detail';
+  static const String recyclingForm = '/recycling/form';
+  static const String recyclingEdit = '/recycling/edit';
+  static const String recyclingStatistics = '/recycling/statistics';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // Recycling management routes
+      case recyclingList:
+        return MaterialPageRoute(builder: (_) => const RecyclingListScreen());
+      case recyclingDetail:
+        final processId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => RecyclingDetailScreen(processId: processId),
+        );
+      case recyclingForm:
+        return MaterialPageRoute(builder: (_) => const RecyclingFormScreen());
+      case recyclingEdit:
+        final process = settings.arguments as RecyclingProcess;
+        return MaterialPageRoute(
+          builder: (_) => RecyclingEditScreen(process: process),
+        );
+      case recyclingStatistics:
+        return MaterialPageRoute(builder: (_) => const RecyclingStatisticsScreen());
+      
       // Chat route
       case chat:
         return MaterialPageRoute(builder: (_) => const ChatScreen());

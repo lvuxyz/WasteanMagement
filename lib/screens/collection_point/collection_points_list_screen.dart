@@ -199,7 +199,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               size: 80,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Không có điểm thu gom nào',
               style: TextStyle(
@@ -212,12 +212,12 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _navigateToCreateScreen,
-                icon: Icon(Icons.add),
+                icon: const Icon(Icons.add),
                 label: Text('Tạo điểm thu gom mới'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ],
@@ -263,14 +263,14 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${filteredCollectionPoints.length} điểm thu gom',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primaryGreen,
                     fontWeight: FontWeight.w500,
@@ -280,8 +280,8 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               if (isAdmin)
                 ElevatedButton.icon(
                   onPressed: _navigateToCreateScreen,
-                  icon: Icon(Icons.add, size: 18),
-                  label: Text('Thêm mới'),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Thêm mới'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: Colors.white,

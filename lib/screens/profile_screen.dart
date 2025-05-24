@@ -269,6 +269,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                     ),
                     _buildOptionItem(
+                      icon: Icons.recycling,
+                      title: 'Quản lý tái chế',
+                      onTap: () {
+                        Navigator.pushNamed(context, '/recycling');
+                      },
+                    ),
+                    _buildOptionItem(
                       icon: Icons.list_alt,
                       title: 'Quản lý giao dịch',
                       onTap: () {

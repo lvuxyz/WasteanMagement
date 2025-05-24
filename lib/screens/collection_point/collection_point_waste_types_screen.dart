@@ -54,7 +54,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
     // Ensure admin status for this management screen
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<AdminCubit>().checkAdminStatus();
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
         final currentState = context.read<AdminCubit>().state;
         if (!currentState) {
@@ -117,7 +117,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
         backgroundColor: AppColors.primaryGreen,
         title: Text(
           'Quản lý loại rác thu gom: ${widget.collectionPointName}',
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         bottom: CustomTabBar(
           controller: _tabController,
@@ -126,14 +126,14 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
-          tabs: [
+          tabs: const [
             Tab(text: 'Đã liên kết'),
             Tab(text: 'Có thể thêm'),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               // Reload both lists
               context.read<WasteTypeBloc>().add(LoadWasteTypesForCollectionPoint(
@@ -157,7 +157,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
             });
           } else if (state is WasteTypeAddedToCollectionPoint) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Đã thêm loại rác vào điểm thu gom thành công'),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
@@ -170,7 +170,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
             ));
           } else if (state is CollectionPointUnlinked) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Đã xóa liên kết loại rác thành công'),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
@@ -193,7 +193,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
         },
         builder: (context, state) {
           if (state is WasteTypeLoading) {
-            return LoadingView(message: 'Đang tải dữ liệu...');
+            return const LoadingView(message: 'Đang tải dữ liệu...');
           }
 
           return TabBarView(
@@ -231,7 +231,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
               size: 80,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Chưa có loại rác nào được liên kết',
               style: TextStyle(
@@ -240,7 +240,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Chuyển sang tab "Có thể thêm" để thêm loại rác',
               textAlign: TextAlign.center,
@@ -274,14 +274,14 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${filteredLinkedTypes.length} loại rác',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.primaryGreen,
                     fontWeight: FontWeight.w500,
@@ -312,9 +312,9 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: filteredLinkedTypes.length,
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     final wasteType = filteredLinkedTypes[index];
                     return BlocBuilder<AdminCubit, bool>(
@@ -334,7 +334,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                               }
                             : () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                const SnackBar(
                                     content: Text('Bạn không có quyền thực hiện chức năng này'),
                                     backgroundColor: Colors.red,
                                     behavior: SnackBarBehavior.floating,
@@ -376,7 +376,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
               size: 80,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Tất cả loại rác đã được liên kết',
               style: TextStyle(
@@ -385,7 +385,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Điểm thu gom này có thể xử lý tất cả các loại rác trong hệ thống',
               textAlign: TextAlign.center,
@@ -419,14 +419,14 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${filteredAvailableTypes.length} loại rác có thể thêm',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     color: Colors.blue,
                     fontWeight: FontWeight.w500,
@@ -445,7 +445,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'Không tìm thấy loại rác phù hợp',
                         style: TextStyle(
@@ -457,9 +457,9 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: filteredAvailableTypes.length,
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     final wasteType = filteredAvailableTypes[index];
                     return BlocBuilder<AdminCubit, bool>(
@@ -480,7 +480,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
                                 }
                               : () {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text('Bạn không có quyền thực hiện chức năng này'),
                                       backgroundColor: Colors.red,
                                       behavior: SnackBarBehavior.floating,
