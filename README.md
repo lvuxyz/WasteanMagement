@@ -115,4 +115,4 @@ Dự án này được phân phối theo giấy phép MIT. Xem file `LICENSE` đ
 
 ## Liên hệ
 
-Nếu bạn có bất kỳ câu hỏi hoặc góp ý nào, vui lòng liên hệ với chúng tôi qua email: support@lvurac.com
+Nếu bạn có bất kỳ câu hỏi hoặc góp ý nào, vui lòng liên hệ với chúng tôi qua email: lvu.byte@gmail.com
