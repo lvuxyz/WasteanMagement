@@ -3,12 +3,14 @@ import '../../models/recycling_record_model.dart';
 import '../../repositories/recycling_progress_repository.dart';
 import 'recycling_progress_event.dart';
 import 'recycling_progress_state.dart';
+import 'dart:developer' as developer;
 
 class RecyclingProgressBloc extends Bloc<RecyclingProgressEvent, RecyclingProgressState> {
   final RecyclingProgressRepository repository;
 
   RecyclingProgressBloc({required this.repository}) : super(RecyclingProgressInitial()) {
     on<LoadRecyclingProgress>(_onLoadRecyclingProgress);
+    on<FetchRecyclingStatistics>(_onFetchRecyclingStatistics);
     on<FilterRecyclingProgressByTimeRange>(_onFilterByTimeRange);
     on<FilterRecyclingProgressByWasteType>(_onFilterByWasteType);
   }
@@ -31,6 +33,57 @@ class RecyclingProgressBloc extends Bloc<RecyclingProgressEvent, RecyclingProgre
       ));
     } catch (e) {
       emit(RecyclingProgressError('Không thể tải dữ liệu tái chế: $e'));
+    }
+  }
+
+  Future<void> _onFetchRecyclingStatistics(
+    FetchRecyclingStatistics event,
+    Emitter<RecyclingProgressState> emit,
+  ) async {
+    if (state is RecyclingProgressLoaded) {
+      final currentState = state as RecyclingProgressLoaded;
+      emit(RecyclingStatisticsLoading());
+      
+      try {
+        developer.log('Đang lấy dữ liệu thống kê từ API...');
+        final statistics = await repository.getRecyclingStatistics(
+          fromDate: event.fromDate,
+          toDate: event.toDate,
+          wasteTypeId: event.wasteTypeId,
+        );
+        
+        developer.log('Đã nhận được dữ liệu thống kê: ${statistics.totals.totalProcesses} quy trình');
+        
+        // If we're already in a loaded state, update with new statistics
+        emit(currentState.copyWith(statistics: statistics));
+      } catch (e) {
+        developer.log('Lỗi khi lấy thống kê: $e');
+        emit(RecyclingProgressError('Không thể tải dữ liệu thống kê: $e'));
+        // Revert back to previous state if error occurs
+        emit(currentState);
+      }
+    } else {
+      // If we're not already in a loaded state, create a basic loaded state with statistics
+      emit(RecyclingStatisticsLoading());
+      
+      try {
+        final statistics = await repository.getRecyclingStatistics(
+          fromDate: event.fromDate,
+          toDate: event.toDate,
+          wasteTypeId: event.wasteTypeId,
+        );
+        
+        emit(RecyclingProgressLoaded(
+          records: const [],
+          filteredRecords: const [],
+          wasteTypeQuantities: const {},
+          totalWeight: 0,
+          statistics: statistics,
+        ));
+      } catch (e) {
+        developer.log('Lỗi khi lấy thống kê: $e');
+        emit(RecyclingProgressError('Không thể tải dữ liệu thống kê: $e'));
+      }
     }
   }
 

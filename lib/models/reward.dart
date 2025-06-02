@@ -16,9 +16,19 @@ class Reward {
   });
 
   factory Reward.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert values to int
+    int parseIntValue(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
     return Reward(
-      rewardId: json['reward_id'],
-      points: json['points'],
+      rewardId: parseIntValue(json['reward_id']),
+      points: parseIntValue(json['points']),
       source: json['source'] ?? 'Manual Reward',
       earnedDate: DateTime.parse(json['earned_date']),
       transactionDate: json['transaction_date'] != null 
@@ -41,10 +51,20 @@ class RewardStatistics {
   });
 
   factory RewardStatistics.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert values to int
+    int parseIntValue(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
     return RewardStatistics(
-      period: json['period'],
-      totalPoints: json['total_points'],
-      rewardCount: json['reward_count'],
+      period: json['period'] ?? '',
+      totalPoints: parseIntValue(json['total_points']),
+      rewardCount: parseIntValue(json['reward_count']),
     );
   }
 }
@@ -65,12 +85,22 @@ class UserRanking {
   });
   
   factory UserRanking.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert values to int
+    int parseIntValue(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
     return UserRanking(
-      userId: json['user_id'],
+      userId: parseIntValue(json['user_id']),
       username: json['username'],
       fullName: json['full_name'],
-      totalPoints: json['total_points'],
-      rank: json['rank'],
+      totalPoints: parseIntValue(json['total_points']),
+      rank: parseIntValue(json['rank']),
     );
   }
 }
@@ -89,11 +119,21 @@ class Pagination {
   });
 
   factory Pagination.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert values to int
+    int parseIntValue(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
     return Pagination(
-      currentPage: json['current_page'],
-      totalPages: json['total_pages'],
-      totalItems: json['total_items'],
-      itemsPerPage: json['items_per_page'],
+      currentPage: parseIntValue(json['current_page']),
+      totalPages: parseIntValue(json['total_pages']),
+      totalItems: parseIntValue(json['total_items']),
+      itemsPerPage: parseIntValue(json['items_per_page']),
     );
   }
 } 

@@ -43,29 +43,31 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: BlocConsumer<RewardBloc, RewardState>(
-        listener: (context, state) {
-          if (state is RankingsLoaded || state is RewardError) {
-            setState(() {
-              _isLoading = false;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (_isLoading) {
+      body: SafeArea(
+        child: BlocConsumer<RewardBloc, RewardState>(
+          listener: (context, state) {
+            if (state is RankingsLoaded || state is RewardError) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+          builder: (context, state) {
+            if (_isLoading) {
+              return const Center(child: LoadingIndicator());
+            } else if (state is RankingsLoaded) {
+              return _buildRankingsList(state.rankings);
+            } else if (state is RewardError) {
+              return ErrorView(
+                message: state.message,
+                onRetry: _loadRankings,
+                title: 'Lỗi tải dữ liệu',
+              );
+            }
+            // Initial state or unexpected state
             return const Center(child: LoadingIndicator());
-          } else if (state is RankingsLoaded) {
-            return _buildRankingsList(state.rankings);
-          } else if (state is RewardError) {
-            return ErrorView(
-              message: state.message,
-              onRetry: _loadRankings,
-              title: 'Lỗi tải dữ liệu',
-            );
-          }
-          // Initial state or unexpected state
-          return const Center(child: LoadingIndicator());
-        },
+          },
+        ),
       ),
     );
   }
@@ -74,6 +76,9 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     if (rankings.isEmpty) {
       return _buildEmptyState();
     }
+
+    // Get the bottom padding to account for navigation bar
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -101,8 +106,8 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               childCount: (rankings.length - 3).clamp(0, rankings.length),
             ),
           ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 16),
+          SliverToBoxAdapter(
+            child: SizedBox(height: bottomPadding > 0 ? bottomPadding + 16 : 16),
           ),
         ],
       ),

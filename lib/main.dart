@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -21,11 +22,12 @@ import 'package:wasteanmagement/blocs/collection_point/collection_point_bloc.dar
 import 'package:provider/provider.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/repositories/language_repository.dart';
-import 'blocs/auth/auth_bloc.dart';
-import 'blocs/auth/auth_event.dart';
-import 'blocs/language/language_bloc.dart';
-import 'blocs/language/language_event.dart';
-import 'blocs/admin/admin_cubit.dart';
+import 'package:wasteanmagement/blocs/auth/auth_bloc.dart';
+import 'package:wasteanmagement/blocs/auth/auth_event.dart';
+import 'package:wasteanmagement/blocs/auth/auth_state.dart';
+import 'package:wasteanmagement/blocs/language/language_bloc.dart';
+import 'package:wasteanmagement/blocs/language/language_event.dart';
+import 'package:wasteanmagement/blocs/admin/admin_cubit.dart';
 import 'core/network/network_info.dart';
 import 'routes.dart';
 import 'generated/l10n.dart';
@@ -34,10 +36,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'blocs/profile/profile_bloc.dart';
 
 Future<void> main() async {
-
   await dotenv.dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-
+  
+  // Thiết lập màu sắc cho thanh trạng thái
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // Thanh trạng thái trong suốt
+    statusBarIconBrightness: Brightness.dark, // Icon màu đen phù hợp với nền trắng
+  ));
 
   // Tạo các repository
   final localDataSource = LocalDataSource();
@@ -87,20 +93,21 @@ Future<void> main() async {
             )..add(const LoadLanguage()),
           ),
           BlocProvider(
+            create: (context) => AdminCubit(
+              userRepository: userRepository,
+            )..checkAdminStatus(),
+            lazy: false,
+          ),
+          BlocProvider(
             create: (context) => AuthBloc(
               userRepository: userRepository,
+              adminCubit: context.read<AdminCubit>(),
             )..add(CheckAuthenticationStatus()),
           ),
           BlocProvider(
             create: (context) => WasteTypeBloc(
               repository: wasteTypeRepository,
             ),
-          ),
-          BlocProvider(
-            create: (context) => AdminCubit(
-              userRepository: userRepository,
-            )..checkAdminStatus(),
-            lazy: false,
           ),
           BlocProvider(
             create: (context) => TransactionBloc(
@@ -129,11 +136,23 @@ Future<void> main() async {
               repository: collectionPointRepository,
             ),
           ),
-          // Add ChatBloc
+          // Add ChatBloc with userId
           BlocProvider(
-            create: (context) => ChatBloc(
-              openAIService: openAIService,
-            ),
+            create: (context) {
+              // We'll use a synchronous approach to get a unique ID for each user
+              final authState = context.read<AuthBloc>().state;
+              String userId = 'guest';
+              
+              // If the user is authenticated, use their ID
+              if (authState is Authenticated) {
+                userId = authState.user.id.toString();
+              }
+              
+              return ChatBloc(
+                openAIService: openAIService,
+                userId: userId,
+              );
+            },
           ),
         ],
         child: const MyApp(),

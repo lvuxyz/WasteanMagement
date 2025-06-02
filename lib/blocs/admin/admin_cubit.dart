@@ -102,8 +102,16 @@ class AdminCubit extends Cubit<bool> {
   }
   
   // Method to force update admin status
+  // IMPORTANT: This should ONLY be used for testing purposes and NEVER in production code.
+  // Using this method to bypass authentication is a serious security risk.
   void forceUpdateAdminStatus(bool isAdmin) {
-    developer.log('Force updating admin status to: $isAdmin');
+    developer.log('Force updating admin status to: $isAdmin - THIS SHOULD ONLY BE USED FOR TESTING', error: isAdmin ? null : 'Security warning: Setting admin to false is safer');
     emit(isAdmin);
+  }
+  
+  // Method to clear admin status when logging out
+  void clearAdminStatus() {
+    developer.log('Clearing admin status on logout');
+    emit(false);
   }
 } 
