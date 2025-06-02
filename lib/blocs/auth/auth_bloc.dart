@@ -3,11 +3,17 @@ import 'package:wasteanmagement/repositories/user_repository.dart';
 import '../../core/error/exceptions.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../admin/admin_cubit.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UserRepository userRepository;
+  final AdminCubit? adminCubit;
 
-  AuthBloc({required this.userRepository}) : super(AuthInitial()) {
+  AuthBloc({
+    required this.userRepository, 
+    this.adminCubit,
+  }) : super(AuthInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<ForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
@@ -62,6 +68,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ) async {
     emit(AuthLoading());
     try {
+      // Clear all chat history for security
+      final prefs = await SharedPreferences.getInstance();
+      final keysToRemove = <String>[];
+      
+      // Find and clear all chat history keys
+      prefs.getKeys().forEach((key) {
+        if (key.startsWith('chat_history_user_')) {
+          keysToRemove.add(key);
+        }
+      });
+      
+      // Remove found keys
+      for (final key in keysToRemove) {
+        await prefs.remove(key);
+      }
+      
+      // Clear admin status if AdminCubit is available
+      if (adminCubit != null) {
+        adminCubit!.clearAdminStatus();
+      }
+      
+      // Perform regular logout
       await userRepository.logout();
       emit(Unauthenticated());
     } catch (e) {

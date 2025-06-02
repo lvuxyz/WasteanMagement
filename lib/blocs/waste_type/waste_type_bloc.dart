@@ -114,9 +114,9 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     try {
       final result = await repository.addToRecyclingPlan(event.wasteTypeId);
       if (result) {
-        emit(RecyclingPlanUpdated('Đã thêm loại rác vào kế hoạch tái chế thành công'));
+        emit(const RecyclingPlanUpdated('Đã thêm loại rác vào kế hoạch tái chế thành công'));
       } else {
-        emit(WasteTypeError('Không thể thêm loại rác vào kế hoạch tái chế'));
+        emit(const WasteTypeError('Không thể thêm loại rác vào kế hoạch tái chế'));
       }
     } catch (e) {
       emit(WasteTypeError('Đã xảy ra lỗi khi thêm vào kế hoạch tái chế: $e'));
@@ -127,7 +127,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypeDetails event,
       Emitter<WasteTypeState> emit,
       ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
       final collectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
@@ -144,7 +144,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
       LoadWasteTypeDetailsWithAvailablePoints event,
       Emitter<WasteTypeState> emit,
       ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteType = await repository.getWasteTypeById(event.wasteTypeId);
       final linkedCollectionPoints = await repository.getCollectionPointsForWasteType(event.wasteTypeId);
@@ -178,7 +178,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         
         add(LoadWasteTypes());
       } else {
-        emit(WasteTypeError('Không thể xóa loại rác'));
+        emit(const WasteTypeError('Không thể xóa loại rác'));
       }
     } catch (e) {
       emit(WasteTypeError('Đã xảy ra lỗi khi xóa loại rác: $e'));
@@ -203,7 +203,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         
         add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
       } else {
-        emit(WasteTypeError('Không thể liên kết điểm thu gom'));
+        emit(const WasteTypeError('Không thể liên kết điểm thu gom'));
       }
     } catch (e) {
       emit(WasteTypeError('Đã xảy ra lỗi khi liên kết điểm thu gom: $e'));
@@ -228,7 +228,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
         
         add(LoadWasteTypeDetailsWithAvailablePoints(event.wasteTypeId));
       } else {
-        emit(WasteTypeError('Không thể hủy liên kết điểm thu gom'));
+        emit(const WasteTypeError('Không thể hủy liên kết điểm thu gom'));
       }
     } catch (e) {
       emit(WasteTypeError('Đã xảy ra lỗi khi hủy liên kết điểm thu gom: $e'));
@@ -269,7 +269,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     UpdateWasteType event,
     Emitter<WasteTypeState> emit,
   ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteType.id, event.wasteType.toJson());
       emit(WasteTypeUpdated(
@@ -288,7 +288,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     UpdateWasteTypeData event,
     Emitter<WasteTypeState> emit,
   ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteType = await repository.updateWasteType(event.wasteTypeId, event.data);
       emit(WasteTypeUpdated(
@@ -307,7 +307,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
     LoadWasteTypesForCollectionPoint event,
     Emitter<WasteTypeState> emit,
   ) async {
-    emit(WasteTypeLoading());
+    emit(const WasteTypeLoading());
     try {
       final wasteTypes = await repository.getWasteTypesForCollectionPoint(event.collectionPointId);
       emit(WasteTypesForCollectionPointLoaded(
@@ -344,7 +344,7 @@ class WasteTypeBloc extends Bloc<WasteTypeEvent, WasteTypeState> {
           collectionPointName: '', // This will be updated when loaded
         ));
       } else {
-        emit(WasteTypeError('Không thể thêm loại rác vào điểm thu gom'));
+        emit(const WasteTypeError('Không thể thêm loại rác vào điểm thu gom'));
       }
     } catch (e) {
       emit(WasteTypeError('Đã xảy ra lỗi khi thêm loại rác vào điểm thu gom: $e'));
