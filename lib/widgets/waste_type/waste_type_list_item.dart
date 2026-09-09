@@ -354,33 +354,5 @@ class WasteTypeListItem extends StatelessWidget {
     );
   }
 
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Tái chế':
-        return Colors.blue;
-      case 'Hữu cơ':
-        return Colors.green;
-      case 'Nguy hại':
-        return Colors.red;
-      case 'Thường':
-        return Colors.grey;
-      default:
-        return AppColors.primaryGreen;
-    }
-  }
   
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Tái chế':
-        return Icons.recycling;
-      case 'Hữu cơ':
-        return Icons.compost;
-      case 'Nguy hại':
-        return Icons.warning_amber_rounded;
-      case 'Thường':
-        return Icons.delete_outline;
-      default:
-        return Icons.category;
-    }
-  }
 }

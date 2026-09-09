@@ -620,7 +620,6 @@ class _EnhancedMessageBubble extends StatelessWidget {
     required this.message,
     required this.isUser,
     required this.time,
-    super.key,
   });
 
   @override

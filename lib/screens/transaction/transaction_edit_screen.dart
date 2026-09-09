@@ -5,7 +5,6 @@ import '../../blocs/transaction/transaction_bloc.dart';
 import '../../blocs/transaction/transaction_event.dart';
 import '../../models/transaction.dart';
 import '../../repositories/transaction_repository.dart';
-import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
@@ -30,16 +29,10 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   String _selectedStatus = 'pending';
-  final AuthService _authService = AuthService();
-
   @override
   void initState() {
     super.initState();
     _loadTransactionDetails();
-  }
-
-  Future<void> _checkIsAdmin() async {
-    await _authService.isAdmin(); // Keep the method for future use if needed
   }
 
   @override

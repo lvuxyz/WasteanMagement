@@ -458,17 +458,6 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
   }
 
   Widget _buildRankingItem(UserRanking ranking) {
-    // Background colors for different positions
-    Color getBackgroundColor() {
-      if (ranking.rank <= 3) {
-        return Colors.amber.withValues(alpha: 0.05);
-      }
-      if (ranking.rank <= 10) {
-        return AppColors.primaryGreen.withValues(alpha: 0.05);
-      }
-      return Colors.transparent;
-    }
-
     Color getPositionColor() {
       if (ranking.rank == 1) return Colors.amber;
       if (ranking.rank == 2) return Colors.grey.shade400;

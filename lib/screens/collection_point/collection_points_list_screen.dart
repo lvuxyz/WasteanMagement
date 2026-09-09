@@ -27,8 +27,6 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   late CollectionPointBloc _collectionPointBloc;
   late AdminCubit _adminCubit;
   
-  bool get _isAdmin => context.read<AdminCubit>().state;
-
   @override
   void initState() {
     super.initState();

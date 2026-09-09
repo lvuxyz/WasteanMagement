@@ -28,7 +28,6 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
   bool _isFilterExpanded = false;
   bool _isAdmin = false;
   final int _currentPage = 1;
-  final int _itemsPerPage = 10;
   final ScrollController _scrollController = ScrollController();
 
   @override

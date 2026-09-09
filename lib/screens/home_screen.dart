@@ -56,12 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _onItemTapped(int index){
-    // Navigation functionality would go here
-    // For example: switch to a different screen based on index
-    // Currently not implemented in the UI
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

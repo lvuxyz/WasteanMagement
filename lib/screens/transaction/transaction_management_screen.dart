@@ -112,57 +112,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   }
 
 
-  void _updateTransactionStatus(int transactionId, String status) {
-    // Đánh dấu là đang cập nhật để hiển thị loading
-    setState(() {
-      _updatingItems[transactionId] = true;
-    });
-    
-    // Sử dụng widget Builder để lấy context chứa BlocProvider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final builderWidget = Builder(
-        builder: (innerContext) {
-          try {
-            // Gửi sự kiện cập nhật qua BlocProvider
-            innerContext.read<TransactionBloc>().add(
-              UpdateTransactionStatus(
-                transactionId: transactionId,
-                status: status,
-              ),
-            );
-          } catch (e) {
-            developer.log("Error sending update status event: $e");
-          }
-          return const SizedBox.shrink();
-        }
-      );
-      
-      // Chèn builder widget vào widget tree tạm thời
-      final overlay = Overlay.of(context);
-      final entry = OverlayEntry(
-        builder: (context) => Positioned(
-          child: builderWidget,
-        ),
-      );
-      
-      overlay.insert(entry);
-      
-      // Xóa sau khi đã thực hiện
-      Future.microtask(() {
-        entry.remove();
-      });
-    });
-    
-    // Xóa trạng thái loading sau 2 giây
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _updatingItems.remove(transactionId);
-        });
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // Lấy TransactionRepository từ context cha
@@ -619,35 +568,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
           ),
         );
       }
-    );
-  }
-
-  Widget _buildStatusButton(BuildContext context, Transaction transaction, String status, String label) {
-    final bool isCurrentStatus = transaction.status == status;
-    final Color statusColor = _getStatusColor(status);
-    
-    return ElevatedButton(
-      onPressed: isCurrentStatus 
-          ? null 
-          : () => _updateTransactionStatus(transaction.transactionId, status),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isCurrentStatus ? statusColor : statusColor.withValues(alpha: 0.1),
-        foregroundColor: isCurrentStatus ? Colors.white : statusColor,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        disabledBackgroundColor: statusColor,
-        disabledForegroundColor: Colors.white,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 
