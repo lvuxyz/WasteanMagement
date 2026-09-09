@@ -148,6 +148,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
       });
       
       // Show success message
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đã chọn vị trí từ bản đồ'),

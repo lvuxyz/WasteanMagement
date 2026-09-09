@@ -225,6 +225,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

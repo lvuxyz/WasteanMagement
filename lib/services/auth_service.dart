@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'dart:developer' as developer;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/storage_keys.dart';
@@ -39,7 +39,7 @@ class AuthService {
     try {
       final token = await getToken();
       developer.log('===== ADMIN CHECK =====');
-      developer.log('Checking admin status with token: ${token != null ? token.substring(0, Math.min(20, token.length)) : "null"}...');
+      developer.log('Checking admin status with token: ${token != null ? token.substring(0, math.min(20, token.length)) : "null"}...');
       
       if (token == null) {
         developer.log('ADMIN CHECK RESULT: Token is null, user is NOT ADMIN');

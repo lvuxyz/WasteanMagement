@@ -146,7 +146,8 @@ class _MapScreenState extends State<MapScreen> {
                                       } catch (e) {
                                         developer.log('Error updating gesture settings: $e');
                                       }
-                                      
+
+                                      if (!context.mounted) return;
                                       context.read<MapBloc>().add(MapInitialized(controller));
                                     });
                                   },

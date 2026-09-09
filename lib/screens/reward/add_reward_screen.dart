@@ -11,7 +11,7 @@ class AddRewardScreen extends StatefulWidget {
   const AddRewardScreen({super.key});
 
   @override
-  _AddRewardScreenState createState() => _AddRewardScreenState();
+  State<AddRewardScreen> createState() => _AddRewardScreenState();
 }
 
 class _AddRewardScreenState extends State<AddRewardScreen> {
@@ -56,6 +56,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
     if (!isAdmin) {
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Bạn không có quyền truy cập chức năng này'),

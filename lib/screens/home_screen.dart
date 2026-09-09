@@ -40,6 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Ensure profile data is loaded
     Future.microtask(() {
+      // Microtask chạy sau khi initState kết thúc; màn hình có thể đã bị gỡ
+      // trước lúc đó (ví dụ người dùng thoát ngay), khi ấy context không còn
+      // dùng được nữa.
+      if (!mounted) return;
       final profileState = context.read<ProfileBloc>().state;
       if (profileState is! ProfileLoaded) {
         context.read<ProfileBloc>().add(LoadProfile());

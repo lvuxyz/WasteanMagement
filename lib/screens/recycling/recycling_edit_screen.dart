@@ -142,6 +142,7 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
       });
       
       // Sau khi chọn ngày, hiển thị time picker
+      if (!context.mounted) return;
       _selectEndTime(context);
     }
   }

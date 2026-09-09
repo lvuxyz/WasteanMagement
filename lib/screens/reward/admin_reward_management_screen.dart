@@ -52,6 +52,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
     if (!isAdmin) {
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Bạn không có quyền truy cập chức năng này'),

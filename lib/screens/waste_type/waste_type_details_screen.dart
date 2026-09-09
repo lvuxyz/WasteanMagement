@@ -459,7 +459,7 @@ class _WasteTypeDetailsScreenState extends State<WasteTypeDetailsScreen>
                   arguments: widget.wasteTypeId,
                 ).then((result) {
                   // Refresh data if changes were made
-                  if (result == true && mounted) {
+                  if (result == true && context.mounted) {
                     context.read<WasteTypeBloc>().add(
                       LoadWasteTypeDetails(widget.wasteTypeId),
                     );

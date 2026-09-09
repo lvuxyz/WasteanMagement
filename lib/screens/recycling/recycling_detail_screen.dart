@@ -154,6 +154,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                             builder: (context) => RecyclingEditScreen(process: process),
                           ),
                         ).then((_) {
+                          if (!context.mounted) return;
                           context.read<RecyclingBloc>().add(
                             GetRecyclingProcessDetail(widget.processId),
                           );

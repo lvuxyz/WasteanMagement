@@ -589,6 +589,7 @@ class _CollectionPointDetailsScreenState
       await launchUrl(Uri.parse(url));
     } catch (e) {
       developer.log('Could not launch maps: $e', error: e);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Không thể mở ứng dụng bản đồ'),

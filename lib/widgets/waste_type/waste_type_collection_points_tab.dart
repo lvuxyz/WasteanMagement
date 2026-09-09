@@ -114,8 +114,10 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                 return showAdminFeatures
                   ? ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.pushNamed(
-                          context,
+                        // StatelessWidget nên không có `mounted`; giữ sẵn
+                        // Navigator trước async gap thay vì tra lại context.
+                        final navigator = Navigator.of(context);
+                        navigator.pushNamed(
                           '/waste-type/collection-points',
                           arguments: wasteTypeId,
                         ).then((result) {
@@ -123,9 +125,8 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                           if (result == true) {
                             // This is part of waste management functionality
                             // Reload this screen with updated data
-                            Navigator.of(context).pop();  // Close current screen
-                            Navigator.pushReplacementNamed(
-                              context,
+                            navigator.pop();  // Close current screen
+                            navigator.pushReplacementNamed(
                               '/waste-type/details',
                               arguments: wasteTypeId,
                             );
