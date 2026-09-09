@@ -1,32 +1,32 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
-import 'constants.dart';
+import 'storage_keys.dart';
 
 class SecureStorage {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<void> saveToken(String token) async {
-    await _storage.write(key: ApiConstants.tokenKey, value: token);
+    await _storage.write(key: SecureStorageKeys.token, value: token);
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: ApiConstants.tokenKey);
+    return await _storage.read(key: SecureStorageKeys.token);
   }
 
   Future<void> deleteToken() async {
-    await _storage.delete(key: ApiConstants.tokenKey);
+    await _storage.delete(key: SecureStorageKeys.token);
   }
 
   Future<void> saveUser(User user) async {
     await _storage.write(
-      key: ApiConstants.userKey,
+      key: SecureStorageKeys.user,
       value: jsonEncode(user.toJson()),
     );
   }
 
   Future<User?> getUser() async {
-    final userJson = await _storage.read(key: ApiConstants.userKey);
+    final userJson = await _storage.read(key: SecureStorageKeys.user);
     if (userJson != null) {
       return User.fromJson(jsonDecode(userJson));
     }
@@ -34,7 +34,7 @@ class SecureStorage {
   }
 
   Future<void> deleteUser() async {
-    await _storage.delete(key: ApiConstants.userKey);
+    await _storage.delete(key: SecureStorageKeys.user);
   }
 
   Future<void> clearAll() async {
