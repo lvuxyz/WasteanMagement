@@ -30,6 +30,8 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/flutter_export_environment.sh
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -51,6 +53,7 @@ app.*.map.json
 
 # Flutter generated files
 **/GeneratedPluginRegistrant.m
+**/GeneratedPluginRegistrant.h
 **/GeneratedPluginRegistrant.swift
 **/generated_plugin_registrant.cc
 **/generated_plugin_registrant.h
