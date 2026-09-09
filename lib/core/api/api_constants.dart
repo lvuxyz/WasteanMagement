@@ -1,20 +1,33 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
-  // Base URL cho toàn bộ hệ thống
-// Đổi thành true để sử dụng localhost cho emulator
+  // Đổi thành true để trỏ về máy chủ chạy trên máy dev khi dùng emulator
+  // Android. Chỉ có tác dụng khi .env không khai báo API_BASE_URL.
   static const bool useEmulator = false;
-  // // Đổi thành true để sử dụng localhost
-  // static const bool useLocalhost = true;
 
-  // URL cho các môi trường khác nhau
+  // URL dự phòng cho các môi trường khác nhau
   static const String _emulatorBaseUrl = 'http://10.0.2.2:5000/api/v1'; // Localhost trên emulator
-  static const String _physicalDeviceBaseUrl = 'http://103.27.239.248:3000/api/v1'; // IP máy chủ trên mạng LAN
-  //static const String _localhostBaseUrl = 'http://192.168.173.115:3000/api/v1'; // Localhost trực tiếp
+  static const String _physicalDeviceBaseUrl = 'http://103.27.239.248:3000/api/v1'; // Máy chủ mặc định
 
-  static String get baseUrl => useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
-  // Chọn URL dựa trên môi trường
-  // static String get baseUrl => useLocalhost
-  //     ? _localhostBaseUrl
-  //     : (useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl);
+  /// Địa chỉ gốc của API.
+  ///
+  /// Ưu tiên `API_BASE_URL` trong .env để đổi máy chủ mà không phải sửa mã
+  /// nguồn và build lại — hữu ích khi chuyển giữa máy dev, staging và
+  /// production, hoặc khi máy chủ mặc định đổi địa chỉ. Nếu biến này không có
+  /// thì quay về hằng số dự phòng như trước.
+  static String get baseUrl {
+    if (dotenv.isInitialized) {
+      final fromEnv = dotenv.env['API_BASE_URL'];
+      if (fromEnv != null && fromEnv.isNotEmpty) {
+        // Bỏ dấu '/' thừa ở cuối để nối endpoint không sinh ra '//'
+        return fromEnv.endsWith('/')
+            ? fromEnv.substring(0, fromEnv.length - 1)
+            : fromEnv;
+      }
+    }
+    return useEmulator ? _emulatorBaseUrl : _physicalDeviceBaseUrl;
+  }
+
   // Các endpoint cụ thể
   static String get login => '$baseUrl/auth/login';
   static String get register => '$baseUrl/auth/register';

@@ -36,14 +36,34 @@ cd wasteanmagement
 flutter pub get
 ```
 
-3. Tạo file `.env` tại thư mục gốc của dự án:
+3. Tạo file `.env` tại thư mục gốc, sao chép từ `env.example`:
+
+```bash
+cp env.example .env
+```
+
+Rồi điền các giá trị:
 
 ```
+API_BASE_URL=http://your-backend-host:3000/api/v1
 OPENAI_API_KEY=your_api_key_here
 MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
 ```
 
-4. Chạy ứng dụng:
+`API_BASE_URL` cho phép đổi máy chủ mà không phải sửa mã nguồn. Bỏ trống thì
+ứng dụng dùng địa chỉ dự phòng khai báo trong `lib/core/api/api_constants.dart`.
+
+4. Sinh file bản địa hóa từ các file ARB:
+
+```bash
+flutter gen-l10n
+```
+
+Bước này chạy tự động khi build, nhưng cần chạy tay sau khi clone để IDE
+không báo thiếu `lib/l10n/app_localizations.dart` (file sinh tự động, không
+commit vào git).
+
+5. Chạy ứng dụng:
 
 ```bash
 flutter run
@@ -89,6 +109,28 @@ LVuRác được xây dựng theo kiến trúc BLoC (Business Logic Component) v
 - **Business Logic Layer**: BLoCs và Cubits (trong thư mục `lib/blocs`)
 - **Data Layer**: Repositories và Data Sources (trong thư mục `lib/repositories` và `lib/data`)
 - **Domain Layer**: Models (trong thư mục `lib/models`)
+
+## Đa ngôn ngữ
+
+Chuỗi giao diện nằm trong `lib/l10n/app_en.arb` và `lib/l10n/app_vi.arb` — đây
+là nguồn sự thật duy nhất. `flutter gen-l10n` sinh ra lớp `AppLocalizations`;
+dùng trong widget qua `AppLocalizations.of(context)`.
+
+Hiện mới khoảng 90 chuỗi được bản địa hóa, chủ yếu ở luồng đăng nhập, đăng ký,
+quên mật khẩu và chọn ngôn ngữ. Phần lớn giao diện còn lại vẫn ghi cứng tiếng
+Việt trong mã nguồn.
+
+## Kiểm thử
+
+```bash
+flutter test
+```
+
+## Yêu cầu về backend
+
+Ứng dụng cần một máy chủ API tương thích chạy tại `API_BASE_URL`. Không có
+máy chủ này thì các màn hình phụ thuộc dữ liệu (bản đồ điểm thu gom, loại rác,
+giao dịch, thống kê tái chế, điểm thưởng) sẽ báo lỗi tải dữ liệu.
 
 ## Chức năng Trợ lý AI
 

@@ -36,8 +36,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'blocs/profile/profile_bloc.dart';
 
 Future<void> main() async {
-  await dotenv.dotenv.load(fileName: ".env");
+  // Phải khởi tạo binding trước: dotenv.load đọc .env qua rootBundle, mà
+  // rootBundle cần binding đã sẵn sàng mới nạp được asset.
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.dotenv.load(fileName: ".env");
   
   // Thiết lập màu sắc cho thanh trạng thái
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
