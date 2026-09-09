@@ -174,7 +174,7 @@ class UserRepository {
                 // For new profile format, just return the raw data to be processed by ProfileBloc
                 // We'll create a minimal User object to satisfy the return type
                 final basicInfo = response['data']['basic_info'] ?? {};
-                print('[DEBUG] Raw profile data from API: ${response['data']}');
+                developer.log('[DEBUG] Raw profile data from API: ${response['data']}');
                 
                 // Kiểm tra và xử lý trường roles
                 List<String> roles = [];
@@ -197,10 +197,10 @@ class UserRepository {
                 // Nếu vẫn không có roles, mặc định thêm role USER
                 if (roles.isEmpty) {
                   roles = ['USER'];
-                  print('[DEBUG] Using default role: USER as no roles were found in API response');
+                  developer.log('[DEBUG] Using default role: USER as no roles were found in API response');
                 }
                 
-                print('[DEBUG] Roles after processing: $roles');
+                developer.log('[DEBUG] Roles after processing: $roles');
                 
                 final user = User(
                   id: basicInfo['id'] ?? 0,
@@ -213,8 +213,8 @@ class UserRepository {
                   rawProfileData: response['data'], // Store the raw profile data for later use
                 );
                 
-                print('[DEBUG] Created User object with rawProfileData available');
-                print('[DEBUG] Transaction stats in raw data: ${user.rawProfileData?['transaction_stats']}');
+                developer.log('[DEBUG] Created User object with rawProfileData available');
+                developer.log('[DEBUG] Transaction stats in raw data: ${user.rawProfileData?['transaction_stats']}');
                 
                 await localDataSource.cacheUserProfile(user);
                 developer.log('Đã lấy và cập nhật thông tin người dùng mới: ${user.fullName}');

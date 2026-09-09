@@ -4,13 +4,14 @@ import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/models/transaction.dart';
+import 'dart:developer' as developer;
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository transactionRepository;
   final AuthService _authService = AuthService();
 
   // ignore: avoid_print
-  void _log(String message) => print(message);
+  void _log(String message) => developer.log(message);
 
   TransactionBloc({required this.transactionRepository}) 
       : super(const TransactionState()) {

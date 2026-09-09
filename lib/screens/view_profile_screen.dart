@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../widgets/common/loading_indicator.dart';
 import '../widgets/common/error_message.dart';
 import 'package:intl/intl.dart';
+import 'dart:developer' as developer;
 
 class ViewProfileScreen extends StatefulWidget {
   const ViewProfileScreen({super.key});
@@ -53,8 +54,8 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         },
       );
       
-      print("[DEBUG] Status code: ${response.statusCode}");
-      print("[DEBUG] Response body: ${response.body.substring(0, 100)}...");
+      developer.log("[DEBUG] Status code: ${response.statusCode}");
+      developer.log("[DEBUG] Response body: ${response.body.substring(0, 100)}...");
       
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -65,7 +66,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             _isLoading = false;
           });
           
-          print("[DEBUG] User data loaded: ${_userData['basic_info']?['full_name']}");
+          developer.log("[DEBUG] User data loaded: ${_userData['basic_info']?['full_name']}");
         } else {
           setState(() {
             _isLoading = false;
@@ -84,7 +85,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print("[DEBUG] Error loading profile: $e");
+      developer.log("[DEBUG] Error loading profile: $e");
     }
   }
 
@@ -128,7 +129,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
     final accountStatus = _userData['account_status'] ?? {};
     final additionalData = _userData['additional_data'] ?? {};
     
-    print("[DEBUG] Building UI with basic info: $basicInfo");
+    developer.log("[DEBUG] Building UI with basic info: $basicInfo");
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),

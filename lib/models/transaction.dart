@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 class Transaction {
   final int transactionId;
   final int userId;
@@ -32,7 +34,7 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     try {
       // Print the transaction data for debugging
-      print('Parsing transaction: ${json['transaction_id']}');
+      developer.log('Parsing transaction: ${json['transaction_id']}');
       
       // Handle quantity that can be int, double, or string
       double parseQuantity() {
@@ -64,8 +66,8 @@ class Transaction {
         wasteTypeName: json['waste_type_name'] ?? 'Không xác định',
       );
     } catch (e) {
-      print('Error parsing Transaction: $e');
-      print('JSON: $json');
+      developer.log('Error parsing Transaction: $e');
+      developer.log('JSON: $json');
       rethrow;
     }
   }
@@ -93,8 +95,8 @@ class TransactionPagination {
         pages: json['pages'],
       );
     } catch (e) {
-      print('Error parsing TransactionPagination: $e');
-      print('JSON: $json');
+      developer.log('Error parsing TransactionPagination: $e');
+      developer.log('JSON: $json');
       rethrow;
     }
   }
@@ -115,11 +117,11 @@ class TransactionResponse {
 
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     try {
-      print('Parsing TransactionResponse: $json');
+      developer.log('Parsing TransactionResponse: $json');
       
       // Check if data exists and is a list
       if (!json.containsKey('data') || json['data'] == null) {
-        print('Warning: No data key found in response');
+        developer.log('Warning: No data key found in response');
         return TransactionResponse(
           success: json['success'] ?? false,
           message: json['message'] ?? 'No data found in response',
@@ -142,8 +144,8 @@ class TransactionResponse {
         pagination: TransactionPagination.fromJson(json['pagination']),
       );
     } catch (e) {
-      print('Error parsing TransactionResponse: $e');
-      print('JSON: $json');
+      developer.log('Error parsing TransactionResponse: $e');
+      developer.log('JSON: $json');
       rethrow;
     }
   }
@@ -177,8 +179,8 @@ class TransactionHistory {
         adminName: json['admin_name'],
       );
     } catch (e) {
-      print('Error parsing TransactionHistory: $e');
-      print('JSON: $json');
+      developer.log('Error parsing TransactionHistory: $e');
+      developer.log('JSON: $json');
       rethrow;
     }
   }
@@ -208,8 +210,8 @@ class TransactionHistoryResponse {
         data: history,
       );
     } catch (e) {
-      print('Error parsing TransactionHistoryResponse: $e');
-      print('JSON: $json');
+      developer.log('Error parsing TransactionHistoryResponse: $e');
+      developer.log('JSON: $json');
       rethrow;
     }
   }

@@ -16,6 +16,7 @@ import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../core/api/api_constants.dart';
 import 'package:intl/intl.dart';
+import 'dart:developer' as developer;
 
 // This class will be used only for the transaction screen
 // It's simpler than the full WasteType model
@@ -100,18 +101,18 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
     try {
       final url = ApiConstants.wasteTypes;
-      print('Đang gọi API trực tiếp: $url');
+      developer.log('Đang gọi API trực tiếp: $url');
       
       final response = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
       
-      print('Phản hồi từ API: ${response.statusCode}');
+      developer.log('Phản hồi từ API: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Dữ liệu phản hồi: $data');
+        developer.log('Dữ liệu phản hồi: $data');
         
         List<dynamic> wasteTypesJson = [];
         
@@ -155,7 +156,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         ];
       });
     } catch (e) {
-      print('Lỗi khi tải danh sách loại rác: $e');
+      developer.log('Lỗi khi tải danh sách loại rác: $e');
       setState(() {
         _wasteTypesError = 'Không thể tải danh sách loại rác: $e';
         _isLoadingWasteTypes = false;

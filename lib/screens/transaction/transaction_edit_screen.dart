@@ -66,14 +66,14 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           return;
         } catch (e) {
           // Transaction not found in bloc state, will fetch from API instead
-          print('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+          developer.log('Transaction not found in bloc state, fetching from API: ${e.toString()}');
         }
       }
 
       // If not found in bloc state, fetch directly
       final repository = Provider.of<TransactionRepository>(context, listen: false);
       final url = '${ApiConstants.transactions}/${widget.transactionId}';
-      print('Fetching transaction details from API: $url');
+      developer.log('Fetching transaction details from API: $url');
       
       final response = await repository.apiClient.get(url);
       
@@ -86,7 +86,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         throw Exception('Could not find transaction details');
       }
     } catch (e) {
-      print('Error loading transaction details: $e');
+      developer.log('Error loading transaction details: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();

@@ -10,6 +10,7 @@ import '../../repositories/transaction_repository.dart';
 import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
 import 'package:intl/intl.dart';
+import 'dart:developer' as developer;
 
 class TransactionDetailsScreen extends StatefulWidget {
   final int transactionId;
@@ -77,14 +78,14 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           return;
         } catch (e) {
           // Transaction not found in bloc state, will fetch from API instead
-          print('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+          developer.log('Transaction not found in bloc state, fetching from API: ${e.toString()}');
         }
       }
 
       // If not found in bloc state, fetch directly
       final repository = Provider.of<TransactionRepository>(context, listen: false);
       final url = '${ApiConstants.transactions}/${widget.transactionId}';
-      print('Fetching transaction details from API: $url');
+      developer.log('Fetching transaction details from API: $url');
       
       final response = await repository.apiClient.get(url);
       
@@ -102,7 +103,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
         throw Exception('Could not find transaction details');
       }
     } catch (e) {
-      print('Error loading transaction details: $e');
+      developer.log('Error loading transaction details: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
@@ -125,7 +126,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
         _isLoadingHistory = false;
       });
     } catch (e) {
-      print('Error loading transaction history: $e');
+      developer.log('Error loading transaction history: $e');
       setState(() {
         _isLoadingHistory = false;
       });

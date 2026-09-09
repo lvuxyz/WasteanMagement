@@ -21,6 +21,7 @@ import '../utils/app_colors.dart';
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
+import 'dart:developer' as developer;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -75,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             // Admin status is now available
-            print('Home screen - User is admin: $isAdmin');
+            developer.log('Home screen - User is admin: $isAdmin');
             return _buildHomePage(isAdmin);
           }
       ),
@@ -997,7 +998,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final isAdmin = snapshot.data ?? false;
         if (!isAdmin) {
-          print('Regular user, but trying to build admin transaction list');
+          developer.log('Regular user, but trying to build admin transaction list');
         }
 
         return BlocProvider(
@@ -1005,7 +1006,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final apiClient = context.read<ApiClient>();
             final transactionRepository = TransactionRepository(apiClient: apiClient);
 
-            print('Building all transactions list for admin. Admin status: $isAdmin');
+            developer.log('Building all transactions list for admin. Admin status: $isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
             )..add(FetchTransactions(limit: 3)); // Reduced limit to 3 for home screen
@@ -1043,7 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: () {
-                            print('Retrying all transactions fetch');
+                            developer.log('Retrying all transactions fetch');
                             context.read<TransactionBloc>().add(RefreshTransactions());
                           },
                           icon: const Icon(Icons.refresh, size: 16),

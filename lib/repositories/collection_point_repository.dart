@@ -21,7 +21,7 @@ class CollectionPointRepository {
         throw Exception('Failed to load collection points: ${response.data['message']}');
       }
     } catch (e) {
-      print('Error fetching collection points: $e');
+      developer.log('Error fetching collection points: $e');
       throw Exception('Failed to load collection points: $e');
     }
   }

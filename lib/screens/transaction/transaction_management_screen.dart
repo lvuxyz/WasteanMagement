@@ -8,6 +8,7 @@ import '../../blocs/transaction/transaction_state.dart';
 import '../../models/transaction.dart';
 import '../../services/auth_service.dart';
 import '../../repositories/transaction_repository.dart';
+import 'dart:developer' as developer;
 
 class TransactionManagementScreen extends StatefulWidget {
   const TransactionManagementScreen({super.key});
@@ -73,7 +74,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                 }
               }
             } catch (e) {
-              print('Error in onScroll: $e');
+              developer.log('Error in onScroll: $e');
             }
             return const SizedBox.shrink();
           }
@@ -130,7 +131,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
               ),
             );
           } catch (e) {
-            print("Error sending update status event: $e");
+            developer.log("Error sending update status event: $e");
           }
           return const SizedBox.shrink();
         }
@@ -280,7 +281,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                       ));
                     }
                   } catch (e) {
-                    print('Error applying filter: $e');
+                    developer.log('Error applying filter: $e');
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Lỗi khi lọc giao dịch: $e'),

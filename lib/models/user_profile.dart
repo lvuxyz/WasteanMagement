@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 class UserProfile {
   final BasicInfo basicInfo;
   final AccountStatus accountStatus;
@@ -14,9 +16,9 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    print('[DEBUG] UserProfile.fromJson START with data: $json');
-    print('[DEBUG] Basic info data: ${json['basic_info']}');
-    print('[DEBUG] Transaction stats data: ${json['transaction_stats']}');
+    developer.log('[DEBUG] UserProfile.fromJson START with data: $json');
+    developer.log('[DEBUG] Basic info data: ${json['basic_info']}');
+    developer.log('[DEBUG] Transaction stats data: ${json['transaction_stats']}');
 
     final profile = UserProfile(
       basicInfo: BasicInfo.fromJson(json['basic_info']),
@@ -26,9 +28,9 @@ class UserProfile {
       timezone: json['timezone'] ?? 'UTC',
     );
 
-    print('[DEBUG] UserProfile created successfully');
-    print('[DEBUG] Basic info: ${profile.basicInfo.fullName}');
-    print('[DEBUG] Total transactions: ${profile.transactionStats.totalTransactions}');
+    developer.log('[DEBUG] UserProfile created successfully');
+    developer.log('[DEBUG] Basic info: ${profile.basicInfo.fullName}');
+    developer.log('[DEBUG] Total transactions: ${profile.transactionStats.totalTransactions}');
     
     return profile;
   }
@@ -152,7 +154,7 @@ class TransactionStats {
   });
 
   factory TransactionStats.fromJson(Map<String, dynamic> json) {
-    print('[DEBUG] TransactionStats.fromJson with data: $json');
+    developer.log('[DEBUG] TransactionStats.fromJson with data: $json');
     
     // Convert any number types to string if needed
     String getStringValue(dynamic value) {
@@ -180,7 +182,7 @@ class TransactionStats {
       totalQuantity: getStringValue(json['total_quantity']),
     );
     
-    print('[DEBUG] Created TransactionStats: totalTransactions=${stats.totalTransactions}');
+    developer.log('[DEBUG] Created TransactionStats: totalTransactions=${stats.totalTransactions}');
     
     return stats;
   }

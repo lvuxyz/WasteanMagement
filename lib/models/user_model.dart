@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'dart:developer' as developer;
 
 class User extends Equatable {
   final dynamic id;
@@ -61,20 +62,20 @@ class User extends Equatable {
 
   bool get isAdmin {
     if (roles == null || roles!.isEmpty) {
-      print('[DEBUG] isAdmin check - roles is null or empty: $roles');
+      developer.log('[DEBUG] isAdmin check - roles is null or empty: $roles');
       // Mặc định là false nếu không có roles
       return false;
     }
     
     // Log all roles for debugging
-    print('[DEBUG] isAdmin check - roles: $roles');
+    developer.log('[DEBUG] isAdmin check - roles: $roles');
     
     // Check if any admin role exists - case insensitive
     final hasAdminRole = roles!.any((role) => 
       role.toLowerCase() == 'admin' || 
       role.toLowerCase() == 'administrator');
     
-    print('[DEBUG] isAdmin result: $hasAdminRole');
+    developer.log('[DEBUG] isAdmin result: $hasAdminRole');
     
     return hasAdminRole;
   }

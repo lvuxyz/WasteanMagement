@@ -11,6 +11,7 @@ import '../utils/app_colors.dart';
 import '../repositories/collection_point_repository.dart';
 import '../core/api/api_client.dart';
 import '../utils/secure_storage.dart';
+import 'dart:developer' as developer;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -143,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
                                           increasePinchToZoomThresholdWhenRotating: true,
                                         ));
                                       } catch (e) {
-                                        print('Error updating gesture settings: $e');
+                                        developer.log('Error updating gesture settings: $e');
                                       }
                                       
                                       context.read<MapBloc>().add(MapInitialized(controller));
@@ -153,7 +154,7 @@ class _MapScreenState extends State<MapScreen> {
                               }
                             );
                           } catch (e) {
-                            print('Error creating MapWidget: $e');
+                            developer.log('Error creating MapWidget: $e');
                             // Fallback widget when MapBox fails to load
                             return Container(
                               color: Colors.grey[200],

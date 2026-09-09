@@ -29,20 +29,20 @@ class AuthService {
     if (_cachedAdminStatus != null && _cachedAdminStatusTime != null) {
       final cacheDuration = now.difference(_cachedAdminStatusTime!);
       if (cacheDuration.inSeconds < 10) {
-        print('===== ADMIN CHECK =====');
-        print('Using cached admin status: $_cachedAdminStatus (cache age: ${cacheDuration.inSeconds}s)');
-        print('=====================');
+        developer.log('===== ADMIN CHECK =====');
+        developer.log('Using cached admin status: $_cachedAdminStatus (cache age: ${cacheDuration.inSeconds}s)');
+        developer.log('=====================');
         return _cachedAdminStatus!;
       }
     }
     
     try {
       final token = await getToken();
-      print('===== ADMIN CHECK =====');
-      print('Checking admin status with token: ${token != null ? token.substring(0, Math.min(20, token.length)) : "null"}...');
+      developer.log('===== ADMIN CHECK =====');
+      developer.log('Checking admin status with token: ${token != null ? token.substring(0, Math.min(20, token.length)) : "null"}...');
       
       if (token == null) {
-        print('ADMIN CHECK RESULT: Token is null, user is NOT ADMIN');
+        developer.log('ADMIN CHECK RESULT: Token is null, user is NOT ADMIN');
         _updateAdminCache(false);
         return false;
       }
@@ -50,7 +50,7 @@ class AuthService {
       // Decode JWT token
       final parts = token.split('.');
       if (parts.length != 3) {
-        print('ADMIN CHECK RESULT: Invalid token format, parts length: ${parts.length}, user is NOT ADMIN');
+        developer.log('ADMIN CHECK RESULT: Invalid token format, parts length: ${parts.length}, user is NOT ADMIN');
         _updateAdminCache(false);
         return false;
       }
@@ -62,31 +62,31 @@ class AuthService {
         final payloadMap = json.decode(decoded);
         
         // Log the payload for debugging
-        print('JWT payload: $payloadMap');
+        developer.log('JWT payload: $payloadMap');
         
         // Check if the roles array contains 'ADMIN'
         if (payloadMap.containsKey('roles') && payloadMap['roles'] is List) {
           final roles = List<String>.from(payloadMap['roles']);
           final isAdmin = roles.contains('ADMIN') || roles.contains('admin');
-          print('ADMIN CHECK RESULT: User has roles: $roles, isAdmin: $isAdmin');
+          developer.log('ADMIN CHECK RESULT: User has roles: $roles, isAdmin: $isAdmin');
           _updateAdminCache(isAdmin);
           return isAdmin;
         }
         
-        print('ADMIN CHECK RESULT: Token does not contain roles or roles is not a list, user is NOT ADMIN');
+        developer.log('ADMIN CHECK RESULT: Token does not contain roles or roles is not a list, user is NOT ADMIN');
         _updateAdminCache(false);
         return false;
       } catch (e) {
-        print('ADMIN CHECK RESULT: Error parsing token payload: $e, user is NOT ADMIN');
+        developer.log('ADMIN CHECK RESULT: Error parsing token payload: $e, user is NOT ADMIN');
         _updateAdminCache(false);
         return false;
       }
     } catch (e) {
-      print('ADMIN CHECK RESULT: Error in isAdmin(): $e, user is NOT ADMIN');
+      developer.log('ADMIN CHECK RESULT: Error in isAdmin(): $e, user is NOT ADMIN');
       _updateAdminCache(false);
       return false;
     } finally {
-      print('=====================');
+      developer.log('=====================');
     }
   }
   
@@ -94,7 +94,7 @@ class AuthService {
   void _updateAdminCache(bool status) {
     _cachedAdminStatus = status;
     _cachedAdminStatusTime = DateTime.now();
-    print('Updated admin status cache: $status');
+    developer.log('Updated admin status cache: $status');
   }
   
   // Kiểm tra admin bỏ qua cache
@@ -102,7 +102,7 @@ class AuthService {
     // Reset cache trước
     _cachedAdminStatus = null;
     _cachedAdminStatusTime = null;
-    print('Force admin check - ignoring cache');
+    developer.log('Force admin check - ignoring cache');
     
     // Gọi isAdmin bình thường
     return isAdmin();

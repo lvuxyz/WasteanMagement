@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../repositories/user_repository.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
+import 'dart:developer' as developer;
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final AuthService _authService = AuthService();
@@ -34,7 +35,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         final now = DateTime.now();
         final cacheDuration = now.difference(_lastFetchTime!);
         if (cacheDuration.inSeconds < _cacheDurationSeconds) {
-          print('[DEBUG] Using cached profile data (cache age: ${cacheDuration.inSeconds}s)');
+          developer.log('[DEBUG] Using cached profile data (cache age: ${cacheDuration.inSeconds}s)');
           emit(ProfileLoaded(userProfile: _cachedProfile!));
           return;
         }
@@ -47,31 +48,31 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           
           // If user has rawProfileData, it means we already have the full profile data
           if (user.rawProfileData != null) {
-            print('[DEBUG] Using rawProfileData to create UserProfile');
-            print('[DEBUG] Raw profile data: ${user.rawProfileData}');
+            developer.log('[DEBUG] Using rawProfileData to create UserProfile');
+            developer.log('[DEBUG] Raw profile data: ${user.rawProfileData}');
             // Create UserProfile from the raw data
             final userProfile = UserProfile.fromJson(user.rawProfileData!);
-            print('[DEBUG] Created UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+            developer.log('[DEBUG] Created UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
             _updateCache(userProfile);
             emit(ProfileLoaded(userProfile: userProfile));
             return;
           }
           
           // Convert the User to UserProfile
-          print('[DEBUG] Converting User model to UserProfile');
+          developer.log('[DEBUG] Converting User model to UserProfile');
           final userProfile = UserProfile.fromUserModel(user);
-          print('[DEBUG] Converted to UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+          developer.log('[DEBUG] Converted to UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
           _updateCache(userProfile);
           emit(ProfileLoaded(userProfile: userProfile));
           return;
         } catch (repoError) {
           // If using userRepository fails, fall back to the direct API call
-          print('[DEBUG] UserRepository error: $repoError. Falling back to direct API call.');
+          developer.log('[DEBUG] UserRepository error: $repoError. Falling back to direct API call.');
         }
       }
       
       // Fall back to original implementation using AuthService
-      print('[DEBUG] Using AuthService to get profile data');
+      developer.log('[DEBUG] Using AuthService to get profile data');
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');
@@ -130,7 +131,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           return;
         } catch (repoError) {
           // If repository fails, try the direct API approach
-          print('UserRepository update error: $repoError. Falling back to direct API call.');
+          developer.log('UserRepository update error: $repoError. Falling back to direct API call.');
         }
       }
       
@@ -177,6 +178,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   void _updateCache(UserProfile profile) {
     _cachedProfile = profile;
     _lastFetchTime = DateTime.now();
-    print('[DEBUG] Updated profile cache');
+    developer.log('[DEBUG] Updated profile cache');
   }
 }
