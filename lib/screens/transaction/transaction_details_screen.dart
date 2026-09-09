@@ -227,7 +227,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           bottom: TabBar(
             controller: _tabController,
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withOpacity(0.7),
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
             indicatorColor: Colors.white,
             tabs: const [
               Tab(text: 'Thông tin'),
@@ -382,7 +382,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           spreadRadius: 1,
                           blurRadius: 3,
                           offset: const Offset(0, 1),
@@ -401,7 +401,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(historyItem.status).withOpacity(0.1),
+                                color: _getStatusColor(historyItem.status).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -552,7 +552,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _getStatusColor(_transaction!.status).withOpacity(0.1),
+        color: _getStatusColor(_transaction!.status).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -561,7 +561,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: _getStatusColor(_transaction!.status).withOpacity(0.2),
+              color: _getStatusColor(_transaction!.status).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -586,7 +586,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(_transaction!.status).withOpacity(0.2),
+                    color: _getStatusColor(_transaction!.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -625,7 +625,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -685,7 +685,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -747,7 +747,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -797,7 +797,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
     return ElevatedButton(
       onPressed: isCurrentStatus ? null : () => _updateTransactionStatus(status),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isCurrentStatus ? statusColor : statusColor.withOpacity(0.1),
+        backgroundColor: isCurrentStatus ? statusColor : statusColor.withValues(alpha: 0.1),
         foregroundColor: isCurrentStatus ? Colors.white : statusColor,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

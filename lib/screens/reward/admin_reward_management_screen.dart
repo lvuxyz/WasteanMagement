@@ -402,7 +402,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -595,8 +595,8 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
             height: 48,
             decoration: BoxDecoration(
               color: isPositive 
-                  ? Colors.green.withOpacity(0.1) 
-                  : Colors.red.withOpacity(0.1),
+                  ? Colors.green.withValues(alpha: 0.1) 
+                  : Colors.red.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

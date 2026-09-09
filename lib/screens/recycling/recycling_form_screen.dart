@@ -235,7 +235,7 @@ class _RecyclingFormScreenState extends State<RecyclingFormScreen> {
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
-                  value: _selectedTransactionId,
+                  initialValue: _selectedTransactionId,
                   items: _transactions.map((transaction) {
                     return DropdownMenuItem<String>(
                       value: transaction['id'].toString(),
@@ -279,7 +279,7 @@ class _RecyclingFormScreenState extends State<RecyclingFormScreen> {
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
-                  value: _selectedWasteTypeId,
+                  initialValue: _selectedWasteTypeId,
                   items: _wasteTypes.map((wasteType) {
                     return DropdownMenuItem<String>(
                       value: wasteType.id.toString(),

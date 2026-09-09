@@ -163,7 +163,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: Offset(0, 3),
                     ),
@@ -249,7 +249,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryGreen.withOpacity(0.7),
+                      AppColors.primaryGreen.withValues(alpha: 0.7),
                       AppColors.primaryGreen,
                     ],
                     begin: Alignment.topLeft,
@@ -258,7 +258,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryGreen.withOpacity(_isGlowing ? 0.7 : 0.3),
+                      color: AppColors.primaryGreen.withValues(alpha: _isGlowing ? 0.7 : 0.3),
                       blurRadius: _isGlowing ? 18 : 12,
                       spreadRadius: _isGlowing ? 3 : 1,
                       offset: const Offset(0, 4),
@@ -306,7 +306,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                             height: 8,
                             width: 8,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               shape: BoxShape.circle,
                             ),
                           ),

@@ -179,7 +179,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -243,7 +243,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color: color.withValues(alpha: 0.3),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -251,7 +251,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
                 ),
                 child: CircleAvatar(
                   radius: 30 * scale,
-                  backgroundColor: color.withOpacity(0.2),
+                  backgroundColor: color.withValues(alpha: 0.2),
                   child: CircleAvatar(
                     radius: 28 * scale,
                     backgroundColor: Colors.white,
@@ -290,7 +290,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               borderRadius: BorderRadius.circular(12 * scale),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.3),
+                  color: color.withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -314,13 +314,13 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               width: double.infinity,
               padding: EdgeInsets.only(top: 8 * scale),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(8 * scale),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -355,7 +355,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
                       borderRadius: BorderRadius.circular(12 * scale),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -396,7 +396,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
           // Empty avatar
           CircleAvatar(
             radius: 30 * scale,
-            backgroundColor: Colors.grey.withOpacity(0.1),
+            backgroundColor: Colors.grey.withValues(alpha: 0.1),
             child: Icon(
               Icons.person,
               color: Colors.grey[300],
@@ -431,7 +431,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
               width: double.infinity,
               padding: EdgeInsets.only(top: 8 * scale),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(8 * scale),
                 ),
@@ -461,10 +461,10 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
     // Background colors for different positions
     Color getBackgroundColor() {
       if (ranking.rank <= 3) {
-        return Colors.amber.withOpacity(0.05);
+        return Colors.amber.withValues(alpha: 0.05);
       }
       if (ranking.rank <= 10) {
-        return AppColors.primaryGreen.withOpacity(0.05);
+        return AppColors.primaryGreen.withValues(alpha: 0.05);
       }
       return Colors.transparent;
     }
@@ -484,7 +484,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -496,10 +496,10 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: getPositionColor().withOpacity(0.1),
+            color: getPositionColor().withValues(alpha: 0.1),
             shape: BoxShape.circle,
             border: Border.all(
-              color: getPositionColor().withOpacity(0.3),
+              color: getPositionColor().withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -529,7 +529,7 @@ class _RewardRankingsScreenState extends State<RewardRankingsScreen> {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: getPositionColor().withOpacity(0.1),
+            color: getPositionColor().withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(

@@ -208,7 +208,7 @@ class _MapScreenState extends State<MapScreen> {
                   Positioned.fill(
                     child: IgnorePointer(
                       child: Container(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         child: const Center(
                           child: CircularProgressIndicator(
                             color: AppColors.primaryGreen,
@@ -335,7 +335,7 @@ class _MapScreenState extends State<MapScreen> {
               : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withValues(alpha: 0.3),
               spreadRadius: 1,
               blurRadius: 6,
               offset: const Offset(0, 3),

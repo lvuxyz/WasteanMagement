@@ -28,7 +28,7 @@ class ErrorView extends StatelessWidget {
             Icon(
               icon,
               size: 80,
-              color: Colors.red.withOpacity(0.8),
+              color: Colors.red.withValues(alpha: 0.8),
             ),
             SizedBox(height: 24),
             Text(

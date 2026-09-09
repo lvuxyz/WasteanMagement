@@ -466,7 +466,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -489,7 +489,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withOpacity(0.1),
+                          color: _getStatusColor(transaction.status).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -630,7 +630,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
           ? null 
           : () => _updateTransactionStatus(transaction.transactionId, status),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isCurrentStatus ? statusColor : statusColor.withOpacity(0.1),
+        backgroundColor: isCurrentStatus ? statusColor : statusColor.withValues(alpha: 0.1),
         foregroundColor: isCurrentStatus ? Colors.white : statusColor,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

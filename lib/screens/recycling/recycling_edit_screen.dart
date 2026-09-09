@@ -417,7 +417,7 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              value: _selectedStatus,
+              initialValue: _selectedStatus,
               items: _statuses.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,

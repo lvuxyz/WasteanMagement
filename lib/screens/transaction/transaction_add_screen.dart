@@ -459,7 +459,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     } else {
       return _buildCard([
         DropdownButtonFormField<String>(
-          value: _selectedWasteTypeId,
+          initialValue: _selectedWasteTypeId,
           decoration: InputDecoration(
             labelText: 'Loại rác thải',
             hintText: 'Chọn loại rác thải',
@@ -557,9 +557,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -727,7 +727,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     } else {
       return _buildCard([
         DropdownButtonFormField<String>(
-          value: _selectedCollectionPointId,
+          initialValue: _selectedCollectionPointId,
           decoration: InputDecoration(
             labelText: 'Điểm thu gom',
             hintText: 'Chọn điểm thu gom',
@@ -784,7 +784,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.location_on, color: AppColors.primaryGreen),

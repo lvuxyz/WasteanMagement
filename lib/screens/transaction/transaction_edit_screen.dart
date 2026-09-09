@@ -8,6 +8,7 @@ import '../../repositories/transaction_repository.dart';
 import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:developer' as developer;
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
@@ -288,9 +289,9 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(_transaction!.status).withOpacity(0.1),
+                  color: _getStatusColor(_transaction!.status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _getStatusColor(_transaction!.status).withOpacity(0.3)),
+                  border: Border.all(color: _getStatusColor(_transaction!.status).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -328,9 +329,9 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,16 +376,30 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         border: Border.all(color: Colors.grey[300]!),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        children: [
-          _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
-          const Divider(height: 1),
-          _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
-          const Divider(height: 1),
-          _buildStatusOption('completed', 'Hoàn thành', Colors.green),
-          const Divider(height: 1),
-          _buildStatusOption('rejected', 'Đã hủy', Colors.red),
-        ],
+      // Từ Flutter 3.32, groupValue/onChanged trên từng RadioListTile đã bị
+      // loại bỏ dần; giá trị nhóm nay do RadioGroup bao ngoài quản lý.
+      child: RadioGroup<String>(
+        groupValue: _selectedStatus,
+        onChanged: (newValue) {
+          if (newValue == null) return;
+          developer.log(
+            'Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)',
+          );
+          setState(() {
+            _selectedStatus = newValue;
+          });
+        },
+        child: Column(
+          children: [
+            _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
+            const Divider(height: 1),
+            _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
+            const Divider(height: 1),
+            _buildStatusOption('completed', 'Hoàn thành', Colors.green),
+            const Divider(height: 1),
+            _buildStatusOption('rejected', 'Đã hủy', Colors.red),
+          ],
+        ),
       ),
     );
   }
@@ -426,15 +441,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         ],
       ),
       value: value,
-      groupValue: _selectedStatus,
       activeColor: color,
       selected: isSelected,
-      onChanged: (newValue) {
-        print('Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)');
-        setState(() {
-          _selectedStatus = newValue!;
-        });
-      },
     );
   }
 

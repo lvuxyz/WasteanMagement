@@ -61,7 +61,7 @@ class RegistrationSubmitButton extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              disabledBackgroundColor: AppColors.primaryGreen.withOpacity(0.6),
+              disabledBackgroundColor: AppColors.primaryGreen.withValues(alpha: 0.6),
             ),
             child: state is RegistrationLoading
                 ? const CircularProgressIndicator(color: AppColors.white)

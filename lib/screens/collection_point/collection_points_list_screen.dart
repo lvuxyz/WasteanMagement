@@ -245,7 +245,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               child: const Text(
                 '⚠️ Bạn đang đăng nhập với quyền Admin',
                 style: TextStyle(
@@ -265,7 +265,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -342,7 +342,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+              color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -355,7 +355,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -395,10 +395,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+                          color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -425,7 +425,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                           Container(
                             padding: EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -453,10 +453,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
+                        color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getCapacityColor(capacityPercentage).withOpacity(0.3),
+                          color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -476,7 +476,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(16),
                   ),
@@ -511,7 +511,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     Container(
                       width: 1,
                       height: 24,
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withValues(alpha: 0.2),
                     ),
                     Expanded(
                       child: BlocBuilder<AdminCubit, bool>(

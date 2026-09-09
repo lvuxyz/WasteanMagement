@@ -37,7 +37,7 @@ class FilterDropdown extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.5)),
+            border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.5)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(

@@ -159,11 +159,11 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Mark as navigating before pop to avoid focus issues
+    return PopScope(
+      // Handler cũ luôn trả true nên không cần canPop: false. Giữ nguyên mục
+      // đích ban đầu: dựng cờ để tránh thao tác focus khi màn hình đang đóng.
+      onPopInvokedWithResult: (didPop, result) {
         _isNavigating = true;
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -282,9 +282,9 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [

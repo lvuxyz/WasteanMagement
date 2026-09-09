@@ -30,7 +30,7 @@ class CustomSwitchField extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.primaryGreen,
+          activeThumbColor: AppColors.primaryGreen,
         ),
       ],
     );

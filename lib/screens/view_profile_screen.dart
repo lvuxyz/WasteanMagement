@@ -171,7 +171,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
+              backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.2),
               child: Text(
                 firstLetter,
                 style: TextStyle(
@@ -223,7 +223,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.1),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -328,7 +328,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color),

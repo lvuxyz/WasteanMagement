@@ -87,10 +87,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         textField: "Vị trí được chọn",
         textSize: 12.0,
         textOffset: [0.0, 2.0],
-        textColor: Colors.black.value,
+        textColor: Colors.black.toARGB32(),
         textAnchor: TextAnchor.TOP,
         textHaloWidth: 1.0,
-        textHaloColor: Colors.white.value,
+        textHaloColor: Colors.white.toARGB32(),
       );
 
       // Create the annotation
@@ -220,7 +220,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.red,
@@ -232,7 +232,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 if (!_hasSelectedLocation) Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Text(
@@ -253,7 +253,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             Positioned.fill(
               child: IgnorePointer(
                 child: Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   child: const Center(
                     child: CircularProgressIndicator(
                       color: AppColors.primaryGreen,
@@ -315,7 +315,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -351,10 +351,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryGreen.withOpacity(0.1),
+                            color: AppColors.primaryGreen.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: AppColors.primaryGreen.withOpacity(0.3),
+                              color: AppColors.primaryGreen.withValues(alpha: 0.3),
                             ),
                           ),
                           child: const Text(

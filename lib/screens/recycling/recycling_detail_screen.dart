@@ -269,8 +269,8 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
             colors: [
-              statusColor.withOpacity(0.7),
-              statusColor.withOpacity(0.3),
+              statusColor.withValues(alpha: 0.7),
+              statusColor.withValues(alpha: 0.3),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -283,7 +283,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -334,7 +334,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                   children: [
                     LinearProgressIndicator(
                       value: progressValue,
-                      backgroundColor: Colors.white.withOpacity(0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(4),

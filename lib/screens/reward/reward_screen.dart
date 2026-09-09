@@ -95,8 +95,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black87,
-            ),
-            dialogBackgroundColor: Colors.white,
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
@@ -202,7 +201,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             offset: const Offset(0, 1),
             blurRadius: 3,
           ),
@@ -230,7 +229,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                     padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.leaderboard_rounded,
-                      color: AppColors.primaryGreen.withOpacity(0.8),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.8),
                       size: 22,
                     ),
                   ),
@@ -245,7 +244,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                     padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.insert_chart_rounded,
-                      color: AppColors.primaryGreen.withOpacity(0.8),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.8),
                       size: 22,
                     ),
                   ),
@@ -326,7 +325,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.15),
+            color: Colors.green.withValues(alpha: 0.15),
             offset: const Offset(0, 3),
             blurRadius: 8,
           ),
@@ -337,7 +336,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         child: InkWell(
           onTap: _navigateToStatistics,
           borderRadius: BorderRadius.circular(10),
-          splashColor: Colors.white.withOpacity(0.1),
+          splashColor: Colors.white.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -345,7 +344,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -407,7 +406,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(8),
         boxShadow: _isFilterExpanded ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             offset: const Offset(0, 1),
             blurRadius: 4,
           ),
@@ -443,7 +442,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.1),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
@@ -661,7 +660,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -675,10 +674,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           height: 36,
           decoration: BoxDecoration(
             color: isPositive
-                ? Colors.green.withOpacity(0.1)
+                ? Colors.green.withValues(alpha: 0.1)
                 : isZero
-                ? Colors.orange.withOpacity(0.1)
-                : Colors.red.withOpacity(0.1),
+                ? Colors.orange.withValues(alpha: 0.1)
+                : Colors.red.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -715,10 +714,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: isPositive
-                ? Colors.green.withOpacity(0.1)
+                ? Colors.green.withValues(alpha: 0.1)
                 : isZero
                 ? Colors.transparent
-                : Colors.red.withOpacity(0.1),
+                : Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(

@@ -51,7 +51,7 @@ class _RecyclingProgressFilterState extends State<RecyclingProgressFilter> {
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -152,7 +152,7 @@ class _RecyclingProgressFilterState extends State<RecyclingProgressFilter> {
                 vertical: 10,
               ),
             ),
-            value: _selectedWasteTypeId.isEmpty ? null : _selectedWasteTypeId,
+            initialValue: _selectedWasteTypeId.isEmpty ? null : _selectedWasteTypeId,
             hint: const Text('Tất cả loại rác'),
             items: [
               const DropdownMenuItem<String>(

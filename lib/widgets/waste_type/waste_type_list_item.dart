@@ -58,7 +58,7 @@ class WasteTypeListItem extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: wasteType.color.withOpacity(0.1),
+                              color: wasteType.color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -91,8 +91,8 @@ class WasteTypeListItem extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: wasteType.recyclable 
-                                      ? Colors.green.withOpacity(0.1) 
-                                      : Colors.grey.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1) 
+                                      : Colors.grey.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -204,7 +204,7 @@ class WasteTypeListItem extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -239,7 +239,7 @@ class WasteTypeListItem extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(

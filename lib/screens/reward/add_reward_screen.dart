@@ -234,7 +234,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   labelText: 'Chọn người dùng',
                   border: OutlineInputBorder(),
                 ),
-                value: _selectedUserId,
+                initialValue: _selectedUserId,
                 items: _users.map((user) {
                   final userId = user['user_id'] ?? user['id'];
                   final username = user['username'] ?? '';

@@ -203,9 +203,9 @@ class _CollectionPointDetailsScreenState
         textField: title,
         textSize: 12.0,
         textOffset: [0.0, 1.5],
-        textColor: Colors.black.value,
+        textColor: Colors.black.toARGB32(),
         textHaloWidth: 1.0,
-        textHaloColor: Colors.white.value,
+        textHaloColor: Colors.white.toARGB32(),
       );
       
       await pointAnnotationManager.create(options);
@@ -242,10 +242,10 @@ class _CollectionPointDetailsScreenState
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.5),
+          color: color.withValues(alpha: 0.5),
         ),
       ),
       child: Text(
@@ -467,10 +467,10 @@ class _CollectionPointDetailsScreenState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: wasteType.color.withOpacity(0.05),
+        color: wasteType.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: wasteType.color.withOpacity(0.3),
+          color: wasteType.color.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -500,8 +500,8 @@ class _CollectionPointDetailsScreenState
                 ),
                 decoration: BoxDecoration(
                   color: wasteType.recyclable
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.red.withOpacity(0.1),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
