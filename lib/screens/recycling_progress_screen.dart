@@ -8,14 +8,14 @@ import '../blocs/recycling_progress/recycling_progress_bloc.dart';
 import '../blocs/recycling_progress/recycling_progress_event.dart';
 import '../blocs/recycling_progress/recycling_progress_state.dart';
 import '../repositories/recycling_progress_repository.dart';
+import '../repositories/waste_type_repository.dart';
 import '../utils/app_colors.dart';
 import '../core/network/network_info.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
 import '../models/waste_type_model.dart';
 import '../core/api/api_client.dart';
-import '../utils/secure_storage.dart';
-import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class RecyclingProgressScreen extends StatelessWidget {
   const RecyclingProgressScreen({Key? key}) : super(key: key);
@@ -25,12 +25,12 @@ class RecyclingProgressScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => RecyclingProgressBloc(
         repository: RecyclingProgressRepository(
+          // Dùng lại ApiClient và WasteTypeRepository do main.dart cung cấp
+          // thay vì dựng http.Client + SecureStorage riêng cho màn hình này.
           remoteDataSource: RemoteDataSource(
-            apiClient: ApiClient(
-              client: http.Client(),
-              secureStorage: SecureStorage(),
-            ),
+            apiClient: context.read<ApiClient>(),
           ),
+          wasteTypeRepository: context.read<WasteTypeRepository>(),
           localDataSource: LocalDataSource(),
           networkInfo: NetworkInfoImpl(),
         ),
@@ -63,10 +63,23 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
 
   Future<void> _loadWasteTypes() async {
     final repository = context.read<RecyclingProgressBloc>().repository;
-    final types = await repository.getWasteTypes();
-    setState(() {
-      _wasteTypes = types;
-    });
+    try {
+      final types = await repository.getWasteTypes();
+      if (!mounted) return;
+      setState(() {
+        _wasteTypes = types;
+      });
+    } catch (e) {
+      // Bộ lọc loại rác chỉ là tiện ích phụ: nếu không tải được thì để trống
+      // và báo nhẹ, không chặn phần thống kê vốn tải bằng luồng riêng.
+      developer.log('Không tải được danh sách loại rác cho bộ lọc: $e', error: e);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không tải được danh sách loại rác để lọc'),
+        ),
+      );
+    }
   }
 
   void _fetchStatistics() {
