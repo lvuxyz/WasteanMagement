@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wasteanmagement/screens/create_transaction_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_add_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_management_screen.dart';
 import 'package:wasteanmagement/screens/transaction/transaction_details_screen.dart';
@@ -50,7 +49,6 @@ class AppRoutes {
   static const String map = '/map';
   static const String wasteTypeManagement = '/waste-type';
   static const String wasteTypeAdd = '/waste-type/add';
-  static const String wasteTypeTest = '/waste-type-test';
   static const String wasteTypeCollectionPoints = '/waste-type/collection-points';
   static const String wasteClassificationGuide = '/waste-guide';
   static const String recyclingProgress = '/recycling-progress';
@@ -59,7 +57,6 @@ class AppRoutes {
   static const String collectionPointCreate = '/collection-points/create';
   static const String collectionPointDetails = '/collection-points/details';
   static const String transactions = '/transactions';
-  static const String createTransaction = '/create-transaction';
   static const String addTransaction = '/add-transaction';
   static const String transactionDetails = '/transaction-details';
   static const String editTransaction = '/edit-transaction';
@@ -124,8 +121,6 @@ class AppRoutes {
         
       case transactions:
         return MaterialPageRoute(builder: (_) => const TransactionManagementScreen());
-      case createTransaction:
-        return MaterialPageRoute(builder: (_) => const CreateTransactionScreen());
       case addTransaction:
         return MaterialPageRoute(
           builder: (context) {
