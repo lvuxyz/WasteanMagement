@@ -9,7 +9,7 @@ import '../widgets/common/error_message.dart';
 import 'package:intl/intl.dart';
 
 class ViewProfileScreen extends StatefulWidget {
-  const ViewProfileScreen({Key? key}) : super(key: key);
+  const ViewProfileScreen({super.key});
 
   @override
   State<ViewProfileScreen> createState() => _ViewProfileScreenState();

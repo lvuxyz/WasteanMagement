@@ -14,7 +14,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class AdminRewardManagementScreen extends StatefulWidget {
-  const AdminRewardManagementScreen({Key? key}) : super(key: key);
+  const AdminRewardManagementScreen({super.key});
 
   @override
   State<AdminRewardManagementScreen> createState() => _AdminRewardManagementScreenState();

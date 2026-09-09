@@ -6,7 +6,7 @@ import '../blocs/waste_guide/waste_guide_state.dart';
 import '../utils/app_colors.dart';
 
 class WasteClassificationGuideScreen extends StatelessWidget {
-  const WasteClassificationGuideScreen({Key? key}) : super(key: key);
+  const WasteClassificationGuideScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class WasteClassificationGuideScreen extends StatelessWidget {
 }
 
 class WasteClassificationGuideContent extends StatefulWidget {
-  const WasteClassificationGuideContent({Key? key}) : super(key: key);
+  const WasteClassificationGuideContent({super.key});
 
   @override
   State<WasteClassificationGuideContent> createState() => _WasteClassificationGuideContentState();
@@ -394,7 +394,7 @@ class _WasteClassificationGuideContentState extends State<WasteClassificationGui
         const SizedBox(height: 16),
 
         // Danh sách các mục trong danh mục
-        ...category.items.map((item) => _buildWasteItemCard(item, category.id)).toList(),
+        ...category.items.map((item) => _buildWasteItemCard(item, category.id)),
 
         // Khoảng cách giữa các danh mục
         const SizedBox(height: 24),

@@ -15,7 +15,7 @@ import 'package:wasteanmagement/widgets/common/error_view.dart';
 class RewardScreen extends StatefulWidget {
   final bool isInTabView;
 
-  const RewardScreen({Key? key, this.isInTabView = true}) : super(key: key);
+  const RewardScreen({super.key, this.isInTabView = true});
 
   @override
   State<RewardScreen> createState() => _RewardScreenState();

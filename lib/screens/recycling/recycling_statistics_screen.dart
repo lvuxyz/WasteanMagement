@@ -16,7 +16,7 @@ import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 
 class RecyclingStatisticsScreen extends StatefulWidget {
-  const RecyclingStatisticsScreen({Key? key}) : super(key: key);
+  const RecyclingStatisticsScreen({super.key});
 
   @override
   State<RecyclingStatisticsScreen> createState() => _RecyclingStatisticsScreenState();
@@ -231,7 +231,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
                   value: wasteType['id'] as String,
                   child: Text(wasteType['name'] as String),
                 );
-              }).toList(),
+              }),
             ],
             onChanged: (value) {
               setState(() {

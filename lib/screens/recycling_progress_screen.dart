@@ -18,7 +18,7 @@ import '../core/api/api_client.dart';
 import 'dart:developer' as developer;
 
 class RecyclingProgressScreen extends StatelessWidget {
-  const RecyclingProgressScreen({Key? key}) : super(key: key);
+  const RecyclingProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class RecyclingProgressScreen extends StatelessWidget {
 }
 
 class RecyclingProgressView extends StatefulWidget {
-  const RecyclingProgressView({Key? key}) : super(key: key);
+  const RecyclingProgressView({super.key});
 
   @override
   State<RecyclingProgressView> createState() => _RecyclingProgressViewState();

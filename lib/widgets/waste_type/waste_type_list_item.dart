@@ -14,13 +14,13 @@ class WasteTypeListItem extends StatelessWidget {
   final VoidCallback? onManageCollectionPoints;
 
   const WasteTypeListItem({
-    Key? key,
+    super.key,
     required this.wasteType,
     required this.onView,
     this.onEdit,
     this.onDelete,
     this.onManageCollectionPoints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

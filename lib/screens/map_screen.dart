@@ -13,7 +13,7 @@ import '../core/api/api_client.dart';
 import '../utils/secure_storage.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key}) : super(key: key);
+  const MapScreen({super.key});
 
   @override
   State<MapScreen> createState() => _MapScreenState();

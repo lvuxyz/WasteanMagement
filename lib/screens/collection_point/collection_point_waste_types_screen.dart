@@ -17,10 +17,10 @@ class CollectionPointWasteTypesScreen extends StatefulWidget {
   final String collectionPointName;
 
   const CollectionPointWasteTypesScreen({
-    Key? key,
+    super.key,
     required this.collectionPointId,
     required this.collectionPointName,
-  }) : super(key: key);
+  });
 
   @override
   State<CollectionPointWasteTypesScreen> createState() => _CollectionPointWasteTypesScreenState();

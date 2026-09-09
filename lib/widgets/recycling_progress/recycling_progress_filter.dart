@@ -14,14 +14,14 @@ class RecyclingProgressFilter extends StatefulWidget {
   final Function(String?)? onWasteTypeChanged;
   
   const RecyclingProgressFilter({
-    Key? key,
+    super.key,
     required this.wasteTypes,
     required this.startDate,
     required this.endDate,
     this.selectedWasteTypeId,
     this.onDateRangeChanged,
     this.onWasteTypeChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<RecyclingProgressFilter> createState() => _RecyclingProgressFilterState();

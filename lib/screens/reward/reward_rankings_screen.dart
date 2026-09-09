@@ -9,7 +9,7 @@ import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
 
 class RewardRankingsScreen extends StatefulWidget {
-  const RewardRankingsScreen({Key? key}) : super(key: key);
+  const RewardRankingsScreen({super.key});
 
   @override
   State<RewardRankingsScreen> createState() => _RewardRankingsScreenState();

@@ -9,7 +9,7 @@ import 'language_search_field.dart';
 import 'language_continue_button.dart';
 
 class LanguageSelectionForm extends StatelessWidget {
-  const LanguageSelectionForm({Key? key}) : super(key: key);
+  const LanguageSelectionForm({super.key});
 
   @override
   Widget build(BuildContext context) {

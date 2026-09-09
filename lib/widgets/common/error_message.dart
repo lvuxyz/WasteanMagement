@@ -6,10 +6,10 @@ class ErrorMessage extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const ErrorMessage({
-    Key? key,
+    super.key,
     required this.message,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

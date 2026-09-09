@@ -12,7 +12,7 @@ import 'waste_type_collection_points_screen.dart';
 import 'dart:developer' as developer;
 
 class WasteTypeManagementScreen extends StatefulWidget {
-  const WasteTypeManagementScreen({Key? key}) : super(key: key);
+  const WasteTypeManagementScreen({super.key});
 
   @override
   State<WasteTypeManagementScreen> createState() => _WasteTypeManagementScreenState();

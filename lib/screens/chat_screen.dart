@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 class ChatScreen extends StatefulWidget {
   static const String routeName = '/chat';
 
-  const ChatScreen({Key? key}) : super(key: key);
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -618,8 +618,8 @@ class _EnhancedMessageBubble extends StatelessWidget {
     required this.message,
     required this.isUser,
     required this.time,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

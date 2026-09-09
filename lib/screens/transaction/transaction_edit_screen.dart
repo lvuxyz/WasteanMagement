@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../blocs/transaction/transaction_bloc.dart';
@@ -14,9 +13,9 @@ class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
   
   const TransactionEditScreen({
-    Key? key,
+    super.key,
     required this.transactionId,
-  }) : super(key: key);
+  });
   
   @override
   State<TransactionEditScreen> createState() => _TransactionEditScreenState();

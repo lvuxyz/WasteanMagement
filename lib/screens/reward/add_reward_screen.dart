@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AddRewardScreen extends StatefulWidget {
-  const AddRewardScreen({Key? key}) : super(key: key);
+  const AddRewardScreen({super.key});
 
   @override
   _AddRewardScreenState createState() => _AddRewardScreenState();

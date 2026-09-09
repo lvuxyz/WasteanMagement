@@ -8,7 +8,7 @@ import '../../widgets/common/custom_switch_field.dart';
 import '../../utils/app_colors.dart';
 
 class WasteTypeAddScreen extends StatefulWidget {
-  const WasteTypeAddScreen({Key? key}) : super(key: key);
+  const WasteTypeAddScreen({super.key});
   
   @override
   State<WasteTypeAddScreen> createState() => _WasteTypeAddScreenState();
@@ -24,7 +24,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
   final ScrollController _scrollController = ScrollController();
   
   String _selectedCategory = 'Tái chế';
-  List<String> _examples = [''];
+  final List<String> _examples = [''];
   bool _isRecyclable = true;
   bool _isLoading = false;
 

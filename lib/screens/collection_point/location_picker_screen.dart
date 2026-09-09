@@ -23,10 +23,10 @@ class LocationPickerScreen extends StatefulWidget {
   final double? initialLongitude;
 
   const LocationPickerScreen({
-    Key? key,
+    super.key,
     this.initialLatitude,
     this.initialLongitude,
-  }) : super(key: key);
+  });
 
   @override
   State<LocationPickerScreen> createState() => _LocationPickerScreenState();

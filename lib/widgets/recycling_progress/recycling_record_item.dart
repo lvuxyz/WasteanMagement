@@ -6,9 +6,9 @@ class RecyclingRecordItem extends StatelessWidget {
   final RecyclingRecord record;
   
   const RecyclingRecordItem({
-    Key? key,
+    super.key,
     required this.record,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

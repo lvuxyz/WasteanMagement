@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import '../../blocs/waste_type/waste_type_bloc.dart';
 import '../../blocs/waste_type/waste_type_event.dart';
 import '../../blocs/waste_type/waste_type_state.dart';
@@ -19,9 +18,9 @@ class WasteTypeCollectionPointsScreen extends StatefulWidget {
   final int wasteTypeId;
 
   const WasteTypeCollectionPointsScreen({
-    Key? key,
+    super.key,
     required this.wasteTypeId,
-  }) : super(key: key);
+  });
 
   @override
   State<WasteTypeCollectionPointsScreen> createState() => _WasteTypeCollectionPointsScreenState();

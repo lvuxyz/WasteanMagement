@@ -10,14 +10,14 @@ class SearchField extends StatefulWidget {
   final FocusNode? focusNode; // Allow passing an external focusNode
 
   const SearchField({
-    Key? key,
+    super.key,
     required this.hintText,
     this.controller,
     this.onClear,
     this.value,
     this.onChanged,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
   State<SearchField> createState() => _SearchFieldState();

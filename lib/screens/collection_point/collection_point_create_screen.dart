@@ -11,7 +11,7 @@ import '../../widgets/common/loading_view.dart';
 import '../collection_point/location_picker_screen.dart';
 
 class CollectionPointCreateScreen extends StatefulWidget {
-  const CollectionPointCreateScreen({Key? key}) : super(key: key);
+  const CollectionPointCreateScreen({super.key});
 
   @override
   State<CollectionPointCreateScreen> createState() => _CollectionPointCreateScreenState();

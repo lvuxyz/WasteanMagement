@@ -15,7 +15,7 @@ import '../../blocs/collection_point/collection_point_event.dart';
 import '../../blocs/collection_point/collection_point_state.dart';
 
 class CollectionPointsListScreen extends StatefulWidget {
-  const CollectionPointsListScreen({Key? key}) : super(key: key);
+  const CollectionPointsListScreen({super.key});
 
   @override
   State<CollectionPointsListScreen> createState() => _CollectionPointsListScreenState();

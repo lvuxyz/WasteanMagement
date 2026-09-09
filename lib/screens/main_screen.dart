@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MainScreen extends StatefulWidget {
   final String username;
 
-  const MainScreen({Key? key, this.username = ''}) : super(key: key);
+  const MainScreen({super.key, this.username = ''});
 
   @override
   State<MainScreen> createState() => _MainScreenState();

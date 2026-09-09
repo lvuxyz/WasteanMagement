@@ -143,7 +143,7 @@ class UserRepository {
       if (await networkInfo.isConnected) {
         try {
           final token = await localDataSource.getToken();
-          developer.log('Token hiện tại: ${token != null ? (token.substring(0, min(10, token.length)) + "...") : "null"}');
+          developer.log('Token hiện tại: ${token != null ? ("${token.substring(0, min(10, token.length))}...") : "null"}');
 
           if (token == null) {
             developer.log('Token không tồn tại, thử lấy từ cache');
@@ -247,7 +247,7 @@ class UserRepository {
               }
             }
             
-            throw apiError;
+            rethrow;
           }
         } on UnauthorizedException catch (e) {
           developer.log('Lỗi xác thực khi lấy thông tin, thử dùng cache: ${e.toString()}');

@@ -21,7 +21,7 @@ import '../../utils/secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class RecyclingFormScreen extends StatefulWidget {
-  const RecyclingFormScreen({Key? key}) : super(key: key);
+  const RecyclingFormScreen({super.key});
 
   @override
   State<RecyclingFormScreen> createState() => _RecyclingFormScreenState();

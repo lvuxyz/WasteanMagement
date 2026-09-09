@@ -10,7 +10,7 @@ import 'package:wasteanmagement/widgets/common/error_view.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class RewardStatisticsScreen extends StatefulWidget {
-  const RewardStatisticsScreen({Key? key}) : super(key: key);
+  const RewardStatisticsScreen({super.key});
 
   @override
   State<RewardStatisticsScreen> createState() => _RewardStatisticsScreenState();
@@ -442,7 +442,7 @@ class _RewardStatisticsScreenState extends State<RewardStatisticsScreen> {
               ),
               _buildStatItem(
                 'Trung bình',
-                totalCount > 0 ? '${(totalPoints / totalCount).toStringAsFixed(1)}' : '0',
+                totalCount > 0 ? (totalPoints / totalCount).toStringAsFixed(1) : '0',
                 Icons.trending_up,
                 Colors.amber,
               ),

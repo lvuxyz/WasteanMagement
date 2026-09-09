@@ -16,9 +16,9 @@ class CollectionPointDetailsScreen extends StatefulWidget {
   final int collectionPointId;
 
   const CollectionPointDetailsScreen({
-    Key? key,
+    super.key,
     required this.collectionPointId,
-  }) : super(key: key);
+  });
 
   @override
   State<CollectionPointDetailsScreen> createState() =>
@@ -457,7 +457,7 @@ class _CollectionPointDetailsScreenState
           ],
         ),
         const SizedBox(height: 16),
-        ...wasteTypes.map((wasteType) => _buildWasteTypeItem(wasteType)).toList(),
+        ...wasteTypes.map((wasteType) => _buildWasteTypeItem(wasteType)),
       ],
     );
   }

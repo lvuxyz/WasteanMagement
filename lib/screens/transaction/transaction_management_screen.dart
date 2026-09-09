@@ -10,7 +10,7 @@ import '../../services/auth_service.dart';
 import '../../repositories/transaction_repository.dart';
 
 class TransactionManagementScreen extends StatefulWidget {
-  const TransactionManagementScreen({Key? key}) : super(key: key);
+  const TransactionManagementScreen({super.key});
 
   @override
   State<TransactionManagementScreen> createState() => _TransactionManagementScreenState();

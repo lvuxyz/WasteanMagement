@@ -6,7 +6,7 @@ import '../blocs/help_guidance/help_guidance_state.dart';
 import '../utils/app_colors.dart';
 
 class HelpAndGuidanceScreen extends StatelessWidget {
-  const HelpAndGuidanceScreen({Key? key}) : super(key: key);
+  const HelpAndGuidanceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

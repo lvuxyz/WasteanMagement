@@ -13,9 +13,9 @@ class WasteTypeEditScreen extends StatefulWidget {
   final int? wasteTypeId; // Null for create, not null for update
 
   const WasteTypeEditScreen({
-    Key? key,
+    super.key,
     this.wasteTypeId,
-  }) : super(key: key);
+  });
 
   @override
   State<WasteTypeEditScreen> createState() => _WasteTypeEditScreenState();

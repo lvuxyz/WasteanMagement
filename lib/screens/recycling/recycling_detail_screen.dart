@@ -14,15 +14,14 @@ import '../../core/api/api_client.dart';
 import '../../utils/secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'recycling_edit_screen.dart';
-import 'package:intl/intl.dart';
 
 class RecyclingDetailScreen extends StatefulWidget {
   final String processId;
 
   const RecyclingDetailScreen({
-    Key? key,
+    super.key,
     required this.processId,
-  }) : super(key: key);
+  });
 
   @override
   State<RecyclingDetailScreen> createState() => _RecyclingDetailScreenState();

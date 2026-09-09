@@ -7,9 +7,9 @@ class WasteTypeInfoTab extends StatelessWidget {
   final WasteType wasteType;
 
   const WasteTypeInfoTab({
-    Key? key,
+    super.key,
     required this.wasteType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -207,6 +207,7 @@ class WasteTypeInfoTab extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         backgroundColor: statusColor.withOpacity(0.1),
+                        radius: 16,
                         child: Icon(
                           wasteType.recyclable
                               ? Icons.tips_and_updates_outlined
@@ -214,7 +215,6 @@ class WasteTypeInfoTab extends StatelessWidget {
                           color: statusColor,
                           size: 20,
                         ),
-                        radius: 16,
                       ),
                       SizedBox(width: 12),
                       Expanded(
@@ -313,7 +313,7 @@ class WasteTypeInfoTab extends StatelessWidget {
   }
 
   Widget _buildActionButton(BuildContext context, bool isRecyclable) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {

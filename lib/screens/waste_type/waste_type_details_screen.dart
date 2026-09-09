@@ -14,9 +14,9 @@ class WasteTypeDetailsScreen extends StatefulWidget {
   final int wasteTypeId;
 
   const WasteTypeDetailsScreen({
-    Key? key,
+    super.key,
     required this.wasteTypeId,
-  }) : super(key: key);
+  });
 
   @override
   State<WasteTypeDetailsScreen> createState() => _WasteTypeDetailsScreenState();

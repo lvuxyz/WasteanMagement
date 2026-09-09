@@ -10,13 +10,13 @@ class CollectionPointItem extends StatelessWidget {
   final VoidCallback onActionPressed;
 
   const CollectionPointItem({
-    Key? key,
+    super.key,
     required this.collectionPoint,
     required this.actionButtonText,
     required this.actionButtonIcon,
     required this.actionButtonColor,
     required this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

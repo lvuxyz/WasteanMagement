@@ -57,7 +57,7 @@ class TransactionWasteType {
 }
 
 class TransactionAddScreen extends StatefulWidget {
-  const TransactionAddScreen({Key? key}) : super(key: key);
+  const TransactionAddScreen({super.key});
   
   @override
   State<TransactionAddScreen> createState() => _TransactionAddScreenState();
@@ -523,7 +523,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             decoration: InputDecoration(
               labelText: 'Đơn giá',
               prefixIcon: const Icon(Icons.monetization_on_outlined),
-              suffixText: 'đ/${_unit}',
+              suffixText: 'đ/$_unit',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

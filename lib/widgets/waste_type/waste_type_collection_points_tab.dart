@@ -14,11 +14,11 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
   final bool isAdmin;
 
   const WasteTypeCollectionPointsTab({
-    Key? key,
+    super.key,
     required this.wasteTypeId,
     required this.collectionPoints,
     required this.isAdmin,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +288,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${capacityPercentage}%',
+                          '$capacityPercentage%',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

@@ -11,14 +11,14 @@ class WasteTypeItem extends StatelessWidget {
   final VoidCallback? onActionPressed;
 
   const WasteTypeItem({
-    Key? key,
+    super.key,
     required this.wasteType,
     this.onTap,
     this.actionButtonText,
     this.actionButtonIcon,
     this.actionButtonColor,
     this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

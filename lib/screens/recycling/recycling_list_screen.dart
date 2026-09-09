@@ -14,7 +14,7 @@ import 'recycling_form_screen.dart';
 import '../../services/auth_service.dart';
 
 class RecyclingListScreen extends StatefulWidget {
-  const RecyclingListScreen({Key? key}) : super(key: key);
+  const RecyclingListScreen({super.key});
 
   @override
   State<RecyclingListScreen> createState() => _RecyclingListScreenState();
@@ -27,7 +27,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
   DateTime _endDate = DateTime.now();
   bool _isFilterExpanded = false;
   bool _isAdmin = false;
-  int _currentPage = 1;
+  final int _currentPage = 1;
   final int _itemsPerPage = 10;
   final ScrollController _scrollController = ScrollController();
 

@@ -8,11 +8,11 @@ class RecyclingStatistics extends StatelessWidget {
   final RecyclingStatisticsData? apiStatistics;
   
   const RecyclingStatistics({
-    Key? key,
+    super.key,
     required this.wasteTypeQuantities,
     required this.totalWeight,
     this.apiStatistics,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
