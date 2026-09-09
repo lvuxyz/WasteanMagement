@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../blocs/registration/registration_bloc.dart';
 import '../blocs/registration/registration_state.dart';
 import '../utils/app_colors.dart';
@@ -13,7 +13,7 @@ class RegistrationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final registrationSuccessText = l10n.registrationSuccess;
 
     return BlocProvider(

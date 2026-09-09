@@ -30,7 +30,7 @@ import 'package:wasteanmagement/blocs/language/language_event.dart';
 import 'package:wasteanmagement/blocs/admin/admin_cubit.dart';
 import 'core/network/network_info.dart';
 import 'routes.dart';
-import 'generated/l10n.dart';
+import 'l10n/app_localizations.dart';
 import 'utils/app_colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'blocs/profile/profile_bloc.dart';
@@ -198,12 +198,12 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           locale: Locale(languageCode),
           localizationsDelegates: [
-            S.delegate,
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: S.delegate.supportedLocales,
+          supportedLocales: AppLocalizations.supportedLocales,
           initialRoute: AppRoutes.welcome,
           onGenerateRoute: AppRoutes.generateRoute,
         );

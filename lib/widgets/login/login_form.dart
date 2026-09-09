@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../generated/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import 'login_form_fields.dart';
 import 'login_submit_button.dart';
 import 'forgot_password_link.dart';
@@ -25,7 +25,7 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final loginTitle = l10n.loginTitle;
     
     return SingleChildScrollView(

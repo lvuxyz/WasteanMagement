@@ -11,7 +11,7 @@ import '../blocs/language/language_event.dart';
 import '../blocs/language/language_state.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/profile/profile_bloc.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import 'registration_screen.dart';
 import '../utils/app_colors.dart';
 
@@ -21,7 +21,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Lấy localization
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
 
     // Lấy các chuỗi từ localization
     final loginTitle = l10n.loginTitle;

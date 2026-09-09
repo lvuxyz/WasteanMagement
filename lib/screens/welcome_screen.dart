@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../repositories/user_repository.dart';
 import '../routes.dart';
 import '../utils/app_colors.dart';
@@ -72,7 +72,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     
     return Scaffold(
       backgroundColor: AppColors.primaryGreen,

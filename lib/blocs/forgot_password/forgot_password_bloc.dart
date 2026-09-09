@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../generated/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import 'forgot_password_event.dart';
 import 'forgot_password_state.dart';
 
@@ -19,7 +19,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     emit(ForgotPasswordLoading());
 
     // Lấy chuỗi localization trước khi có bất kỳ async nào
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final invalidEmailText = l10n.invalidEmail;
     final resetPasswordErrorText = l10n.resetPasswordError;
 

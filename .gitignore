@@ -66,3 +66,8 @@ app.*.map.json
 .pub-cache/
 .pub/
 /build/
+
+# File bản địa hóa do `flutter gen-l10n` sinh ra từ lib/l10n/*.arb.
+# Nguồn sự thật là các file .arb; đừng commit đầu ra để tránh xung đột.
+/lib/l10n/app_localizations.dart
+/lib/l10n/app_localizations_*.dart

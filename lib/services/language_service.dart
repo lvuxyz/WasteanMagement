@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/language/language_bloc.dart';
 import '../blocs/language/language_state.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/language_utils.dart';
 
 /// A service class to handle language-related operations throughout the app
@@ -28,7 +28,7 @@ class LanguageService {
     String languageCode,
     {String? title, String? content, String? confirmText, String? cancelText}
   ) async {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     
     return LanguageUtils.showLanguageConfirmationDialog(
       context,
@@ -71,7 +71,7 @@ class LanguageService {
     Color? backgroundColor,
     Color? textColor,
   }) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {

@@ -13,7 +13,7 @@ import 'package:wasteanmagement/screens/login_screen.dart';
 import 'package:wasteanmagement/screens/view_profile_screen.dart';
 import 'package:wasteanmagement/utils/secure_storage.dart';
 import 'package:wasteanmagement/repositories/user_repository.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 
@@ -32,7 +32,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -479,7 +479,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
