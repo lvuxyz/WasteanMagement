@@ -146,6 +146,9 @@ class _MapScreenState extends State<MapScreen> {
                                         developer.log('Error updating gesture settings: $e');
                                       }
 
+                                      // context.mounted (không phải `mounted` của State): context ở đây
+                                      // đến từ closure lồng trong callback của MapWidget, nên `mounted`
+                                      // của State không chứng minh được context này còn hợp lệ.
                                       if (!context.mounted) return;
                                       context.read<MapBloc>().add(MapInitialized(controller));
                                     });
