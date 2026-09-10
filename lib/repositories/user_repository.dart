@@ -1,16 +1,18 @@
-import 'dart:developer' as developer;
 import '../core/error/exceptions.dart';
 import '../core/network/network_info.dart';
 import '../models/user_model.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
 import '../core/api/api_constants.dart';
+import '../utils/app_logger.dart';
 
 class UserRepository {
+  static const String _tag = 'User';
+
   final RemoteDataSource remoteDataSource;
   final LocalDataSource localDataSource;
   final NetworkInfo networkInfo;
-  
+
   // Add cache variables
   User? _cachedUser;
   DateTime? _lastFetchTime;
@@ -24,17 +26,15 @@ class UserRepository {
 
   Future<User> login(String username, String password) async {
     try {
-      developer.log('Đang thực hiện đăng nhập với username: $username');
+      AppLogger.d(_tag, 'Đăng nhập · username=$username');
       final response = await remoteDataSource.login(username, password);
 
       // Lưu token xác thực
       if (response['token'] != null) {
         final token = response['token'];
-        developer.log('Token nhận được: ${token.substring(0, min(10, token.length))}...');
         await localDataSource.saveToken(token);
-        developer.log('Đã lưu token thành công');
       } else {
-        developer.log('CẢNH BÁO: Token không tồn tại trong phản hồi', error: 'Token không tồn tại');
+        AppLogger.e(_tag, 'Đăng nhập thất bại: phản hồi không có token');
         throw Exception('Đăng nhập thất bại: Token không tồn tại trong phản hồi');
       }
 
@@ -42,30 +42,31 @@ class UserRepository {
       if (response['user'] != null) {
         final user = User.fromJson(response['user']);
         await localDataSource.cacheUserProfile(user);
-        developer.log('Đã lưu thông tin người dùng vào cache: ${user.fullName}');
+        AppLogger.i(_tag,
+            'Đăng nhập thành công · username=$username, fullName=${user.fullName}, id=${user.id}');
         return user;
       } else {
-        developer.log('CẢNH BÁO: Dữ liệu người dùng không tồn tại trong phản hồi', error: 'Dữ liệu user không tồn tại');
+        AppLogger.e(_tag, 'Đăng nhập thất bại: phản hồi không có dữ liệu người dùng');
         throw Exception('Đăng nhập thất bại: Dữ liệu người dùng không tồn tại trong phản hồi');
       }
     } on UnauthorizedException catch (e) {
-      developer.log('Lỗi xác thực: ${e.toString()}', error: e);
+      AppLogger.w(_tag, 'Sai thông tin đăng nhập · $e');
       throw UnauthorizedException('Thông tin đăng nhập không chính xác: ${e.toString()}');
     } catch (e) {
       // Kiểm tra nếu lỗi là về "Đăng nhập thành công"
       if (e.toString().contains('Đăng nhập thành công')) {
-        developer.log('Đăng nhập thành công nhưng bị bắt là lỗi', error: e);
-        
+        AppLogger.w(_tag, 'Đăng nhập thành công nhưng server trả về dạng lỗi · $e');
+
         // Tạo một User giả định để trả về trong trường hợp này
         // Phải đảm bảo rằng đã có token được lưu trước đó
         // Hoặc truy vấn thông tin người dùng hiện tại
         try {
           final cachedUser = await localDataSource.getCachedUserProfile();
           if (cachedUser != null) {
-            developer.log('Sử dụng thông tin người dùng từ cache: ${cachedUser.fullName}');
+            AppLogger.i(_tag, 'Dùng hồ sơ trong cache: ${cachedUser.fullName}');
             return cachedUser;
           }
-          
+
           // Nếu không có dữ liệu cache, tạo một user tạm thời
           final tempUser = User(
             id: 0,
@@ -73,109 +74,94 @@ class UserRepository {
             fullName: username, // Sử dụng username làm fullName tạm thời
             email: '',
           );
-          
+
           await localDataSource.cacheUserProfile(tempUser);
-          developer.log('Tạo và lưu thông tin người dùng tạm thời: ${tempUser.fullName}');
+          AppLogger.w(_tag, 'Tạo hồ sơ tạm từ username: ${tempUser.fullName}');
           return tempUser;
         } catch (cacheError) {
-          developer.log('Lỗi khi lấy dữ liệu cache: ${cacheError.toString()}', error: cacheError);
+          AppLogger.e(_tag, 'Không đọc được hồ sơ trong cache', error: cacheError);
           throw Exception('Đăng nhập thất bại: Không thể lấy thông tin người dùng sau khi đăng nhập thành công');
         }
       }
-      
-      developer.log('Lỗi đăng nhập: ${e.toString()}', error: e);
+
+      AppLogger.e(_tag, 'Đăng nhập thất bại', error: e);
       throw Exception('Đăng nhập thất bại: ${e.toString()}');
     }
   }
 
   Future<void> logout() async {
     try {
-      developer.log('Bắt đầu đăng xuất');
+      AppLogger.d(_tag, 'Bắt đầu đăng xuất');
       final token = await localDataSource.getToken();
 
       if (token != null && await networkInfo.isConnected) {
         try {
-          developer.log('Gọi API đăng xuất');
           await remoteDataSource.logout(token);
-          developer.log('API đăng xuất thành công');
         } catch (e) {
-          developer.log('Không thể gọi API đăng xuất: ${e.toString()}', error: e);
+          AppLogger.w(_tag, 'API đăng xuất lỗi, vẫn xóa dữ liệu cục bộ · $e');
           // Bỏ qua lỗi khi gọi API đăng xuất
         }
       } else {
-        developer.log('Đăng xuất cục bộ (không cần gọi API)');
+        AppLogger.d(_tag, 'Đăng xuất cục bộ (không gọi API)');
       }
 
       // Luôn xóa dữ liệu cục bộ
       await localDataSource.deleteToken();
       await localDataSource.clearUserProfile();
-      developer.log('Đã xóa dữ liệu đăng nhập cục bộ');
+      AppLogger.i(_tag, 'Đã đăng xuất, xóa token và hồ sơ cục bộ');
     } catch (e) {
-      developer.log('Lỗi khi đăng xuất: ${e.toString()}', error: e);
+      AppLogger.e(_tag, 'Lỗi khi đăng xuất', error: e);
       // Đảm bảo chúng ta xóa dữ liệu ngay cả khi có lỗi
       try {
         await localDataSource.deleteToken();
         await localDataSource.clearUserProfile();
-        developer.log('Đã xóa dữ liệu đăng nhập cục bộ sau khi xảy ra lỗi');
+        AppLogger.i(_tag, 'Đã xóa token và hồ sơ cục bộ sau khi lỗi');
       } catch (clearError) {
-        developer.log('Không thể xóa dữ liệu cục bộ: ${clearError.toString()}', error: clearError);
+        AppLogger.e(_tag, 'Không xóa được dữ liệu cục bộ', error: clearError);
       }
     }
   }
 
   Future<User> getUserProfile() async {
     try {
-      developer.log('Bắt đầu lấy thông tin hồ sơ người dùng');
-      
       // Check if we have a valid cache
       final now = DateTime.now();
       if (_cachedUser != null && _lastFetchTime != null) {
         final cacheDuration = now.difference(_lastFetchTime!);
         if (cacheDuration.inSeconds < _cacheDurationSeconds) {
-          developer.log('Sử dụng thông tin người dùng từ cache nội bộ (tuổi cache: ${cacheDuration.inSeconds}s)');
+          AppLogger.d(_tag,
+              'Hồ sơ lấy từ cache trong bộ nhớ (${cacheDuration.inSeconds}s trước)');
           return _cachedUser!;
         }
       }
-      
-      developer.log('Lấy dữ liệu người dùng mới');
+
+      AppLogger.d(_tag, 'Lấy hồ sơ người dùng mới');
 
       // Kiểm tra kết nối
       if (await networkInfo.isConnected) {
         try {
           final token = await localDataSource.getToken();
-          developer.log('Token hiện tại: ${token != null ? ("${token.substring(0, min(10, token.length))}...") : "null"}');
 
           if (token == null) {
-            developer.log('Token không tồn tại, thử lấy từ cache');
             final cachedUser = await localDataSource.getCachedUserProfile();
             if (cachedUser != null) {
-              developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
+              _logCacheFallback(cachedUser, 'chưa có token');
               _updateCache(cachedUser);
               return cachedUser;
             }
             throw UnauthorizedException('Người dùng chưa đăng nhập');
           }
 
-          developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');
           try {
             final response = await remoteDataSource.getUserProfile();
-            developer.log('Dữ liệu người dùng nhận được: $response');
-            
-            // Add detailed logging for roles
-            developer.log('Raw roles data in response: ${response['roles']}');
-            
-            if (response.containsKey('basic_info') && response['basic_info'] != null) {
-              developer.log('Raw roles data in basic_info: ${response['basic_info']['roles']}');
-            }
-            
+
             // Check if we have the new response format with 'success' and 'data' fields
             if (response.containsKey('success') && response.containsKey('data')) {
               if (response['success'] && response['data'] != null) {
                 // For new profile format, just return the raw data to be processed by ProfileBloc
                 // We'll create a minimal User object to satisfy the return type
                 final basicInfo = response['data']['basic_info'] ?? {};
-                developer.log('[DEBUG] Raw profile data from API: ${response['data']}');
-                
+
                 // Kiểm tra và xử lý trường roles
                 List<String> roles = [];
                 if (basicInfo['roles'] != null) {
@@ -193,15 +179,13 @@ class UserRepository {
                     roles = [response['data']['roles']];
                   }
                 }
-                
+
                 // Nếu vẫn không có roles, mặc định thêm role USER
                 if (roles.isEmpty) {
                   roles = ['USER'];
-                  developer.log('[DEBUG] Using default role: USER as no roles were found in API response');
+                  AppLogger.d(_tag, 'API không trả về roles, mặc định dùng USER');
                 }
-                
-                developer.log('[DEBUG] Roles after processing: $roles');
-                
+
                 final user = User(
                   id: basicInfo['id'] ?? 0,
                   username: basicInfo['username'] ?? '',
@@ -212,84 +196,77 @@ class UserRepository {
                   roles: roles,
                   rawProfileData: response['data'], // Store the raw profile data for later use
                 );
-                
-                developer.log('[DEBUG] Created User object with rawProfileData available');
-                developer.log('[DEBUG] Transaction stats in raw data: ${user.rawProfileData?['transaction_stats']}');
-                
+
                 await localDataSource.cacheUserProfile(user);
-                developer.log('Đã lấy và cập nhật thông tin người dùng mới: ${user.fullName}');
+                _logProfileLoaded(user);
                 _updateCache(user);
                 return user;
               }
             }
-            
+
             // Fallback to old format
             final user = User.fromJson(response);
-            developer.log('Đã chuyển đổi dữ liệu thành đối tượng User: ${user.fullName}');
 
             // Cập nhật cache
             await localDataSource.cacheUserProfile(user);
-            developer.log('Đã lấy và cập nhật thông tin người dùng: ${user.fullName}');
+            _logProfileLoaded(user);
             _updateCache(user);
             return user;
           } catch (apiError) {
-            developer.log('Lỗi khi gọi API lấy thông tin người dùng: ${apiError.toString()}', error: apiError);
-            
             // Nếu lỗi API là 404 hoặc endpoint không tồn tại, có thể là do API URL không đúng
             if (apiError.toString().contains('Không tìm thấy tài nguyên')) {
-              developer.log('API endpoint không tồn tại, kiểm tra API URL: ${ApiConstants.profile}', error: 'API URL Error');
-              
+              AppLogger.e(_tag,
+                  'Sai endpoint hồ sơ, kiểm tra lại ${ApiConstants.profile}',
+                  error: apiError);
+
               // Thử lấy dữ liệu từ cache
               final cachedUser = await localDataSource.getCachedUserProfile();
               if (cachedUser != null) {
-                developer.log('Sử dụng dữ liệu người dùng từ cache: ${cachedUser.fullName}');
+                _logCacheFallback(cachedUser, 'API trả về 404');
                 return cachedUser;
               }
             }
-            
+
             rethrow;
           }
         } on UnauthorizedException catch (e) {
-          developer.log('Lỗi xác thực khi lấy thông tin, thử dùng cache: ${e.toString()}');
-
           // Thử dùng dữ liệu cache nếu token không hợp lệ
           final cachedUser = await localDataSource.getCachedUserProfile();
           if (cachedUser != null) {
-            developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
+            _logCacheFallback(cachedUser, 'token bị từ chối (${e.message})');
             return cachedUser;
           }
 
           // Xóa token không hợp lệ
           await localDataSource.deleteToken();
-          developer.log('Đã xóa token không hợp lệ');
+          AppLogger.w(_tag,
+              'Token bị từ chối và không có cache nên đã xóa token · ${e.message}');
 
           throw UnauthorizedException('Token xác thực không hợp lệ hoặc đã hết hạn');
         } catch (e) {
-          developer.log('Lỗi khác khi lấy thông tin, thử dùng cache: ${e.toString()}', error: e);
           // Với các lỗi khác, thử dùng dữ liệu đã lưu trong cache
           final cachedUser = await localDataSource.getCachedUserProfile();
           if (cachedUser != null) {
-            developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
+            _logCacheFallback(cachedUser, 'lỗi khi gọi API: $e');
             return cachedUser;
           }
           throw Exception('Lấy thông tin người dùng thất bại: ${e.toString()}');
         }
       } else {
-        developer.log('Không có kết nối mạng, sử dụng dữ liệu cache');
         // Không có kết nối, sử dụng dữ liệu đã lưu trong cache
         final cachedUser = await localDataSource.getCachedUserProfile();
         if (cachedUser != null) {
-          developer.log('Đã lấy thông tin người dùng từ cache: ${cachedUser.fullName}');
+          _logCacheFallback(cachedUser, 'không có kết nối mạng');
           return cachedUser;
         }
         throw Exception('Không có kết nối mạng và không có dữ liệu đã lưu');
       }
     } catch (e) {
       if (e is UnauthorizedException) {
-        developer.log('Lỗi xác thực cuối cùng: ${e.toString()}', error: e);
+        // Nhánh bắt lỗi bên trong đã log lý do cụ thể rồi, không lặp lại ở đây.
         rethrow;
       }
-      developer.log('Lỗi lấy thông tin người dùng: ${e.toString()}', error: e);
+      AppLogger.e(_tag, 'Không lấy được hồ sơ người dùng', error: e);
       throw Exception('Lấy thông tin người dùng thất bại: ${e.toString()}');
     }
   }
@@ -301,15 +278,14 @@ class UserRepository {
     String? address,
   }) async {
     try {
-      developer.log('Bắt đầu cập nhật thông tin người dùng');
       if (!await networkInfo.isConnected) {
-        developer.log('Không có kết nối mạng');
+        AppLogger.w(_tag, 'Không cập nhật được hồ sơ: mất kết nối mạng');
         throw Exception('Không có kết nối mạng');
       }
 
       final token = await localDataSource.getToken();
       if (token == null) {
-        developer.log('Token không tồn tại khi cập nhật hồ sơ');
+        AppLogger.w(_tag, 'Không cập nhật được hồ sơ: chưa đăng nhập');
         throw UnauthorizedException('Người dùng chưa đăng nhập');
       }
 
@@ -320,7 +296,7 @@ class UserRepository {
       if (phone != null) requestBody['phone'] = phone;
       if (address != null) requestBody['address'] = address;
 
-      developer.log('Gọi API cập nhật thông tin: $requestBody');
+      AppLogger.d(_tag, 'Cập nhật hồ sơ · ${requestBody.keys.join(', ')}');
       final userData = await remoteDataSource.updateUserProfile(
         fullName: fullName,
         email: email,
@@ -332,11 +308,11 @@ class UserRepository {
 
       // Cập nhật cache
       await localDataSource.cacheUserProfile(updatedUser);
-      developer.log('Đã cập nhật thông tin người dùng: ${updatedUser.fullName}');
+      AppLogger.i(_tag, 'Đã cập nhật hồ sơ: ${updatedUser.fullName}');
 
       return updatedUser;
     } catch (e) {
-      developer.log('Lỗi cập nhật thông tin người dùng: ${e.toString()}', error: e);
+      AppLogger.e(_tag, 'Cập nhật hồ sơ thất bại', error: e);
       if (e is UnauthorizedException) rethrow;
       throw Exception('Cập nhật thông tin người dùng thất bại: ${e.toString()}');
     }
@@ -344,26 +320,24 @@ class UserRepository {
 
   Future<void> changePassword(String currentPassword, String newPassword) async {
     try {
-      developer.log('Bắt đầu thay đổi mật khẩu');
       if (!await networkInfo.isConnected) {
-        developer.log('Không có kết nối mạng');
+        AppLogger.w(_tag, 'Không đổi được mật khẩu: mất kết nối mạng');
         throw Exception('Không có kết nối mạng');
       }
 
       final token = await localDataSource.getToken();
       if (token == null) {
-        developer.log('Token không tồn tại khi thay đổi mật khẩu');
+        AppLogger.w(_tag, 'Không đổi được mật khẩu: chưa đăng nhập');
         throw UnauthorizedException('Người dùng chưa đăng nhập');
       }
 
-      developer.log('Gọi API thay đổi mật khẩu');
-      await remoteDataSource.changePassword(
+await remoteDataSource.changePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
-      developer.log('Đã thay đổi mật khẩu thành công');
+      AppLogger.i(_tag, 'Đã đổi mật khẩu thành công');
     } catch (e) {
-      developer.log('Lỗi thay đổi mật khẩu: ${e.toString()}', error: e);
+      AppLogger.e(_tag, 'Đổi mật khẩu thất bại', error: e);
       if (e is UnauthorizedException) rethrow;
       throw Exception('Thay đổi mật khẩu thất bại: ${e.toString()}');
     }
@@ -371,17 +345,15 @@ class UserRepository {
 
   Future<void> forgotPassword(String email) async {
     try {
-      developer.log('Bắt đầu yêu cầu đặt lại mật khẩu cho email: $email');
       if (!await networkInfo.isConnected) {
-        developer.log('Không có kết nối mạng');
+        AppLogger.w(_tag, 'Không gửi được yêu cầu đặt lại mật khẩu: mất kết nối mạng');
         throw Exception('Không có kết nối mạng');
       }
 
-      developer.log('Gọi API đặt lại mật khẩu');
-      await remoteDataSource.forgotPassword(email);
-      developer.log('Đã gửi yêu cầu đặt lại mật khẩu thành công');
+await remoteDataSource.forgotPassword(email);
+      AppLogger.i(_tag, 'Đã gửi yêu cầu đặt lại mật khẩu cho $email');
     } catch (e) {
-      developer.log('Lỗi đặt lại mật khẩu: ${e.toString()}', error: e);
+      AppLogger.e(_tag, 'Yêu cầu đặt lại mật khẩu thất bại', error: e);
       throw Exception('Yêu cầu đặt lại mật khẩu thất bại: ${e.toString()}');
     }
   }
@@ -389,19 +361,26 @@ class UserRepository {
   // Quản lý phiên
   Future<bool> isLoggedIn() async {
     final token = await localDataSource.getToken();
-    developer.log('Kiểm tra đăng nhập: Token ${token != null ? "tồn tại" : "không tồn tại"}');
+    AppLogger.d(_tag,
+        'Trạng thái đăng nhập: ${token != null ? "đã đăng nhập" : "chưa đăng nhập"}');
     return token != null;
-  }
-
-  // Hàm tiện ích
-  int min(int a, int b) {
-    return a < b ? a : b;
   }
 
   // Helper method to update internal cache
   void _updateCache(User user) {
     _cachedUser = user;
     _lastFetchTime = DateTime.now();
-    developer.log('Đã cập nhật cache nội bộ người dùng');
+  }
+
+  /// Một dòng duy nhất cho mọi lần lấy được hồ sơ từ API.
+  void _logProfileLoaded(User user) {
+    AppLogger.i(_tag,
+        'Hồ sơ: ${user.fullName} (id=${user.id}, roles=${user.roles ?? const []})');
+  }
+
+  /// Một dòng duy nhất cho mọi lần phải lùi về hồ sơ trong cache, kèm lý do —
+  /// trước đây bốn nhánh khác nhau in ra cùng một câu nên không biết vì sao.
+  void _logCacheFallback(User user, String reason) {
+    AppLogger.w(_tag, 'Dùng hồ sơ trong cache: ${user.fullName} · $reason');
   }
 }

@@ -7,17 +7,17 @@ import '../../services/auth_service.dart';
 import '../../repositories/user_repository.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
-import 'dart:developer' as developer;
+import '../../utils/app_logger.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final AuthService _authService = AuthService();
   final UserRepository? userRepository;
-  
+
   // Add cache variables
   UserProfile? _cachedProfile;
   DateTime? _lastFetchTime;
   static const int _cacheDurationSeconds = 10; // Cache for 10 seconds
-  
+
   ProfileBloc({this.userRepository}) : super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
@@ -29,55 +29,54 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     try {
       emit(ProfileLoading());
-      
+
       // Check cache first if not a forced refresh
       if (!event.forceRefresh && _cachedProfile != null && _lastFetchTime != null) {
         final now = DateTime.now();
         final cacheDuration = now.difference(_lastFetchTime!);
         if (cacheDuration.inSeconds < _cacheDurationSeconds) {
-          developer.log('[DEBUG] Using cached profile data (cache age: ${cacheDuration.inSeconds}s)');
+          AppLogger.d('Profile', 'Hồ sơ lấy từ cache (${cacheDuration.inSeconds}s trước)');
           emit(ProfileLoaded(userProfile: _cachedProfile!));
           return;
         }
       }
-      
+
       if (userRepository != null) {
         try {
           // If we have a userRepository, use it to get the profile
           final user = await userRepository!.getUserProfile();
-          
+
           // If user has rawProfileData, it means we already have the full profile data
           if (user.rawProfileData != null) {
-            developer.log('[DEBUG] Using rawProfileData to create UserProfile');
-            developer.log('[DEBUG] Raw profile data: ${user.rawProfileData}');
             // Create UserProfile from the raw data
             final userProfile = UserProfile.fromJson(user.rawProfileData!);
-            developer.log('[DEBUG] Created UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+            AppLogger.d('Profile',
+                'Hồ sơ dựng từ rawProfileData · ${userProfile.basicInfo.fullName}, ${userProfile.transactionStats.totalTransactions} giao dịch');
             _updateCache(userProfile);
             emit(ProfileLoaded(userProfile: userProfile));
             return;
           }
-          
+
           // Convert the User to UserProfile
-          developer.log('[DEBUG] Converting User model to UserProfile');
           final userProfile = UserProfile.fromUserModel(user);
-          developer.log('[DEBUG] Converted to UserProfile: ${userProfile.basicInfo.fullName}, transactions: ${userProfile.transactionStats.totalTransactions}');
+          AppLogger.d('Profile',
+              'Hồ sơ dựng từ model User · ${userProfile.basicInfo.fullName}, ${userProfile.transactionStats.totalTransactions} giao dịch');
           _updateCache(userProfile);
           emit(ProfileLoaded(userProfile: userProfile));
           return;
         } catch (repoError) {
           // If using userRepository fails, fall back to the direct API call
-          developer.log('[DEBUG] UserRepository error: $repoError. Falling back to direct API call.');
+          AppLogger.d('Profile', 'UserRepository lỗi, chuyển sang gọi API trực tiếp · $repoError');
         }
       }
-      
+
       // Fall back to original implementation using AuthService
-      developer.log('[DEBUG] Using AuthService to get profile data');
+      AppLogger.d('Profile', 'Lấy hồ sơ qua AuthService');
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');
       }
-      
+
       // Make API request
       final response = await http.get(
         Uri.parse(ApiConstants.profile),
@@ -86,9 +85,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           'Authorization': 'Bearer $token',
         },
       );
-      
+
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         if (responseData['success'] == true && responseData['data'] != null) {
           // Use the provided data structure from the response
@@ -114,7 +113,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     try {
       emit(ProfileLoading());
-      
+
       // Try to use userRepository if available
       if (userRepository != null) {
         try {
@@ -124,23 +123,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             phone: event.phone,
             address: event.address,
           );
-          
+
           emit(const ProfileUpdateSuccess());
           // Reload profile after successful update
           add(LoadProfile());
           return;
         } catch (repoError) {
           // If repository fails, try the direct API approach
-          developer.log('UserRepository update error: $repoError. Falling back to direct API call.');
+          AppLogger.d('Profile', 'UserRepository lỗi khi cập nhật, chuyển sang gọi API trực tiếp · $repoError');
         }
       }
-      
+
       // Fall back to original implementation using AuthService
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');
       }
-      
+
       // Make API request to update profile
       final response = await http.put(
         Uri.parse(ApiConstants.updateProfile),
@@ -155,9 +154,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           'address': event.address,
         }),
       );
-      
+
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         if (responseData['success'] == true) {
           emit(const ProfileUpdateSuccess());
@@ -178,6 +177,5 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   void _updateCache(UserProfile profile) {
     _cachedProfile = profile;
     _lastFetchTime = DateTime.now();
-    developer.log('[DEBUG] Updated profile cache');
   }
 }

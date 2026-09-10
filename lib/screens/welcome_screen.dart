@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -7,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../repositories/user_repository.dart';
 import '../routes.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_logger.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -23,49 +23,46 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _checkAuthStatus() async {
-    developer.log('Kiểm tra trạng thái xác thực');
-    
     // Lấy UserRepository
     final userRepository = context.read<UserRepository>();
-    
+
     // TÙY CHỌN: Tắt dòng này khi phát hành, chỉ dùng khi phát triển
     // Xóa token cũ để luôn phải đăng nhập lại khi debug
     // await userRepository.logout();
-    // developer.log('Đã xóa token cũ (chỉ ở chế độ debug)');
-    
+    // AppLogger.d('Welcome', 'Đã xóa token cũ (chỉ ở chế độ debug)');
+
     final isLogged = await userRepository.isLoggedIn();
-    
-    developer.log('Trạng thái đăng nhập: ${isLogged ? "Đã đăng nhập" : "Chưa đăng nhập"}');
-    
+
+    AppLogger.d('Welcome', 'Trạng thái đăng nhập: ${isLogged ? "Đã đăng nhập" : "Chưa đăng nhập"}');
+
     // Chỉ kiểm tra nếu có token
     if (isLogged) {
       try {
         // Kiểm tra token có hợp lệ không
-        developer.log('Kiểm tra token và lấy thông tin người dùng');
         await userRepository.getUserProfile();
-        
+
         // Thêm độ trễ nhỏ để hiển thị splash screen
         await Future.delayed(const Duration(milliseconds: 1500));
-        
+
         // Điều hướng đến màn hình chính nếu đã đăng nhập
         if (mounted && context.read<AuthBloc>().state is Authenticated) {
-          developer.log('Token hợp lệ, chuyển hướng đến màn hình chính');
+          AppLogger.d('Welcome', 'Token hợp lệ, chuyển hướng đến màn hình chính');
           Navigator.of(context).pushReplacementNamed(AppRoutes.main);
           return;
         }
       } catch (e) {
-        developer.log('Token không hợp lệ hoặc lỗi: $e', error: e);
+        AppLogger.e('Welcome', 'Token không hợp lệ hoặc lỗi', error: e);
         // Đăng xuất nếu token không hợp lệ
         await userRepository.logout();
       }
     }
-    
+
     // Thêm độ trễ nhỏ để hiển thị splash screen
     await Future.delayed(const Duration(milliseconds: 1500));
-    
+
     // Nếu không có token hoặc token không hợp lệ, điều hướng đến màn hình đăng nhập
     if (mounted) {
-      developer.log('Chuyển hướng đến màn hình đăng nhập');
+      AppLogger.d('Welcome', 'Chuyển hướng đến màn hình đăng nhập');
       Navigator.of(context).pushReplacementNamed(AppRoutes.login);
     }
   }
@@ -73,7 +70,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     return Scaffold(
       backgroundColor: AppColors.primaryGreen,
       body: Center(
@@ -102,7 +99,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               },
             ),
             const SizedBox(height: 30),
-            
+
             // App name
             Text(
               l10n.welcomeTitle,
@@ -112,9 +109,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 color: Colors.white,
               ),
             ),
-            
+
             const SizedBox(height: 10),
-            
+
             // App slogan
             Text(
               l10n.welcomeSubtitle,
@@ -124,9 +121,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 50),
-            
+
             // Loading indicator
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

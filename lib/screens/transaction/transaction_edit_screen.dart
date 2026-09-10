@@ -7,16 +7,16 @@ import '../../models/transaction.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../core/api/api_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as developer;
+import '../../utils/app_logger.dart';
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
-  
+
   const TransactionEditScreen({
     super.key,
     required this.transactionId,
   });
-  
+
   @override
   State<TransactionEditScreen> createState() => _TransactionEditScreenState();
 }
@@ -59,18 +59,17 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           return;
         } catch (e) {
           // Transaction not found in bloc state, will fetch from API instead
-          developer.log('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+          AppLogger.d('Transaction', 'Chưa có giao dịch trong state, gọi API lấy chi tiết · $e');
         }
       }
 
       // If not found in bloc state, fetch directly
       final repository = Provider.of<TransactionRepository>(context, listen: false);
       final url = '${ApiConstants.transactions}/${widget.transactionId}';
-      developer.log('Fetching transaction details from API: $url');
-      
+
       final response = await repository.apiClient.get(url);
-      
-      if (response.statusCode >= 200 && response.statusCode < 300 && 
+
+      if (response.statusCode >= 200 && response.statusCode < 300 &&
           response.data['data'] != null) {
         final transactionData = response.data['data'];
         _transaction = Transaction.fromJson(transactionData);
@@ -79,7 +78,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         throw Exception('Could not find transaction details');
       }
     } catch (e) {
-      developer.log('Error loading transaction details: $e');
+      AppLogger.w('Transaction', 'Không tải được chi tiết giao dịch: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
@@ -113,7 +112,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           ),
         );
       }
-      
+
       setState(() {
         _isSaving = false;
       });
@@ -131,7 +130,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       setState(() {
         _isSaving = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi: ${e.toString()}'),
@@ -289,7 +288,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      _getStatusIcon(_transaction!.status), 
+                      _getStatusIcon(_transaction!.status),
                       color: _getStatusColor(_transaction!.status)
                     ),
                     const SizedBox(width: 12),
@@ -375,9 +374,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         groupValue: _selectedStatus,
         onChanged: (newValue) {
           if (newValue == null) return;
-          developer.log(
-            'Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)',
-          );
+          AppLogger.d('Transaction', 'Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)');
           setState(() {
             _selectedStatus = newValue;
           });
@@ -399,7 +396,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
 
   Widget _buildStatusOption(String value, String label, Color color) {
     final isSelected = _selectedStatus == value;
-    
+
     return RadioListTile<String>(
       title: Row(
         children: [

@@ -21,7 +21,7 @@ import '../utils/app_colors.dart';
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             // Admin status is now available
-            developer.log('Home screen - User is admin: $isAdmin');
+            AppLogger.d('Home', 'Màn hình chính · admin=$isAdmin');
             return _buildHomePage(isAdmin);
           }
       ),
@@ -996,7 +996,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final isAdmin = snapshot.data ?? false;
         if (!isAdmin) {
-          developer.log('Regular user, but trying to build admin transaction list');
+          AppLogger.d('Home', 'Người dùng thường nhưng đang dựng danh sách giao dịch của admin');
         }
 
         return BlocProvider(
@@ -1004,7 +1004,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final apiClient = context.read<ApiClient>();
             final transactionRepository = TransactionRepository(apiClient: apiClient);
 
-            developer.log('Building all transactions list for admin. Admin status: $isAdmin');
+            AppLogger.d('Home', 'Dựng danh sách toàn bộ giao dịch · admin=$isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
             )..add(FetchTransactions(limit: 3)); // Reduced limit to 3 for home screen
@@ -1042,7 +1042,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: () {
-                            developer.log('Retrying all transactions fetch');
+                            AppLogger.d('Home', 'Tải lại toàn bộ giao dịch');
                             context.read<TransactionBloc>().add(RefreshTransactions());
                           },
                           icon: const Icon(Icons.refresh, size: 16),

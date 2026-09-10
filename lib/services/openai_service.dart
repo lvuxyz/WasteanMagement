@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:wasteanmagement/models/chat_message.dart';
+import '../utils/app_logger.dart';
 
 class OpenAIService {
   final Dio _dio = Dio();
@@ -24,7 +24,7 @@ class OpenAIService {
   OpenAIService() {
     _apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
     if (_apiKey.isEmpty) {
-      debugPrint('OPENAI_API_KEY không được cấu hình trong file .env');
+      AppLogger.w('OpenAI', 'Thiếu OPENAI_API_KEY trong file .env');
     }
 
     // Cấu hình timeout để tăng tốc độ
@@ -87,7 +87,7 @@ Ví dụ emoji: ♻️ (tái chế), 🗑️ (rác), 🌍 (môi trường), 💡
         'content': message,
       });
 
-      debugPrint("Sending ${messages.length} messages to OpenAI");
+      AppLogger.d('OpenAI', 'Gửi ${messages.length} tin nhắn tới OpenAI');
 
       final response = await _dio.post(
         _baseUrl,
@@ -116,7 +116,7 @@ Ví dụ emoji: ♻️ (tái chế), 🗑️ (rác), 🌍 (môi trường), 💡
         return '⚠️ Có lỗi xảy ra khi kết nối với OpenAI. Vui lòng thử lại sau.';
       }
     } catch (e) {
-      debugPrint('Lỗi khi gọi OpenAI API: $e');
+      AppLogger.e('OpenAI', 'Gọi OpenAI API thất bại', error: e);
       if (e is DioException) {
         if (e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.receiveTimeout) {

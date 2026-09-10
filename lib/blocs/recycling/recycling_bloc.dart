@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as developer;
 import '../../repositories/recycling_repository.dart';
 import 'recycling_event.dart';
 import 'recycling_state.dart';
+import '../../utils/app_logger.dart';
 
 class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   final RecyclingRepository repository;
@@ -25,7 +25,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final result = await repository.getRecyclingProcesses(
         page: event.page,
         limit: event.limit,
@@ -34,7 +34,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
         fromDate: event.fromDate,
         toDate: event.toDate,
       );
-      
+
       emit(RecyclingProcessesLoaded(
         processes: result['processes'],
         total: result['total'],
@@ -42,7 +42,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
         totalPages: result['totalPages'],
       ));
     } catch (e) {
-      developer.log('Lỗi khi lấy danh sách quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy danh sách quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -53,9 +53,9 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final processes = await repository.getAllRecyclingProcesses();
-      
+
       emit(RecyclingProcessesLoaded(
         processes: processes,
         total: processes.length,
@@ -63,7 +63,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
         totalPages: 1,
       ));
     } catch (e) {
-      developer.log('Lỗi khi lấy toàn bộ quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy toàn bộ quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -74,12 +74,12 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final process = await repository.getRecyclingProcessDetail(event.id);
-      
+
       emit(RecyclingProcessLoaded(process: process));
     } catch (e) {
-      developer.log('Lỗi khi lấy chi tiết quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy chi tiết quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -90,17 +90,17 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final process = await repository.createRecyclingProcess(
         transactionId: event.transactionId,
         wasteTypeId: event.wasteTypeId,
         quantity: event.quantity,
         notes: event.notes,
       );
-      
+
       emit(RecyclingProcessCreated(process: process));
     } catch (e) {
-      developer.log('Lỗi khi tạo quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi tạo quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -111,15 +111,15 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final process = await repository.updateRecyclingProcess(
         id: event.id,
         updateData: event.updateData,
       );
-      
+
       emit(RecyclingProcessUpdated(process: process));
     } catch (e) {
-      developer.log('Lỗi khi cập nhật quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi cập nhật quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -130,16 +130,16 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final report = await repository.getRecyclingReport(
         fromDate: event.fromDate,
         toDate: event.toDate,
         wasteTypeId: event.wasteTypeId,
       );
-      
+
       emit(RecyclingReportLoaded(report: report));
     } catch (e) {
-      developer.log('Lỗi khi lấy báo cáo thống kê tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy báo cáo thống kê tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -150,16 +150,16 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final statistics = await repository.getRecyclingStatistics(
         fromDate: event.fromDate,
         toDate: event.toDate,
         wasteTypeId: event.wasteTypeId,
       );
-      
+
       emit(RecyclingStatisticsLoaded(statistics: statistics));
     } catch (e) {
-      developer.log('Lỗi khi lấy thống kê số liệu tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy thống kê số liệu tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -170,15 +170,15 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final processes = await repository.getUserRecyclingProcesses(event.userId);
-      
+
       emit(UserRecyclingProcessesLoaded(
         processes: processes,
         userId: event.userId,
       ));
     } catch (e) {
-      developer.log('Lỗi khi lấy quy trình tái chế của người dùng: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy quy trình tái chế của người dùng', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }
@@ -189,12 +189,12 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
   ) async {
     try {
       emit(RecyclingLoading());
-      
+
       final success = await repository.sendRecyclingNotification(
         event.id,
         event.message,
       );
-      
+
       if (success) {
         emit(RecyclingNotificationSent(
           id: event.id,
@@ -204,7 +204,7 @@ class RecyclingBloc extends Bloc<RecyclingEvent, RecyclingState> {
         emit(const RecyclingError(message: 'Không thể gửi thông báo'));
       }
     } catch (e) {
-      developer.log('Lỗi khi gửi thông báo cập nhật quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi gửi thông báo cập nhật quy trình tái chế', error: e);
       emit(RecyclingError(message: e.toString()));
     }
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'dart:developer' as developer;
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
@@ -11,6 +10,7 @@ import 'package:wasteanmagement/screens/reward/reward_rankings_screen.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
+import '../../utils/app_logger.dart';
 
 class RewardScreen extends StatefulWidget {
   final bool isInTabView;
@@ -69,7 +69,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         : null;
 
     if (fromDateStr != null || toDateStr != null) {
-      developer.log('Applying date filter - From: $fromDateStr, To: $toDateStr');
+      AppLogger.d('Reward', 'Applying date filter - From: $fromDateStr, To: $toDateStr');
     }
 
     _rewardBloc.add(LoadMyRewards(
@@ -108,7 +108,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         _selectedToDate = DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
         _currentPage = 1;
       });
-      developer.log('Date range selected: ${_selectedFromDate!.toIso8601String()} - ${_selectedToDate!.toIso8601String()}');
+      AppLogger.d('Reward', 'Chọn khoảng ngày · ${_selectedFromDate!.toIso8601String()} → ${_selectedToDate!.toIso8601String()}');
     }
   }
 
@@ -260,7 +260,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   Widget _buildRewardsContent(MyRewardsLoaded state) {
     // Get the bottom padding to account for navigation bar
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return CustomScrollView(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),

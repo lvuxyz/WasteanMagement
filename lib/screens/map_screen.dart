@@ -12,7 +12,7 @@ import '../repositories/collection_point_repository.dart';
 import '../core/api/api_client.dart';
 import '../utils/secure_storage.dart';
 import '../utils/snackbar_utils.dart';
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -32,7 +32,7 @@ class _MapScreenState extends State<MapScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    
+
     // MapBox initialization is handled later when the widget is built
   }
 
@@ -46,7 +46,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final cardHeight = screenSize.height * 0.18;
-    
+
     return BlocProvider(
       create: (context) => MapBloc(
         mapboxService: MapboxService(),
@@ -109,7 +109,7 @@ class _MapScreenState extends State<MapScreen> {
                                 if (!snapshot.hasData) {
                                   return const Center(child: CircularProgressIndicator());
                                 }
-                                
+
                                 return MapWidget(
                                   key: const ValueKey('mapWidget'),
                                   styleUri: MapboxStyles.MAPBOX_STREETS,
@@ -124,7 +124,7 @@ class _MapScreenState extends State<MapScreen> {
                                       _mapController = controller;
                                       _currentZoom = 13.0;
                                     });
-                                    
+
                                     // Configure gesture settings after a small delay to ensure map is ready
                                     Future.delayed(const Duration(milliseconds: 300), () {
                                       try {
@@ -143,7 +143,7 @@ class _MapScreenState extends State<MapScreen> {
                                           increasePinchToZoomThresholdWhenRotating: true,
                                         ));
                                       } catch (e) {
-                                        developer.log('Error updating gesture settings: $e');
+                                        AppLogger.w('Map', 'Không cập nhật được cấu hình cử chỉ bản đồ: $e');
                                       }
 
                                       // context.mounted (không phải `mounted` của State): context ở đây
@@ -157,7 +157,7 @@ class _MapScreenState extends State<MapScreen> {
                               }
                             );
                           } catch (e) {
-                            developer.log('Error creating MapWidget: $e');
+                            AppLogger.w('Map', 'Không tạo được MapWidget: $e');
                             // Fallback widget when MapBox fails to load
                             return Container(
                               color: Colors.grey[200],
@@ -166,7 +166,7 @@ class _MapScreenState extends State<MapScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(
-                                      Icons.map_outlined, 
+                                      Icons.map_outlined,
                                       color: AppColors.primaryGreen,
                                       size: 48,
                                     ),
@@ -245,12 +245,12 @@ class _MapScreenState extends State<MapScreen> {
                       },
                     ),
                   ),
-                  
+
                 // Map controls for additional zoom control
                 Positioned(
                   right: 16,
-                  bottom: state.collectionPoints.isNotEmpty 
-                      ? cardHeight + 32 
+                  bottom: state.collectionPoints.isNotEmpty
+                      ? cardHeight + 32
                       : 16,
                   child: Column(
                     children: [
@@ -310,14 +310,14 @@ class _MapScreenState extends State<MapScreen> {
       ) {
     // Prevent division by zero or invalid values
     final double currentLoad = point['current_load'] is num ? point['current_load'].toDouble() : 0.0;
-    final double capacity = point['capacity'] is num && point['capacity'] > 0 
-        ? point['capacity'].toDouble() 
+    final double capacity = point['capacity'] is num && point['capacity'] > 0
+        ? point['capacity'].toDouble()
         : 1.0;  // Default to 1 to prevent division by zero
-        
+
     final double progressValue = currentLoad / capacity;
     // Ensure the progress value is between 0.0 and 1.0
     final double safeProgressValue = progressValue.isFinite ? progressValue.clamp(0.0, 1.0) : 0.0;
-    
+
     // Calculate capacity percentage for color
     final double capacityPercentage = progressValue * 100;
     final screenSize = MediaQuery.of(context).size;

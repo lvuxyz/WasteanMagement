@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class Transaction {
   final int transactionId;
@@ -34,8 +34,7 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     try {
       // Print the transaction data for debugging
-      developer.log('Parsing transaction: ${json['transaction_id']}');
-      
+
       // Handle quantity that can be int, double, or string
       double parseQuantity() {
         final quantity = json['quantity'];
@@ -49,7 +48,7 @@ class Transaction {
           return 0.0; // Default value
         }
       }
-      
+
       return Transaction(
         transactionId: json['transaction_id'],
         userId: json['user_id'],
@@ -61,13 +60,13 @@ class Transaction {
         status: json['status'],
         proofImageUrl: json['proof_image_url'],
         userName: json['user_name'] ?? json['user_full_name'], // Handle different field names
-        username: json['username'], 
+        username: json['username'],
         collectionPointName: json['collection_point_name'] ?? 'Không xác định',
         wasteTypeName: json['waste_type_name'] ?? 'Không xác định',
       );
     } catch (e) {
-      developer.log('Error parsing Transaction: $e');
-      developer.log('JSON: $json');
+      AppLogger.w('Transaction',
+          'Không đọc được Transaction: $e · ${AppLogger.preview(json)}');
       rethrow;
     }
   }
@@ -95,8 +94,8 @@ class TransactionPagination {
         pages: json['pages'],
       );
     } catch (e) {
-      developer.log('Error parsing TransactionPagination: $e');
-      developer.log('JSON: $json');
+      AppLogger.w('Transaction',
+          'Không đọc được TransactionPagination: $e · ${AppLogger.preview(json)}');
       rethrow;
     }
   }
@@ -117,21 +116,19 @@ class TransactionResponse {
 
   factory TransactionResponse.fromJson(Map<String, dynamic> json) {
     try {
-      developer.log('Parsing TransactionResponse: $json');
-      
       // Check if data exists and is a list
       if (!json.containsKey('data') || json['data'] == null) {
-        developer.log('Warning: No data key found in response');
+        AppLogger.w('Transaction', 'Phản hồi giao dịch không có trường data');
         return TransactionResponse(
           success: json['success'] ?? false,
           message: json['message'] ?? 'No data found in response',
           data: [],
-          pagination: json.containsKey('pagination') 
+          pagination: json.containsKey('pagination')
               ? TransactionPagination.fromJson(json['pagination'])
               : TransactionPagination(total: 0, page: 1, limit: 10, pages: 0),
         );
       }
-      
+
       final List<dynamic> dataJson = json['data'];
       final List<Transaction> transactions = dataJson
           .map((item) => Transaction.fromJson(item))
@@ -144,8 +141,8 @@ class TransactionResponse {
         pagination: TransactionPagination.fromJson(json['pagination']),
       );
     } catch (e) {
-      developer.log('Error parsing TransactionResponse: $e');
-      developer.log('JSON: $json');
+      AppLogger.w('Transaction',
+          'Không đọc được TransactionResponse: $e · ${AppLogger.preview(json)}');
       rethrow;
     }
   }
@@ -179,8 +176,8 @@ class TransactionHistory {
         adminName: json['admin_name'],
       );
     } catch (e) {
-      developer.log('Error parsing TransactionHistory: $e');
-      developer.log('JSON: $json');
+      AppLogger.w('Transaction',
+          'Không đọc được TransactionHistory: $e · ${AppLogger.preview(json)}');
       rethrow;
     }
   }
@@ -210,8 +207,8 @@ class TransactionHistoryResponse {
         data: history,
       );
     } catch (e) {
-      developer.log('Error parsing TransactionHistoryResponse: $e');
-      developer.log('JSON: $json');
+      AppLogger.w('Transaction',
+          'Không đọc được TransactionHistoryResponse: $e · ${AppLogger.preview(json)}');
       rethrow;
     }
   }

@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 
 class UserProfile {
   final BasicInfo basicInfo;
@@ -16,10 +15,6 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    developer.log('[DEBUG] UserProfile.fromJson START with data: $json');
-    developer.log('[DEBUG] Basic info data: ${json['basic_info']}');
-    developer.log('[DEBUG] Transaction stats data: ${json['transaction_stats']}');
-
     final profile = UserProfile(
       basicInfo: BasicInfo.fromJson(json['basic_info']),
       accountStatus: AccountStatus.fromJson(json['account_status']),
@@ -28,10 +23,7 @@ class UserProfile {
       timezone: json['timezone'] ?? 'UTC',
     );
 
-    developer.log('[DEBUG] UserProfile created successfully');
-    developer.log('[DEBUG] Basic info: ${profile.basicInfo.fullName}');
-    developer.log('[DEBUG] Total transactions: ${profile.transactionStats.totalTransactions}');
-    
+
     return profile;
   }
 
@@ -41,7 +33,7 @@ class UserProfile {
     if (user.rawProfileData != null) {
       return UserProfile.fromJson(user.rawProfileData);
     }
-    
+
     // Fallback to creating a UserProfile from basic user data
     return UserProfile(
       basicInfo: BasicInfo(
@@ -154,15 +146,13 @@ class TransactionStats {
   });
 
   factory TransactionStats.fromJson(Map<String, dynamic> json) {
-    developer.log('[DEBUG] TransactionStats.fromJson with data: $json');
-    
     // Convert any number types to string if needed
     String getStringValue(dynamic value) {
       if (value == null) return '0';
       if (value is String) return value;
       return value.toString();
     }
-    
+
     // Convert any string or number types to int
     int getIntValue(dynamic value) {
       if (value == null) return 0;
@@ -172,7 +162,7 @@ class TransactionStats {
       }
       return 0;
     }
-    
+
     final stats = TransactionStats(
       totalTransactions: getIntValue(json['total_transactions']),
       completedTransactions: getStringValue(json['completed_transactions']),
@@ -181,9 +171,8 @@ class TransactionStats {
       verifiedTransactions: getStringValue(json['verified_transactions']),
       totalQuantity: getStringValue(json['total_quantity']),
     );
-    
-    developer.log('[DEBUG] Created TransactionStats: totalTransactions=${stats.totalTransactions}');
-    
+
+
     return stats;
   }
 }

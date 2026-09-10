@@ -16,7 +16,7 @@ import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
 import '../models/waste_type_model.dart';
 import '../core/api/api_client.dart';
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class RecyclingProgressScreen extends StatelessWidget {
   const RecyclingProgressScreen({super.key});
@@ -73,7 +73,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
     } catch (e) {
       // Bộ lọc loại rác chỉ là tiện ích phụ: nếu không tải được thì để trống
       // và báo nhẹ, không chặn phần thống kê vốn tải bằng luồng riêng.
-      developer.log('Không tải được danh sách loại rác cho bộ lọc: $e', error: e);
+      AppLogger.e('RecycleProgress', 'Không tải được danh sách loại rác cho bộ lọc', error: e);
       if (!mounted) return;
       SnackBarUtils.showError(context, 'Không tải được danh sách loại rác để lọc');
     }
@@ -82,7 +82,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
   void _fetchStatistics() {
     final formattedStartDate = DateFormat('yyyy-MM-dd').format(_startDate);
     final formattedEndDate = DateFormat('yyyy-MM-dd').format(_endDate);
-    
+
     context.read<RecyclingProgressBloc>().add(
       FetchRecyclingStatistics(
         fromDate: formattedStartDate,
@@ -142,11 +142,11 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
             if (state is RecyclingProgressInitial) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is RecyclingProgressLoading || state is RecyclingStatisticsLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is RecyclingProgressLoaded) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -173,18 +173,18 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                             : const SizedBox.shrink(),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Statistics section
                     RecyclingStatistics(
                       wasteTypeQuantities: state.wasteTypeQuantities,
                       totalWeight: state.totalWeight,
                       apiStatistics: state.statistics,
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Records section
                     const Text(
                       'Lịch sử tái chế',
@@ -194,7 +194,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     if (state.filteredRecords.isEmpty)
                       const Center(
                         child: Padding(
@@ -209,14 +209,14 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                         ),
                       )
                     else
-                      ...state.filteredRecords.map((record) => 
+                      ...state.filteredRecords.map((record) =>
                         RecyclingRecordItem(record: record),
                       ),
                   ],
                 ),
               );
             }
-            
+
             return const Center(
               child: Text('Có lỗi xảy ra khi tải dữ liệu'),
             );

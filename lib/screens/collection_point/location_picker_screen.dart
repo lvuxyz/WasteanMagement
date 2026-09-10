@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../utils/app_colors.dart';
-import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../utils/app_logger.dart';
 
 class LocationData {
   final double latitude;
@@ -53,11 +53,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    
+
     // Initialize with provided coordinates if available
     _selectedLatitude = widget.initialLatitude;
     _selectedLongitude = widget.initialLongitude;
-    
+
     // Fetch address for initial coordinates if available
     if (_selectedLatitude != null && _selectedLongitude != null) {
       _fetchAddress(_selectedLatitude!, _selectedLongitude!);
@@ -95,27 +95,27 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
       // Create the annotation
       await _pointAnnotationManager!.create(options);
-      
+
       // Update coordinates
       setState(() {
         _selectedLatitude = point.coordinates.lat.toDouble();
         _selectedLongitude = point.coordinates.lng.toDouble();
       });
-      
+
       // Fetch address for these coordinates
       await _fetchAddress(_selectedLatitude!, _selectedLongitude!);
-      
+
     } catch (e) {
-      developer.log('Error updating map marker: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Không cập nhật được map marker', error: e);
     }
   }
-  
+
   Future<void> _fetchAddress(double latitude, double longitude) async {
     setState(() {
       _isLoadingAddress = true;
       _selectedAddress = "Đang tải địa chỉ...";
     });
-    
+
     try {
       // Using OpenStreetMap Nominatim for reverse geocoding (free and open source)
       final response = await http.get(
@@ -126,11 +126,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           'User-Agent': 'WasteManagementApp/1.0',
         },
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final address = data['display_name'] as String?;
-        
+
         setState(() {
           _selectedAddress = address ?? "Không thể xác định địa chỉ";
           _isLoadingAddress = false;
@@ -142,23 +142,23 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         });
       }
     } catch (e) {
-      developer.log('Error fetching address: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Không lấy được địa chỉ', error: e);
       setState(() {
         _selectedAddress = "Không thể xác định địa chỉ";
         _isLoadingAddress = false;
       });
     }
   }
-  
+
   Future<Point?> _getCurrentCenterPoint() async {
     if (_mapController == null) return null;
-    
+
     try {
       // Get the current center of the map
       CameraState cameraState = await _mapController!.getCameraState();
       return cameraState.center;
     } catch (e) {
-      developer.log('Error getting center point: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Không lấy được tọa độ tâm bản đồ', error: e);
       return null;
     }
   }
@@ -166,7 +166,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryGreen,
@@ -199,13 +199,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     onMapCreated: _onMapCreated,
                   );
                 } catch (e) {
-                  developer.log('Error creating MapWidget: $e', error: e);
+                  AppLogger.e('CollectionPoint', 'Không tạo được MapWidget', error: e);
                   return _buildErrorWidget();
                 }
               },
             ),
           ),
-          
+
           // Center crosshair - always visible for positioning
           Center(
             child: Column(
@@ -247,7 +247,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               ],
             ),
           ),
-          
+
           // Loading indicator
           if (_isLoading)
             Positioned.fill(
@@ -262,7 +262,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ),
               ),
             ),
-            
+
           // Map controls for zoom
           Positioned(
             right: 16,
@@ -303,7 +303,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               ],
             ),
           ),
-            
+
           // Bottom info panel
           Positioned(
             left: 0,
@@ -369,7 +369,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   if (_hasSelectedLocation) ...[
                     // Address section
                     Container(
@@ -586,14 +586,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       ),
     );
   }
-  
+
   void _selectCenterLocation() async {
     if (_mapController == null) return;
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // Get the current center of the map
       Point? centerPoint = await _getCurrentCenterPoint();
@@ -601,22 +601,22 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         await _updateMapMarker(centerPoint);
       }
     } catch (e) {
-      developer.log('Error selecting center location: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Không chọn được vị trí tâm bản đồ', error: e);
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
-  
+
   bool get _hasSelectedLocation => _selectedLatitude != null && _selectedLongitude != null;
 
   void _onMapCreated(MapboxMap mapboxMap) async {
     _mapController = mapboxMap;
-    
+
     // Set initial zoom
     _currentZoom = 14.0;
-    
+
     // Configure gestures
     await mapboxMap.gestures.updateSettings(
       GesturesSettings(
@@ -630,10 +630,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         pitchEnabled: true,
       ),
     );
-    
+
     // Create annotation manager for markers
     _pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
-    
+
     // If initial location was provided, place a marker
     if (_selectedLatitude != null && _selectedLongitude != null) {
       final point = Point(

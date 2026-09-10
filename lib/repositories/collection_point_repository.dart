@@ -1,11 +1,11 @@
-import 'dart:developer' as developer;
 import '../core/api/api_constants.dart';
 import '../core/api/api_client.dart';
 import '../models/collection_point.dart';
+import '../utils/app_logger.dart';
 
 class CollectionPointRepository {
   final ApiClient apiClient;
-  
+
   CollectionPointRepository({required this.apiClient});
 
   // Lấy tất cả điểm thu gom
@@ -13,7 +13,7 @@ class CollectionPointRepository {
     try {
       // This endpoint doesn't require authentication
       final response = await apiClient.get(ApiConstants.collectionPoints);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final collectionPointsResponse = CollectionPointsResponse.fromJson(response.data);
         return collectionPointsResponse.collectionPoints;
@@ -21,7 +21,7 @@ class CollectionPointRepository {
         throw Exception('Failed to load collection points: ${response.data['message']}');
       }
     } catch (e) {
-      developer.log('Error fetching collection points: $e');
+      AppLogger.w('CollectionPoint', 'Không lấy được điểm thu gom của loại rác: $e');
       throw Exception('Failed to load collection points: $e');
     }
   }
@@ -29,39 +29,31 @@ class CollectionPointRepository {
   // Lấy chi tiết điểm thu gom
   Future<CollectionPoint?> getCollectionPointById(int id) async {
     try {
-      developer.log('Đang gọi API lấy chi tiết điểm thu gom: ${ApiConstants.collectionPoints}/$id');
-      
       final response = await apiClient.get('${ApiConstants.collectionPoints}/$id');
-      
-      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = response.data;
-        
-        developer.log('Dữ liệu phản hồi: $data');
-        
+
         if (data['status'] == 'success' && data['data'] != null && data['data']['collectionPoint'] != null) {
           final Map<String, dynamic> collectionPointJson = data['data']['collectionPoint'];
           return CollectionPoint.fromJson(collectionPointJson);
         } else {
-          developer.log('Không tìm thấy chi tiết điểm thu gom trong phản hồi API');
+          AppLogger.w('CollectionPoint', 'Phản hồi API không có chi tiết điểm thu gom');
           return null;
         }
       } else {
-        developer.log('Lỗi khi tải chi tiết điểm thu gom. Mã trạng thái: ${response.statusCode}', 
-          error: 'Lỗi HTTP ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      developer.log('Lỗi khi tải chi tiết điểm thu gom: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Lỗi khi tải chi tiết điểm thu gom', error: e);
       return null;
     }
   }
-  
+
   // Tạo điểm thu gom mới
   Future<CollectionPoint?> createCollectionPoint({
     required String name,
-    required String address, 
+    required String address,
     required double latitude,
     required double longitude,
     required String operatingHours,
@@ -69,8 +61,6 @@ class CollectionPointRepository {
     String status = 'active',
   }) async {
     try {
-      developer.log('Đang gọi API tạo điểm thu gom mới: ${ApiConstants.collectionPoints}');
-      
       final body = {
         'name': name,
         'address': address,
@@ -80,35 +70,29 @@ class CollectionPointRepository {
         'capacity': capacity,
         'status': status,
       };
-      
-      developer.log('Dữ liệu gửi đi: $body');
-      
+
+      AppLogger.d('CollectionPoint', 'Gửi dữ liệu · ${AppLogger.preview(body)}');
+
       final response = await apiClient.post(
         ApiConstants.collectionPoints,
         body: body,
       );
-      
-      developer.log('Phản hồi từ API: Mã trạng thái ${response.statusCode}');
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = response.data;
-        
-        developer.log('Dữ liệu phản hồi: $data');
-        
+
         if (data['status'] == 'success' && data['data'] != null && data['data']['collectionPoint'] != null) {
           final Map<String, dynamic> collectionPointJson = data['data']['collectionPoint'];
           return CollectionPoint.fromJson(collectionPointJson);
         } else {
-          developer.log('Không thể tạo điểm thu gom: ${data['message'] ?? 'Lỗi không xác định'}');
+          AppLogger.w('CollectionPoint', 'Không thể tạo điểm thu gom: ${data['message'] ?? 'Lỗi không xác định'}');
           return null;
         }
       } else {
-        developer.log('Lỗi khi tạo điểm thu gom. Mã trạng thái: ${response.statusCode}', 
-          error: 'Lỗi HTTP ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      developer.log('Lỗi khi tạo điểm thu gom: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Lỗi khi tạo điểm thu gom', error: e);
       throw Exception('Không thể tạo điểm thu gom: $e');
     }
   }

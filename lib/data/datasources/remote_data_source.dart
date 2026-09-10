@@ -1,10 +1,10 @@
 import 'package:http/http.dart' as http;
-import 'dart:developer' as developer;
 import '../../core/api/api_client.dart';
 import '../../core/api/api_constants.dart';
 import '../../core/error/exceptions.dart';
 import '../../utils/secure_storage.dart';
 import '../../models/recycling_statistics_model.dart';
+import '../../utils/app_logger.dart';
 
 class RemoteDataSource {
   final ApiClient apiClient;
@@ -38,14 +38,13 @@ class RemoteDataSource {
       if (response.isSuccess) {
         // Cấu trúc dữ liệu trả về đã thay đổi
         final responseData = response.body;
-        developer.log('Phản hồi đăng nhập: ${responseData.toString()}');
+        AppLogger.d('DataSource', 'Phản hồi đăng nhập · ${AppLogger.preview(responseData)}');
 
         // Kiểm tra thông báo thành công
         final successMessage = response.message;
-        if (successMessage.toLowerCase().contains('thành công') || 
-            responseData['status'] == 'success' || 
+        if (successMessage.toLowerCase().contains('thành công') ||
+            responseData['status'] == 'success' ||
             (responseData['data'] != null && responseData['data']['status'] == 'success')) {
-          
           // Nếu có dữ liệu thì trả về, nếu không thì tạo dữ liệu tạm thời
           if (responseData['data'] != null) {
             return responseData['data'];
@@ -67,8 +66,8 @@ class RemoteDataSource {
       } else {
         // Kiểm tra thông báo để phát hiện trường hợp phản hồi chứa "thành công" nhưng bị xử lý như lỗi
         if (response.message.toLowerCase().contains('thành công')) {
-          developer.log('Phát hiện đăng nhập thành công từ thông báo lỗi: ${response.message}');
-          
+          AppLogger.d('DataSource', 'Phát hiện đăng nhập thành công từ thông báo lỗi: ${response.message}');
+
           // Trả về dữ liệu tạm thời vì đăng nhập thành công nhưng không có dữ liệu
           return {
             'token': 'temp_token_${DateTime.now().millisecondsSinceEpoch}',
@@ -80,14 +79,14 @@ class RemoteDataSource {
             },
           };
         }
-        
+
         throw ServerException(response.message);
       }
     } catch (e) {
       // Kiểm tra nếu lỗi chứa thông báo thành công
       if (e.toString().toLowerCase().contains('thành công')) {
-        developer.log('Phát hiện đăng nhập thành công từ lỗi: ${e.toString()}');
-        
+        AppLogger.d('DataSource', 'Phát hiện đăng nhập thành công từ lỗi: ${e.toString()}');
+
         // Trả về dữ liệu tạm thời vì đăng nhập thành công nhưng không có dữ liệu
         return {
           'token': 'temp_token_${DateTime.now().millisecondsSinceEpoch}',
@@ -99,7 +98,7 @@ class RemoteDataSource {
           },
         };
       }
-      
+
       if (e is UnauthorizedException) rethrow;
       throw ServerException(e.toString());
     }
@@ -122,14 +121,13 @@ class RemoteDataSource {
   // Lấy thông tin người dùng
   Future<Map<String, dynamic>> getUserProfile() async {
     try {
-      developer.log('Gọi API lấy thông tin người dùng: ${ApiConstants.profile}');
       final response = await apiClient.get(ApiConstants.profile);
 
       if (response.isSuccess) {
         // Xử lý phản hồi dựa trên cấu trúc API được cung cấp
         final responseData = response.body;
-        developer.log('Phản hồi lấy thông tin người dùng: ${responseData.toString()}');
-        
+        AppLogger.d('DataSource', 'Phản hồi hồ sơ · ${AppLogger.preview(responseData)}');
+
         // Cấu trúc API: { "success": true, "data": { "user": {...} } }
         if (responseData['success'] == true && responseData['data'] != null) {
           if (responseData['data']['user'] != null) {
@@ -148,7 +146,7 @@ class RemoteDataSource {
         throw ServerException('Lấy thông tin người dùng thất bại: ${response.statusCode}');
       }
     } catch (e) {
-      developer.log('Lỗi khi lấy thông tin người dùng: ${e.toString()}', error: e);
+      AppLogger.e('DataSource', 'Lỗi khi lấy thông tin người dùng', error: e);
       if (e is UnauthorizedException) rethrow;
       throw ServerException(e.toString());
     }
@@ -265,15 +263,13 @@ class RemoteDataSource {
       if (wasteTypeId != null) {
         url += '&wasteTypeId=$wasteTypeId';
       }
-      
-      developer.log('Gọi API lấy thống kê tái chế: $url');
-      
+
       final response = await apiClient.get(url);
 
       if (response.isSuccess) {
         final responseData = response.body;
-        developer.log('Phản hồi lấy thống kê tái chế: ${responseData.toString()}');
-        
+        AppLogger.d('DataSource', 'Phản hồi thống kê tái chế · ${AppLogger.preview(responseData)}');
+
         if (responseData['status'] == 'success' && responseData['data'] != null) {
           return RecyclingStatisticsData.fromJson(responseData['data']);
         } else {
@@ -283,7 +279,7 @@ class RemoteDataSource {
         throw ServerException('Lấy thống kê tái chế thất bại: ${response.statusCode}');
       }
     } catch (e) {
-      developer.log('Lỗi khi lấy thống kê tái chế: ${e.toString()}', error: e);
+      AppLogger.e('DataSource', 'Lỗi khi lấy thống kê tái chế', error: e);
       if (e is UnauthorizedException) rethrow;
       throw ServerException(e.toString());
     }

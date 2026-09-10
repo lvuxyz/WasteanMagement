@@ -6,7 +6,7 @@ import '../blocs/registration/registration_state.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/registration/registration_form.dart';
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class RegistrationScreen extends StatelessWidget {
   const RegistrationScreen({super.key});
@@ -24,7 +24,7 @@ class RegistrationScreen extends StatelessWidget {
         body: BlocListener<RegistrationBloc, RegistrationState>(
           listener: (context, state) {
             if (state is RegistrationFailure) {
-              developer.log('Registration failed: ${state.error}');
+              AppLogger.w('Register', 'Đăng ký thất bại · ${state.error}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.error),
@@ -33,7 +33,7 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               );
             } else if (state is RegistrationSuccess) {
-              developer.log('Registration successful');
+              AppLogger.d('Register', 'Đăng ký thành công');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(registrationSuccessText),

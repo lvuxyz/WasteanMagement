@@ -10,7 +10,7 @@ import '../../repositories/transaction_repository.dart';
 import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
 import 'package:intl/intl.dart';
-import 'dart:developer' as developer;
+import '../../utils/app_logger.dart';
 
 class TransactionDetailsScreen extends StatefulWidget {
   final int transactionId;
@@ -72,21 +72,20 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           setState(() {
             _isLoading = false;
           });
-          
+
           // Load transaction history
           _loadTransactionHistory();
           return;
         } catch (e) {
           // Transaction not found in bloc state, will fetch from API instead
-          developer.log('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+          AppLogger.d('Transaction', 'Chưa có giao dịch trong state, gọi API lấy chi tiết · $e');
         }
       }
 
       // If not found in bloc state, fetch directly
       final repository = Provider.of<TransactionRepository>(context, listen: false);
       final url = '${ApiConstants.transactions}/${widget.transactionId}';
-      developer.log('Fetching transaction details from API: $url');
-      
+
       final response = await repository.apiClient.get(url);
       if (!mounted) return;
 
@@ -97,41 +96,41 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
         setState(() {
           _isLoading = false;
         });
-        
+
         // Load transaction history
         _loadTransactionHistory();
       } else {
         throw Exception('Could not find transaction details');
       }
     } catch (e) {
-      developer.log('Error loading transaction details: $e');
+      AppLogger.w('Transaction', 'Không tải được chi tiết giao dịch: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
       });
     }
   }
-  
+
   Future<void> _loadTransactionHistory() async {
     setState(() {
       _isLoadingHistory = true;
     });
-    
+
     try {
       // Load transaction history via bloc
       context.read<TransactionBloc>().add(
         FetchTransactionHistory(transactionId: widget.transactionId)
       );
-      
+
       setState(() {
         _isLoadingHistory = false;
       });
     } catch (e) {
-      developer.log('Error loading transaction history: $e');
+      AppLogger.w('Transaction', 'Không tải được lịch sử giao dịch: $e');
       setState(() {
         _isLoadingHistory = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Không thể tải lịch sử giao dịch: ${e.toString()}'),
@@ -143,11 +142,11 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
 
   Future<void> _updateTransactionStatus(String status) async {
     if (!_isAdmin) return;
-    
+
     setState(() {
       _isUpdatingStatus = true;
     });
-    
+
     try {
       context.read<TransactionBloc>().add(
         UpdateTransactionStatus(
@@ -155,7 +154,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
           status: status,
         ),
       );
-      
+
       // Update local transaction status
       setState(() {
         if (_transaction != null) {
@@ -177,10 +176,10 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
         }
         _isUpdatingStatus = false;
       });
-      
+
       // Reload transaction history
       _loadTransactionHistory();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Trạng thái giao dịch đã được cập nhật thành: ${_getStatusText(status)}'),
@@ -191,7 +190,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
       setState(() {
         _isUpdatingStatus = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi: ${e.toString()}'),
@@ -258,12 +257,12 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
         if (_isLoadingHistory) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         final history = state.transactionHistory;
         if (history.isEmpty) {
           return _buildEmptyHistoryState();
         }
-        
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -285,7 +284,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
       },
     );
   }
-  
+
   Widget _buildEmptyHistoryState() {
     return Center(
       child: Column(
@@ -329,12 +328,12 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
       ),
     );
   }
-  
+
   Widget _buildHistoryTimeline(List<TransactionHistory> history) {
     // Sort history by changed_at date (newest first)
     final sortedHistory = List<TransactionHistory>.from(history)
       ..sort((a, b) => b.changedAt.compareTo(a.changedAt));
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -342,7 +341,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
       itemBuilder: (context, index) {
         final historyItem = sortedHistory[index];
         final isLast = index == sortedHistory.length - 1;
-        
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -399,7 +398,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8, 
+                                horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
@@ -768,7 +767,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
                 ),
               ),
               const SizedBox(height: 16),
-              _isUpdatingStatus 
+              _isUpdatingStatus
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -795,7 +794,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
   Widget _buildStatusButton(String status, String label) {
     final bool isCurrentStatus = _transaction?.status == status;
     final Color statusColor = _getStatusColor(status);
-    
+
     return ElevatedButton(
       onPressed: isCurrentStatus ? null : () => _updateTransactionStatus(status),
       style: ElevatedButton.styleFrom(
