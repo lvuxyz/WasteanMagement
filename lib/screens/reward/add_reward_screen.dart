@@ -47,7 +47,8 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
     });
     
     final isAdmin = await _authService.isAdmin();
-    
+    if (!mounted) return;
+
     setState(() {
       _isAdmin = isAdmin;
       _isCheckingAdmin = false;

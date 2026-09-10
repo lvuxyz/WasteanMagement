@@ -22,7 +22,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   final ScrollController _scrollController = ScrollController();
   String _selectedFilterOption = 'all';
   final Map<int, bool> _deletingItems = {}; // Track which items are being deleted
-  final Map<int, bool> _updatingItems = {}; // Track which items are being updated
   bool _isAdmin = false;
 
   @override
@@ -379,8 +378,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
 
   Widget _buildTransactionItem(Transaction transaction) {
     final isDeleting = _deletingItems[transaction.transactionId] ?? false;
-    final isUpdating = _updatingItems[transaction.transactionId] ?? false;
-    
+
     // Show loading indicators if necessary
     if (isDeleting) {
       return const Center(
@@ -548,21 +546,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                     },
                   ),
                 ),
-                if (_isAdmin)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (isUpdating)
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                      ],
-                    ),
-                  ),
               ],
             ),
           ),

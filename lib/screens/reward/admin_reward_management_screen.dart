@@ -43,7 +43,8 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
     });
     
     final isAdmin = await _authService.isAdmin();
-    
+    if (!mounted) return;
+
     setState(() {
       _isAdmin = isAdmin;
       _isCheckingAdmin = false;
@@ -164,7 +165,8 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
           'Content-Type': 'application/json',
         },
       );
-      
+      if (!mounted) return;
+
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success']) {
         final users = data['data'] as List<dynamic>;

@@ -88,8 +88,9 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
       developer.log('Fetching transaction details from API: $url');
       
       final response = await repository.apiClient.get(url);
-      
-      if (response.statusCode >= 200 && response.statusCode < 300 && 
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 && response.statusCode < 300 &&
           response.data['data'] != null) {
         final transactionData = response.data['data'];
         _transaction = Transaction.fromJson(transactionData);
