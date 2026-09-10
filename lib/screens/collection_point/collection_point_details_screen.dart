@@ -7,6 +7,7 @@ import '../../blocs/collection_point/collection_point_state.dart';
 import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../widgets/common/loading_view.dart';
 import '../../widgets/common/error_view.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -590,11 +591,7 @@ class _CollectionPointDetailsScreenState
     } catch (e) {
       developer.log('Could not launch maps: $e', error: e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể mở ứng dụng bản đồ'),
-        ),
-      );
+      SnackBarUtils.showError(context, 'Không thể mở ứng dụng bản đồ');
     }
   }
 } 

@@ -10,6 +10,7 @@ import '../blocs/recycling_progress/recycling_progress_state.dart';
 import '../repositories/recycling_progress_repository.dart';
 import '../repositories/waste_type_repository.dart';
 import '../utils/app_colors.dart';
+import '../utils/snackbar_utils.dart';
 import '../core/network/network_info.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
@@ -74,11 +75,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
       // và báo nhẹ, không chặn phần thống kê vốn tải bằng luồng riêng.
       developer.log('Không tải được danh sách loại rác cho bộ lọc: $e', error: e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không tải được danh sách loại rác để lọc'),
-        ),
-      );
+      SnackBarUtils.showError(context, 'Không tải được danh sách loại rác để lọc');
     }
   }
 
@@ -138,12 +135,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
         child: BlocConsumer<RecyclingProgressBloc, RecyclingProgressState>(
           listener: (context, state) {
             if (state is RecyclingProgressError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              SnackBarUtils.showError(context, state.message);
             }
           },
           builder: (context, state) {
@@ -234,11 +226,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: Navigate to add new recycling record screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Chức năng thêm bản ghi tái chế sẽ được phát triển sau'),
-            ),
-          );
+          SnackBarUtils.showInfo(context, 'Chức năng thêm bản ghi tái chế sẽ được phát triển sau');
         },
         backgroundColor: AppColors.primaryGreen,
         child: const Icon(Icons.add),

@@ -5,6 +5,7 @@ import '../../blocs/collection_point/collection_point_bloc.dart';
 import '../../blocs/collection_point/collection_point_event.dart';
 import '../../blocs/collection_point/collection_point_state.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../utils/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/loading_view.dart';
@@ -149,12 +150,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
       
       // Show success message
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã chọn vị trí từ bản đồ'),
-          backgroundColor: AppColors.primaryGreen,
-        ),
-      );
+      SnackBarUtils.showSuccess(context, 'Đã chọn vị trí từ bản đồ');
     }
   }
 
@@ -187,13 +183,8 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
         body: BlocConsumer<CollectionPointBloc, CollectionPointState>(
           listener: (context, state) {
             if (state is CollectionPointCreated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              
+              SnackBarUtils.showSuccess(context, state.message);
+
               // Separate navigation from the callback to avoid FocusNode issues
               if (!_isNavigating) {
                 _isNavigating = true;
@@ -204,12 +195,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
                 });
               }
             } else if (state is CollectionPointError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              SnackBarUtils.showError(context, state.message);
             }
           },
           builder: (context, state) {

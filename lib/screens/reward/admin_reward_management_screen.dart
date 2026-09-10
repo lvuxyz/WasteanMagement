@@ -6,6 +6,7 @@ import 'package:wasteanmagement/blocs/reward/reward_state.dart';
 import 'package:wasteanmagement/models/reward.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
+import 'package:wasteanmagement/utils/snackbar_utils.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
 import 'package:wasteanmagement/core/api/api_constants.dart';
@@ -54,12 +55,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bạn không có quyền truy cập chức năng này'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtils.showError(context, 'Bạn không có quyền truy cập chức năng này');
         Navigator.of(context).pop();
       });
     }
@@ -185,36 +181,24 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
         setState(() {
           _isLoadingUsers = false;
           _usersList = [];
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Lỗi: ${data['message'] ?? 'Không thể lấy danh sách người dùng'}'),
-              backgroundColor: Colors.red,
-            ),
-          );
         });
+        SnackBarUtils.showError(
+          context,
+          'Lỗi: ${data['message'] ?? 'Không thể lấy danh sách người dùng'}',
+        );
       }
     } catch (e) {
       setState(() {
         _isLoadingUsers = false;
         _usersList = [];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       });
+      SnackBarUtils.showError(context, 'Lỗi: $e');
     }
   }
-  
+
   void _showAddRewardDialog() {
     if (_selectedUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn người dùng trước'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showError(context, 'Vui lòng chọn người dùng trước');
       return;
     }
     
@@ -262,22 +246,12 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
                 Navigator.pop(context);
                 
                 // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Thêm điểm thưởng thành công'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                
+                SnackBarUtils.showSuccess(context, 'Thêm điểm thưởng thành công');
+
                 // Reload user rewards
                 _loadUserRewards();
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Lỗi: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                SnackBarUtils.showError(context, 'Lỗi: $e');
               }
             },
             child: const Text('Thêm'),
@@ -575,12 +549,7 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
         context.read<RewardBloc>().add(DeleteReward(reward.rewardId));
         
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã xóa điểm thưởng'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackBarUtils.showSuccess(context, 'Đã xóa điểm thưởng');
       },
       child: Card(
         elevation: 0,
@@ -705,19 +674,9 @@ class _AdminRewardManagementScreenState extends State<AdminRewardManagementScree
                 Navigator.pop(context);
                 
                 // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Cập nhật điểm thưởng thành công'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                SnackBarUtils.showSuccess(context, 'Cập nhật điểm thưởng thành công');
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Lỗi: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                SnackBarUtils.showError(context, 'Lỗi: $e');
               }
             },
             child: const Text('Lưu'),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/services/reward_service.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
+import 'package:wasteanmagement/utils/snackbar_utils.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/core/api/api_constants.dart';
 import 'package:http/http.dart' as http;
@@ -58,12 +59,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bạn không có quyền truy cập chức năng này'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtils.showError(context, 'Bạn không có quyền truy cập chức năng này');
         Navigator.of(context).pop();
       });
     }

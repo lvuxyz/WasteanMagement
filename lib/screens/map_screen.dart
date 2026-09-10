@@ -11,6 +11,7 @@ import '../utils/app_colors.dart';
 import '../repositories/collection_point_repository.dart';
 import '../core/api/api_client.dart';
 import '../utils/secure_storage.dart';
+import '../utils/snackbar_utils.dart';
 import 'dart:developer' as developer;
 
 class MapScreen extends StatefulWidget {
@@ -85,9 +86,7 @@ class _MapScreenState extends State<MapScreen> {
         body: BlocConsumer<MapBloc, MapState>(
           listener: (context, state) {
             if (state.errorMessage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage!)),
-              );
+              SnackBarUtils.showError(context, state.errorMessage!);
             }
           },
           builder: (context, state) {
@@ -453,11 +452,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _showDirectionsNotImplemented(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng chỉ đường sẽ được triển khai trong phiên bản sau.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    SnackBarUtils.showInfo(context, 'Tính năng chỉ đường sẽ được triển khai trong phiên bản sau.');
   }
 }
