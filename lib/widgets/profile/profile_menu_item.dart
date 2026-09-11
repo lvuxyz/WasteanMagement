@@ -10,14 +10,14 @@ class ProfileMenuItem extends StatelessWidget {
   final bool showArrow;
 
   const ProfileMenuItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.onTap,
     this.iconColor = AppColors.primaryGreen,
     this.textColor = Colors.black87, // Changed from AppColors.primaryText
     this.showArrow = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class ProfileMenuItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

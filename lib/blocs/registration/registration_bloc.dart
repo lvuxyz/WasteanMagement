@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:developer' as developer;
 import '../../core/api/api_constants.dart';
 import 'registration_event.dart';
 import 'registration_state.dart';
+import '../../utils/app_logger.dart';
 
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final BuildContext context;
@@ -20,9 +20,9 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   ) async {
     try {
       emit(RegistrationLoading());
-      
-      developer.log('Attempting to register user: ${event.username}');
-      
+
+      AppLogger.d('Register', 'Đăng ký tài khoản · username=${event.username}');
+
       // API call
       final response = await http.post(
         Uri.parse(ApiConstants.register),
@@ -38,12 +38,9 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
           'address': event.address,
         }),
       );
-      
-      developer.log('Registration response status: ${response.statusCode}');
-      developer.log('Registration response body: ${response.body}');
 
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Registration successful
         emit(RegistrationSuccess());
@@ -53,9 +50,9 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
         emit(RegistrationFailure(error: errorMessage));
       }
     } catch (e) {
-      developer.log('Registration error: $e');
+      AppLogger.w('Register', 'Đăng ký thất bại · $e');
       emit(RegistrationFailure(error: e.toString()));
     }
   }
-} 
+}
 

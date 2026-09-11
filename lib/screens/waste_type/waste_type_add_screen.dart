@@ -8,7 +8,7 @@ import '../../widgets/common/custom_switch_field.dart';
 import '../../utils/app_colors.dart';
 
 class WasteTypeAddScreen extends StatefulWidget {
-  const WasteTypeAddScreen({Key? key}) : super(key: key);
+  const WasteTypeAddScreen({super.key});
   
   @override
   State<WasteTypeAddScreen> createState() => _WasteTypeAddScreenState();
@@ -24,7 +24,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
   final ScrollController _scrollController = ScrollController();
   
   String _selectedCategory = 'Tái chế';
-  List<String> _examples = [''];
+  final List<String> _examples = [''];
   bool _isRecyclable = true;
   bool _isLoading = false;
 
@@ -205,7 +205,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
             // Loading overlay
             if (_isLoading)
               Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -237,7 +237,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: Offset(0, -4),
                     blurRadius: 8,
                   ),
@@ -329,7 +329,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
             ),
             SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
@@ -448,7 +448,7 @@ class _WasteTypeAddScreenState extends State<WasteTypeAddScreen> {
                     height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

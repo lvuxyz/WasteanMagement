@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../blocs/transaction/transaction_bloc.dart';
 import '../../blocs/transaction/transaction_event.dart';
 import '../../models/transaction.dart';
 import '../../repositories/transaction_repository.dart';
-import '../../services/auth_service.dart';
 import '../../core/api/api_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../utils/app_logger.dart';
 
 class TransactionEditScreen extends StatefulWidget {
   final int transactionId;
-  
+
   const TransactionEditScreen({
-    Key? key,
+    super.key,
     required this.transactionId,
-  }) : super(key: key);
-  
+  });
+
   @override
   State<TransactionEditScreen> createState() => _TransactionEditScreenState();
 }
@@ -30,16 +29,10 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   String _selectedStatus = 'pending';
-  final AuthService _authService = AuthService();
-
   @override
   void initState() {
     super.initState();
     _loadTransactionDetails();
-  }
-
-  Future<void> _checkIsAdmin() async {
-    await _authService.isAdmin(); // Keep the method for future use if needed
   }
 
   @override
@@ -66,18 +59,17 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           return;
         } catch (e) {
           // Transaction not found in bloc state, will fetch from API instead
-          print('Transaction not found in bloc state, fetching from API: ${e.toString()}');
+          AppLogger.d('Transaction', 'Chưa có giao dịch trong state, gọi API lấy chi tiết · $e');
         }
       }
 
       // If not found in bloc state, fetch directly
       final repository = Provider.of<TransactionRepository>(context, listen: false);
       final url = '${ApiConstants.transactions}/${widget.transactionId}';
-      print('Fetching transaction details from API: $url');
-      
+
       final response = await repository.apiClient.get(url);
-      
-      if (response.statusCode >= 200 && response.statusCode < 300 && 
+
+      if (response.statusCode >= 200 && response.statusCode < 300 &&
           response.data['data'] != null) {
         final transactionData = response.data['data'];
         _transaction = Transaction.fromJson(transactionData);
@@ -86,7 +78,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         throw Exception('Could not find transaction details');
       }
     } catch (e) {
-      print('Error loading transaction details: $e');
+      AppLogger.w('Transaction', 'Không tải được chi tiết giao dịch: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = e.toString();
@@ -120,7 +112,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
           ),
         );
       }
-      
+
       setState(() {
         _isSaving = false;
       });
@@ -138,7 +130,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
       setState(() {
         _isSaving = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi: ${e.toString()}'),
@@ -289,14 +281,14 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(_transaction!.status).withOpacity(0.1),
+                  color: _getStatusColor(_transaction!.status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _getStatusColor(_transaction!.status).withOpacity(0.3)),
+                  border: Border.all(color: _getStatusColor(_transaction!.status).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _getStatusIcon(_transaction!.status), 
+                      _getStatusIcon(_transaction!.status),
                       color: _getStatusColor(_transaction!.status)
                     ),
                     const SizedBox(width: 12),
@@ -329,9 +321,9 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,23 +368,35 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         border: Border.all(color: Colors.grey[300]!),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        children: [
-          _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
-          const Divider(height: 1),
-          _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
-          const Divider(height: 1),
-          _buildStatusOption('completed', 'Hoàn thành', Colors.green),
-          const Divider(height: 1),
-          _buildStatusOption('rejected', 'Đã hủy', Colors.red),
-        ],
+      // Từ Flutter 3.32, groupValue/onChanged trên từng RadioListTile đã bị
+      // loại bỏ dần; giá trị nhóm nay do RadioGroup bao ngoài quản lý.
+      child: RadioGroup<String>(
+        groupValue: _selectedStatus,
+        onChanged: (newValue) {
+          if (newValue == null) return;
+          AppLogger.d('Transaction', 'Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)');
+          setState(() {
+            _selectedStatus = newValue;
+          });
+        },
+        child: Column(
+          children: [
+            _buildStatusOption('pending', 'Chờ xử lý', Colors.orange),
+            const Divider(height: 1),
+            _buildStatusOption('verified', 'Đã xác nhận', Colors.blue),
+            const Divider(height: 1),
+            _buildStatusOption('completed', 'Hoàn thành', Colors.green),
+            const Divider(height: 1),
+            _buildStatusOption('rejected', 'Đã hủy', Colors.red),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatusOption(String value, String label, Color color) {
     final isSelected = _selectedStatus == value;
-    
+
     return RadioListTile<String>(
       title: Row(
         children: [
@@ -427,15 +431,8 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         ],
       ),
       value: value,
-      groupValue: _selectedStatus,
       activeColor: color,
       selected: isSelected,
-      onChanged: (newValue) {
-        print('Đã chọn trạng thái: $newValue (trước đó: $_selectedStatus)');
-        setState(() {
-          _selectedStatus = newValue!;
-        });
-      },
     );
   }
 

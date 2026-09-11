@@ -14,13 +14,13 @@ class WasteTypeListItem extends StatelessWidget {
   final VoidCallback? onManageCollectionPoints;
 
   const WasteTypeListItem({
-    Key? key,
+    super.key,
     required this.wasteType,
     required this.onView,
     this.onEdit,
     this.onDelete,
     this.onManageCollectionPoints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class WasteTypeListItem extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: wasteType.color.withOpacity(0.1),
+                              color: wasteType.color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -91,8 +91,8 @@ class WasteTypeListItem extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: wasteType.recyclable 
-                                      ? Colors.green.withOpacity(0.1) 
-                                      : Colors.grey.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1) 
+                                      : Colors.grey.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -204,7 +204,7 @@ class WasteTypeListItem extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -239,7 +239,7 @@ class WasteTypeListItem extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -354,33 +354,5 @@ class WasteTypeListItem extends StatelessWidget {
     );
   }
 
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Tái chế':
-        return Colors.blue;
-      case 'Hữu cơ':
-        return Colors.green;
-      case 'Nguy hại':
-        return Colors.red;
-      case 'Thường':
-        return Colors.grey;
-      default:
-        return AppColors.primaryGreen;
-    }
-  }
   
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Tái chế':
-        return Icons.recycling;
-      case 'Hữu cơ':
-        return Icons.compost;
-      case 'Nguy hại':
-        return Icons.warning_amber_rounded;
-      case 'Thường':
-        return Icons.delete_outline;
-      default:
-        return Icons.category;
-    }
-  }
 }

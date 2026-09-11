@@ -3,7 +3,7 @@ import '../utils/app_colors.dart';
 import '../widgets/common/custom_button.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({Key? key}) : super(key: key);
+  const ChangePasswordScreen({super.key});
 
   @override
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -60,7 +60,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -225,6 +225,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

@@ -10,13 +10,13 @@ class CustomDropdownField<T> extends StatelessWidget {
   final String Function(T)? itemText;
 
   const CustomDropdownField({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     required this.items,
     required this.onChanged,
     this.itemText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

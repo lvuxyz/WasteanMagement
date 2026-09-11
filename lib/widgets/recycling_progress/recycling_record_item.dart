@@ -6,9 +6,9 @@ class RecyclingRecordItem extends StatelessWidget {
   final RecyclingRecord record;
   
   const RecyclingRecordItem({
-    Key? key,
+    super.key,
     required this.record,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,7 @@ class RecyclingRecordItem extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
                       color: statusColor,
@@ -152,7 +152,7 @@ class RecyclingRecordItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.1),
+        color: iconColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(

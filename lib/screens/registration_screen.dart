@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../blocs/registration/registration_bloc.dart';
 import '../blocs/registration/registration_state.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_app_bar.dart';
 import '../widgets/registration/registration_form.dart';
-import 'dart:developer' as developer;
+import '../utils/app_logger.dart';
 
 class RegistrationScreen extends StatelessWidget {
   const RegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final registrationSuccessText = l10n.registrationSuccess;
 
     return BlocProvider(
@@ -24,7 +24,7 @@ class RegistrationScreen extends StatelessWidget {
         body: BlocListener<RegistrationBloc, RegistrationState>(
           listener: (context, state) {
             if (state is RegistrationFailure) {
-              developer.log('Registration failed: ${state.error}');
+              AppLogger.w('Register', 'Đăng ký thất bại · ${state.error}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.error),
@@ -33,7 +33,7 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               );
             } else if (state is RegistrationSuccess) {
-              developer.log('Registration successful');
+              AppLogger.d('Register', 'Đăng ký thành công');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(registrationSuccessText),

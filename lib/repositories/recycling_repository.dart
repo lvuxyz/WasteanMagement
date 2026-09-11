@@ -1,9 +1,9 @@
-import 'dart:developer' as developer;
 import 'package:wasteanmagement/models/recycling_report_model.dart';
 
 import '../core/network/network_info.dart';
 import '../models/recycling_process_model.dart';
 import '../services/recycling_service.dart';
+import '../utils/app_logger.dart';
 
 class RecyclingRepository {
   final RecyclingService _recyclingService;
@@ -17,7 +17,7 @@ class RecyclingRepository {
 
   // Lấy danh sách quy trình tái chế có phân trang
   Future<Map<String, dynamic>> getRecyclingProcesses({
-    int page = 1, 
+    int page = 1,
     int limit = 10,
     String? status,
     String? wasteTypeId,
@@ -39,7 +39,7 @@ class RecyclingRepository {
         toDate: toDate,
       );
     } catch (e) {
-      developer.log('Lỗi khi lấy danh sách quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy danh sách quy trình tái chế', error: e);
       throw Exception('Không thể lấy danh sách quy trình tái chế: $e');
     }
   }
@@ -54,7 +54,7 @@ class RecyclingRepository {
 
       return await _recyclingService.getAllRecyclingProcesses();
     } catch (e) {
-      developer.log('Lỗi khi lấy toàn bộ quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy toàn bộ quy trình tái chế', error: e);
       throw Exception('Không thể lấy toàn bộ quy trình tái chế: $e');
     }
   }
@@ -69,7 +69,7 @@ class RecyclingRepository {
 
       return await _recyclingService.getRecyclingProcessDetail(id);
     } catch (e) {
-      developer.log('Lỗi khi lấy chi tiết quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy chi tiết quy trình tái chế', error: e);
       throw Exception('Không thể lấy chi tiết quy trình tái chế: $e');
     }
   }
@@ -94,7 +94,7 @@ class RecyclingRepository {
         notes: notes,
       );
     } catch (e) {
-      developer.log('Lỗi khi tạo quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi tạo quy trình tái chế', error: e);
       throw Exception('Không thể tạo quy trình tái chế: $e');
     }
   }
@@ -115,7 +115,7 @@ class RecyclingRepository {
         updateData: updateData,
       );
     } catch (e) {
-      developer.log('Lỗi khi cập nhật quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi cập nhật quy trình tái chế', error: e);
       throw Exception('Không thể cập nhật quy trình tái chế: $e');
     }
   }
@@ -138,7 +138,7 @@ class RecyclingRepository {
         wasteTypeId: wasteTypeId,
       );
     } catch (e) {
-      developer.log('Lỗi khi lấy báo cáo thống kê tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy báo cáo thống kê tái chế', error: e);
       throw Exception('Không thể lấy báo cáo thống kê tái chế: $e');
     }
   }
@@ -161,7 +161,7 @@ class RecyclingRepository {
         wasteTypeId: wasteTypeId,
       );
     } catch (e) {
-      developer.log('Lỗi khi lấy thống kê số liệu tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy thống kê số liệu tái chế', error: e);
       throw Exception('Không thể lấy thống kê số liệu tái chế: $e');
     }
   }
@@ -176,7 +176,7 @@ class RecyclingRepository {
 
       return await _recyclingService.getUserRecyclingProcesses(userId);
     } catch (e) {
-      developer.log('Lỗi khi lấy quy trình tái chế của người dùng: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi lấy quy trình tái chế của người dùng', error: e);
       throw Exception('Không thể lấy quy trình tái chế của người dùng: $e');
     }
   }
@@ -191,7 +191,7 @@ class RecyclingRepository {
 
       return await _recyclingService.sendRecyclingNotification(id, message);
     } catch (e) {
-      developer.log('Lỗi khi gửi thông báo cập nhật quy trình tái chế: $e', error: e);
+      AppLogger.e('Recycling', 'Lỗi khi gửi thông báo cập nhật quy trình tái chế', error: e);
       throw Exception('Không thể gửi thông báo cập nhật quy trình tái chế: $e');
     }
   }

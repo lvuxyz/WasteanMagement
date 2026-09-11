@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as developer;
 import 'help_guidance_event.dart';
 import 'help_guidance_state.dart';
+import '../../utils/app_logger.dart';
 
 class HelpGuidanceBloc extends Bloc<HelpGuidanceEvent, HelpGuidanceState> {
   HelpGuidanceBloc() : super(HelpGuidanceInitial()) {
@@ -13,8 +13,8 @@ class HelpGuidanceBloc extends Bloc<HelpGuidanceEvent, HelpGuidanceState> {
     LoadHelpGuidanceData event,
     Emitter<HelpGuidanceState> emit,
   ) {
-    developer.log('Loading help and guidance data');
-    
+    AppLogger.d('HelpGuide', 'Tải dữ liệu trợ giúp và hướng dẫn');
+
     // FAQ items data
     final List<Map<String, dynamic>> faqItems = [
       {
@@ -99,12 +99,12 @@ class HelpGuidanceBloc extends Bloc<HelpGuidanceEvent, HelpGuidanceState> {
     SearchFaqs event,
     Emitter<HelpGuidanceState> emit,
   ) {
-    developer.log('Searching FAQs with query: ${event.query}');
-    
+    AppLogger.d('HelpGuide', 'Tìm FAQ · từ khóa=${event.query}');
+
     final currentState = state;
     if (currentState is HelpGuidanceLoaded) {
       final query = event.query.toLowerCase();
-      
+
       List<Map<String, dynamic>> filteredFaqs;
       if (query.isEmpty) {
         filteredFaqs = currentState.faqItems;
@@ -115,7 +115,7 @@ class HelpGuidanceBloc extends Bloc<HelpGuidanceEvent, HelpGuidanceState> {
                 faq['answer'].toLowerCase().contains(query))
             .toList();
       }
-      
+
       emit(currentState.copyWith(filteredFaqs: filteredFaqs));
     }
   }

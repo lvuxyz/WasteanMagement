@@ -7,9 +7,10 @@ import '../services/auth_service.dart';
 import '../widgets/common/loading_indicator.dart';
 import '../widgets/common/error_message.dart';
 import 'package:intl/intl.dart';
+import '../utils/app_logger.dart';
 
 class ViewProfileScreen extends StatefulWidget {
-  const ViewProfileScreen({Key? key}) : super(key: key);
+  const ViewProfileScreen({super.key});
 
   @override
   State<ViewProfileScreen> createState() => _ViewProfileScreenState();
@@ -35,7 +36,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
 
     try {
       final token = await _authService.getToken();
-      
+
       if (token == null) {
         setState(() {
           _isLoading = false;
@@ -43,7 +44,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         });
         return;
       }
-      
+
       // Make API request
       final response = await http.get(
         Uri.parse(ApiConstants.profile),
@@ -52,20 +53,20 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
           'Authorization': 'Bearer $token',
         },
       );
-      
-      print("[DEBUG] Status code: ${response.statusCode}");
-      print("[DEBUG] Response body: ${response.body.substring(0, 100)}...");
-      
+
+      AppLogger.d('Profile', "Status code: ${response.statusCode}");
+      AppLogger.d('Profile', "Response body: ${response.body.substring(0, 100)}...");
+
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        
+
         if (responseData['success'] == true && responseData['data'] != null) {
           setState(() {
             _userData = responseData['data'];
             _isLoading = false;
           });
-          
-          print("[DEBUG] User data loaded: ${_userData['basic_info']?['full_name']}");
+
+          AppLogger.d('Profile', "User data loaded: ${_userData['basic_info']?['full_name']}");
         } else {
           setState(() {
             _isLoading = false;
@@ -84,7 +85,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         _isLoading = false;
         _errorMessage = e.toString();
       });
-      print("[DEBUG] Error loading profile: $e");
+      AppLogger.d('Profile', "Error loading profile: $e");
     }
   }
 
@@ -104,7 +105,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadUserData,
-        child: _isLoading 
+        child: _isLoading
           ? const Center(child: LoadingIndicator())
           : _errorMessage.isNotEmpty
             ? ErrorMessage(
@@ -127,9 +128,9 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
     final transactionStats = _userData['transaction_stats'] ?? {};
     final accountStatus = _userData['account_status'] ?? {};
     final additionalData = _userData['additional_data'] ?? {};
-    
-    print("[DEBUG] Building UI with basic info: $basicInfo");
-    
+
+    AppLogger.d('Profile', "Building UI with basic info: $basicInfo");
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -137,14 +138,14 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         children: [
           // Avatar and basic info
           _buildProfileHeader(basicInfo),
-          
+
           const SizedBox(height: 24),
-          
+
           // Transaction stats card
           _buildStatsCard(transactionStats),
-          
+
           const SizedBox(height: 24),
-          
+
           // Account info card
           _buildAccountInfoCard(basicInfo, accountStatus, additionalData),
         ],
@@ -157,11 +158,11 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
     final email = basicInfo['email'] ?? '';
     final phone = basicInfo['phone'] ?? '';
     final roles = (basicInfo['roles'] as List?)?.cast<String>() ?? <String>[];
-    
-    final firstLetter = fullName.isNotEmpty 
-        ? fullName[0].toUpperCase() 
+
+    final firstLetter = fullName.isNotEmpty
+        ? fullName[0].toUpperCase()
         : '?';
-        
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -171,7 +172,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
+              backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.2),
               child: Text(
                 firstLetter,
                 style: TextStyle(
@@ -223,7 +224,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.1),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -252,7 +253,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
     final rejectedTransactions = stats['rejected_transactions']?.toString() ?? '0';
     final verifiedTransactions = stats['verified_transactions']?.toString() ?? '0';
     final totalQuantity = stats['total_quantity']?.toString() ?? '0';
-    
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -328,7 +329,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color),
@@ -359,7 +360,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
   ) {
     final rewardStats = additionalData['reward_stats'] ?? {};
     final timezone = _userData['timezone'] ?? 'UTC';
-    
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -381,7 +382,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             _buildInfoRow('Trạng thái', _getStatusText(accountStatus['status'] ?? '')),
             _buildInfoRow('Ngày tạo', _formatDateTime(accountStatus['created_at'] ?? '')),
             _buildInfoRow('Múi giờ', timezone),
-            
+
             const SizedBox(height: 16),
             const Text(
               'Thông tin điểm thưởng',
@@ -392,12 +393,12 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             ),
             const SizedBox(height: 16),
             _buildInfoRow(
-              'Tổng phần thưởng', 
+              'Tổng phần thưởng',
               (rewardStats['total_rewards'] ?? 0).toString(),
               valueColor: Colors.green,
             ),
             _buildInfoRow(
-              'Tổng điểm', 
+              'Tổng điểm',
               _formatNumber(rewardStats['total_points']?.toString() ?? '0'),
               valueColor: Colors.blue,
             ),
@@ -412,7 +413,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
   }
 
   Widget _buildInfoRow(
-    String label, 
+    String label,
     String value, {
     Color? valueColor,
   }) {
@@ -466,7 +467,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         return status;
     }
   }
-  
+
   String _formatNumber(String number) {
     try {
       final num = int.parse(number);

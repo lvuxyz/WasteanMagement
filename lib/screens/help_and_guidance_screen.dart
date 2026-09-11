@@ -6,7 +6,7 @@ import '../blocs/help_guidance/help_guidance_state.dart';
 import '../utils/app_colors.dart';
 
 class HelpAndGuidanceScreen extends StatelessWidget {
-  const HelpAndGuidanceScreen({Key? key}) : super(key: key);
+  const HelpAndGuidanceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -384,7 +384,7 @@ class _TutorialsTab extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

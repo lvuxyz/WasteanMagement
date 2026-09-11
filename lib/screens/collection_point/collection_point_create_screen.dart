@@ -5,13 +5,14 @@ import '../../blocs/collection_point/collection_point_bloc.dart';
 import '../../blocs/collection_point/collection_point_event.dart';
 import '../../blocs/collection_point/collection_point_state.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../utils/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/loading_view.dart';
 import '../collection_point/location_picker_screen.dart';
 
 class CollectionPointCreateScreen extends StatefulWidget {
-  const CollectionPointCreateScreen({Key? key}) : super(key: key);
+  const CollectionPointCreateScreen({super.key});
 
   @override
   State<CollectionPointCreateScreen> createState() => _CollectionPointCreateScreenState();
@@ -148,22 +149,18 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
       });
       
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã chọn vị trí từ bản đồ'),
-          backgroundColor: AppColors.primaryGreen,
-        ),
-      );
+      if (!mounted) return;
+      SnackBarUtils.showSuccess(context, 'Đã chọn vị trí từ bản đồ');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Mark as navigating before pop to avoid focus issues
+    return PopScope(
+      // Handler cũ luôn trả true nên không cần canPop: false. Giữ nguyên mục
+      // đích ban đầu: dựng cờ để tránh thao tác focus khi màn hình đang đóng.
+      onPopInvokedWithResult: (didPop, result) {
         _isNavigating = true;
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -186,13 +183,8 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
         body: BlocConsumer<CollectionPointBloc, CollectionPointState>(
           listener: (context, state) {
             if (state is CollectionPointCreated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              
+              SnackBarUtils.showSuccess(context, state.message);
+
               // Separate navigation from the callback to avoid FocusNode issues
               if (!_isNavigating) {
                 _isNavigating = true;
@@ -203,12 +195,7 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
                 });
               }
             } else if (state is CollectionPointError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              SnackBarUtils.showError(context, state.message);
             }
           },
           builder: (context, state) {
@@ -282,9 +269,9 @@ class _CollectionPointCreateScreenState extends State<CollectionPointCreateScree
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [

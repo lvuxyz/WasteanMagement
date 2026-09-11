@@ -11,12 +11,12 @@ class AddCollectionPointsTab extends StatefulWidget {
   final Function(String) onSearchChanged;
 
   const AddCollectionPointsTab({
-    Key? key,
+    super.key,
     required this.availableCollectionPoints,
     required this.onAddCollectionPoint,
     required this.searchQuery,
     required this.onSearchChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<AddCollectionPointsTab> createState() => _AddCollectionPointsTabState();

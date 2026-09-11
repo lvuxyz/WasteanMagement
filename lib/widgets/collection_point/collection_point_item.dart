@@ -10,13 +10,13 @@ class CollectionPointItem extends StatelessWidget {
   final VoidCallback onActionPressed;
 
   const CollectionPointItem({
-    Key? key,
+    super.key,
     required this.collectionPoint,
     required this.actionButtonText,
     required this.actionButtonIcon,
     required this.actionButtonColor,
     required this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class CollectionPointItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+            color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -49,7 +49,7 @@ class CollectionPointItem extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                      color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -89,10 +89,10 @@ class CollectionPointItem extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                      color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+                        color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -121,7 +121,7 @@ class CollectionPointItem extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -150,10 +150,10 @@ class CollectionPointItem extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
+                      color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _getCapacityColor(capacityPercentage).withOpacity(0.3),
+                        color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -174,7 +174,7 @@ class CollectionPointItem extends StatelessWidget {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: actionButtonColor.withOpacity(0.05),
+                color: actionButtonColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(16),
                 ),

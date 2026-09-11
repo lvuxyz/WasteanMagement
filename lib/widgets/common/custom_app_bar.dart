@@ -7,10 +7,10 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> tabs;
 
   const CustomTabBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.tabs,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +32,17 @@ class CustomTabBar extends StatelessWidget implements PreferredSizeWidget {
 
 class CustomAppBar extends AppBar {
   CustomAppBar({
-    Key? key,
+    super.key,
     required String title,
-    List<Widget>? actions,
-    bool centerTitle = true,
+    super.actions,
+    bool super.centerTitle = true,
     Color backgroundColor = Colors.transparent,
     Color titleColor = Colors.white,
-    bool automaticallyImplyLeading = true,
-    double elevation = 0,
-    PreferredSizeWidget? bottom,
-    Widget? leading,
+    super.automaticallyImplyLeading,
+    double super.elevation = 0,
+    super.bottom,
+    super.leading,
   }) : super(
-    key: key,
     title: Text(
       title,
       style: TextStyle(
@@ -54,11 +53,5 @@ class CustomAppBar extends AppBar {
     backgroundColor: backgroundColor == Colors.transparent 
         ? AppColors.primaryGreen 
         : backgroundColor,
-    centerTitle: centerTitle,
-    elevation: elevation,
-    automaticallyImplyLeading: automaticallyImplyLeading,
-    actions: actions,
-    bottom: bottom,
-    leading: leading,
   );
 }

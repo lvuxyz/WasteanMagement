@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,13 +8,14 @@ import '../../services/mapbox_service.dart';
 import '../../repositories/collection_point_repository.dart';
 import 'map_event.dart';
 import 'map_state.dart';
+import '../../utils/app_logger.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final MapboxService mapboxService;
   final CollectionPointRepository collectionPointRepository;
 
   MapBloc({
-    required this.mapboxService, 
+    required this.mapboxService,
     required this.collectionPointRepository
   }) : super(const MapState()) {
     on<MapInitialized>(_onMapInitialized);
@@ -72,11 +72,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
               ),
             );
           } catch (annotationError) {
-            developer.log('Lỗi khi tạo annotation marker: $annotationError', error: annotationError);
+            AppLogger.e('Map', 'Lỗi khi tạo annotation marker', error: annotationError);
             // Tiếp tục xử lý mà không hiển thị marker
           }
         } catch (mapError) {
-          developer.log('Lỗi khi cập nhật camera map: $mapError', error: mapError);
+          AppLogger.e('Map', 'Lỗi khi cập nhật camera map', error: mapError);
           // Tiếp tục xử lý mà không di chuyển camera
         }
       }
@@ -86,7 +86,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         userLocation: location,
       ));
     } catch (e) {
-      developer.log('Lỗi khi lấy vị trí người dùng: $e', error: e);
+      AppLogger.e('Map', 'Lỗi khi lấy vị trí người dùng', error: e);
       emit(state.copyWith(
         isLoading: false,
         errorMessage: 'Không thể lấy vị trí của bạn. Vui lòng thử lại sau.',
@@ -102,10 +102,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       // Chuyển đổi sang dạng Map và tính toán khoảng cách
       final List<Map<String, dynamic>> processedPoints = [];
-      
+
       // Tính khoảng cách nếu có vị trí người dùng
       final userLocation = state.userLocation;
-      
+
       for (var point in collectionPoints) {
         double distance = 0.0;
         if (userLocation != null) {
@@ -114,7 +114,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           final pointPosition = Position(point.longitude, point.latitude);
           distance = mapboxService.calculateDistance(userPosition, pointPosition) / 1000; // Chuyển đổi từ mét sang km
         }
-        
+
         processedPoints.add({
           'id': point.collectionPointId,
           'name': point.name,
@@ -128,7 +128,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           'current_load': point.currentLoad ?? 0.0,
         });
       }
-      
+
       // Thêm markers cho điểm thu gom
       if (state.controller != null) {
         try {
@@ -159,7 +159,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             isLoading: false,
           ));
         } catch (e) {
-          developer.log('Error adding markers: $e', error: e);
+          AppLogger.e('Map', 'Không thêm được marker lên bản đồ', error: e);
           emit(state.copyWith(
             isLoading: false,
             errorMessage: 'Không thể hiển thị điểm thu gom trên bản đồ',
@@ -172,7 +172,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         ));
       }
     } catch (e) {
-      developer.log('Error loading collection points: $e', error: e);
+      AppLogger.e('Map', 'Không tải được collection points', error: e);
       emit(state.copyWith(
         isLoading: false,
         errorMessage: 'Không thể tải danh sách điểm thu gom',
@@ -208,7 +208,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       emit(state.copyWith(selectedPointId: selectedPoint['id']));
     } catch (e) {
-      developer.log('Error selecting collection point: $e', error: e);
+      AppLogger.e('Map', 'Không chọn được điểm thu gom', error: e);
       emit(state.copyWith(
         errorMessage: 'Không thể hiển thị chi tiết điểm thu gom',
       ));

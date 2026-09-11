@@ -13,9 +13,9 @@ class WasteTypeEditScreen extends StatefulWidget {
   final int? wasteTypeId; // Null for create, not null for update
 
   const WasteTypeEditScreen({
-    Key? key,
+    super.key,
     this.wasteTypeId,
-  }) : super(key: key);
+  });
 
   @override
   State<WasteTypeEditScreen> createState() => _WasteTypeEditScreenState();
@@ -414,7 +414,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                 // Loading overlay
                 if (_isLoading)
                   Container(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -447,7 +447,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       offset: Offset(0, -4),
                       blurRadius: 8,
                     ),
@@ -540,7 +540,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
             ),
             SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
@@ -659,7 +659,7 @@ class _WasteTypeEditScreenState extends State<WasteTypeEditScreen> {
                     height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

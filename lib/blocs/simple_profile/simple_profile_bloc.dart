@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart' as auth_events;
 import 'simple_profile_event.dart';
 import 'simple_profile_state.dart';
+import '../../utils/app_logger.dart';
 
 class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
   final AuthBloc? authBloc;
@@ -18,7 +18,7 @@ class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
     LoadProfileMenuItems event,
     Emitter<SimpleProfileState> emit,
   ) {
-    developer.log('Loading profile menu items');
+    AppLogger.d('Profile', 'Tải danh sách mục hồ sơ');
     emit(SimpleProfileLoading());
 
     try {
@@ -68,7 +68,7 @@ class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
 
       emit(SimpleProfileLoaded(menuItems: menuItems));
     } catch (e) {
-      developer.log('Error loading profile menu items: $e');
+      AppLogger.w('Profile', 'Không tải được danh sách mục hồ sơ: $e');
       emit(const SimpleProfileError(error: 'Failed to load profile menu items'));
     }
   }
@@ -77,7 +77,7 @@ class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
     LogoutRequested event,
     Emitter<SimpleProfileState> emit,
   ) async {
-    developer.log('Logout requested');
+    AppLogger.d('Profile', 'Người dùng yêu cầu đăng xuất');
     emit(LogoutInProgress());
 
     try {
@@ -89,7 +89,7 @@ class SimpleProfileBloc extends Bloc<SimpleProfileEvent, SimpleProfileState> {
         throw Exception('AuthBloc is not available');
       }
     } catch (e) {
-      developer.log('Error during logout: $e');
+      AppLogger.w('Profile', 'Lỗi khi đăng xuất: $e');
       emit(LogoutFailure(error: 'Failed to logout: $e'));
     }
   }

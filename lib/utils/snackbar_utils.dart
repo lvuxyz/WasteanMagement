@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class SnackBarUtils {
   static void showSuccess(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -15,6 +16,7 @@ class SnackBarUtils {
   }
 
   static void showError(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -28,6 +30,7 @@ class SnackBarUtils {
   }
 
   static void showInfo(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -41,6 +44,7 @@ class SnackBarUtils {
   }
 
   static void showWarning(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -52,4 +56,4 @@ class SnackBarUtils {
       ),
     );
   }
-} 
+}

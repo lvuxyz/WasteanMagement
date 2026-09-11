@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../generated/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import 'registration_form_fields.dart';
 import 'registration_submit_button.dart';
 import 'login_link.dart';
@@ -35,7 +35,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final registrationTitle = l10n.registrationTitle;
     final registrationDescription = l10n.registrationDescription;
 

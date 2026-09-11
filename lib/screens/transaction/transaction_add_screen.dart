@@ -16,6 +16,7 @@ import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../core/api/api_constants.dart';
 import 'package:intl/intl.dart';
+import '../../utils/app_logger.dart';
 
 // This class will be used only for the transaction screen
 // It's simpler than the full WasteType model
@@ -37,14 +38,14 @@ class TransactionWasteType {
       id: json['waste_type_id'],
       name: json['name'],
       unit: json['unit'] ?? 'kg',
-      unitPrice: json['unit_price'] != null 
-        ? (json['unit_price'] is double 
-            ? json['unit_price'] 
-            : double.tryParse(json['unit_price'].toString())) 
+      unitPrice: json['unit_price'] != null
+        ? (json['unit_price'] is double
+            ? json['unit_price']
+            : double.tryParse(json['unit_price'].toString()))
         : null,
     );
   }
-  
+
   // Create from WasteType model
   factory TransactionWasteType.fromWasteType(WasteType wasteType) {
     return TransactionWasteType(
@@ -57,8 +58,8 @@ class TransactionWasteType {
 }
 
 class TransactionAddScreen extends StatefulWidget {
-  const TransactionAddScreen({Key? key}) : super(key: key);
-  
+  const TransactionAddScreen({super.key});
+
   @override
   State<TransactionAddScreen> createState() => _TransactionAddScreenState();
 }
@@ -67,19 +68,19 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
-  
+
   String? _selectedWasteTypeId;
   String? _selectedCollectionPointId;
   File? _proofImage;
-  
+
   List<TransactionWasteType> _wasteTypes = [];
   bool _isLoadingWasteTypes = true;
   String _wasteTypesError = '';
-  
+
   List<CollectionPoint> _collectionPoints = [];
   bool _isLoadingCollectionPoints = true;
   String _collectionPointsError = '';
-  
+
   String _unit = 'kg';
   double _unitPrice = 0;
   bool _isSubmitting = false;
@@ -100,21 +101,19 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
     try {
       final url = ApiConstants.wasteTypes;
-      print('Đang gọi API trực tiếp: $url');
-      
+
       final response = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
-      
-      print('Phản hồi từ API: ${response.statusCode}');
-      
+
+      AppLogger.d('Transaction', '← ${response.statusCode} POST /auth/register');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Dữ liệu phản hồi: $data');
-        
+
         List<dynamic> wasteTypesJson = [];
-        
+
         // Support multiple API response formats
         if (data['status'] == 'success' && data['data'] != null) {
           if (data['data'] is List) {
@@ -123,17 +122,17 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             wasteTypesJson = data['data']['wasteTypes'];
           }
         }
-        
+
         if (wasteTypesJson.isNotEmpty) {
           final wasteTypes = wasteTypesJson.map((json) => TransactionWasteType(
             id: json['waste_type_id'],
             name: json['name'],
             unit: json['unit'] ?? 'kg',
-            unitPrice: json['unit_price'] != null 
-              ? (double.tryParse(json['unit_price'].toString()) ?? 0.0) 
+            unitPrice: json['unit_price'] != null
+              ? (double.tryParse(json['unit_price'].toString()) ?? 0.0)
               : 0.0,
           )).toList();
-          
+
           setState(() {
             _wasteTypes = wasteTypes;
             _isLoadingWasteTypes = false;
@@ -141,12 +140,12 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           return;
         }
       }
-      
+
       // If API call fails or data format is unexpected, use fallback data
       setState(() {
         _wasteTypesError = 'Không thể tải danh sách loại rác từ API';
         _isLoadingWasteTypes = false;
-        
+
         // Fallback data for testing/development
         _wasteTypes = [
           TransactionWasteType(id: 1, name: 'Nhựa', unit: 'kg', unitPrice: 5000),
@@ -155,11 +154,11 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         ];
       });
     } catch (e) {
-      print('Lỗi khi tải danh sách loại rác: $e');
+      AppLogger.w('Transaction', 'Lỗi khi tải danh sách loại rác: $e');
       setState(() {
         _wasteTypesError = 'Không thể tải danh sách loại rác: $e';
         _isLoadingWasteTypes = false;
-        
+
         // Fallback data for testing/development
         _wasteTypes = [
           TransactionWasteType(id: 1, name: 'Nhựa', unit: 'kg', unitPrice: 5000),
@@ -179,7 +178,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     try {
       final collectionPointRepository = Provider.of<CollectionPointRepository>(context, listen: false);
       final collectionPoints = await collectionPointRepository.getAllCollectionPoints();
-      
+
       setState(() {
         _collectionPoints = collectionPoints;
         _isLoadingCollectionPoints = false;
@@ -198,7 +197,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         (type) => type.id.toString() == _selectedWasteTypeId,
         orElse: () => TransactionWasteType(id: 0, name: '', unit: 'kg', unitPrice: 0),
       );
-      
+
       setState(() {
         _unit = wasteType.unit;
         _unitPrice = wasteType.unitPrice ?? 0;
@@ -272,7 +271,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         final quantity = double.parse(_quantityController.text);
         final collectionPointId = int.parse(_selectedCollectionPointId!);
         final wasteTypeId = int.parse(_selectedWasteTypeId!);
-        
+
         // Gửi sự kiện tạo giao dịch qua BLoC với File trực tiếp
         context.read<TransactionBloc>().add(
           CreateTransaction(
@@ -283,9 +282,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             proofImage: _proofImage,
           ),
         );
-        
+
         _showSuccessSnackBar('Đang tạo giao dịch...');
-        
+
         // Quay lại màn hình trước sau khi gửi thành công
         Navigator.pop(context, true);
       } catch (e) {
@@ -308,7 +307,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   @override
   Widget build(BuildContext context) {
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
-    
+
     return BlocProvider(
       create: (context) => TransactionBloc(transactionRepository: transactionRepository),
       child: BlocListener<TransactionBloc, TransactionState>(
@@ -339,17 +338,17 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             // Điểm thu gom section
                             _buildSectionTitle('Điểm thu gom'),
                             _buildCollectionPointsSection(),
-                            
+
                             const SizedBox(height: 24),
                             // Thông tin rác thải section
                             _buildSectionTitle('Thông tin rác thải'),
                             _buildWasteTypeSection(),
-                            
+
                             const SizedBox(height: 24),
                             // Hình ảnh section
                             _buildSectionTitle('Hình ảnh chứng minh (tùy chọn)'),
                             _buildProofImageSection(),
-                            
+
                             const SizedBox(height: 24),
                             // Ghi chú section
                             _buildSectionTitle('Ghi chú (tùy chọn)'),
@@ -368,7 +367,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                 maxLines: 3,
                               ),
                             ]),
-                            
+
                             const SizedBox(height: 32),
                             // Submit button
                             ElevatedButton(
@@ -459,7 +458,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     } else {
       return _buildCard([
         DropdownButtonFormField<String>(
-          value: _selectedWasteTypeId,
+          initialValue: _selectedWasteTypeId,
           decoration: InputDecoration(
             labelText: 'Loại rác thải',
             hintText: 'Chọn loại rác thải',
@@ -523,7 +522,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
             decoration: InputDecoration(
               labelText: 'Đơn giá',
               prefixIcon: const Icon(Icons.monetization_on_outlined),
-              suffixText: 'đ/${_unit}',
+              suffixText: 'đ/$_unit',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -557,9 +556,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -727,7 +726,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     } else {
       return _buildCard([
         DropdownButtonFormField<String>(
-          value: _selectedCollectionPointId,
+          initialValue: _selectedCollectionPointId,
           decoration: InputDecoration(
             labelText: 'Điểm thu gom',
             hintText: 'Chọn điểm thu gom',
@@ -784,7 +783,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.location_on, color: AppColors.primaryGreen),
@@ -820,14 +819,14 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           Row(
             children: [
               _buildInfoItem(
-                Icons.access_time, 
-                'Giờ hoạt động', 
+                Icons.access_time,
+                'Giờ hoạt động',
                 selectedPoint.operatingHours
               ),
               const SizedBox(width: 16),
               _buildInfoItem(
-                Icons.info_outline, 
-                'Trạng thái', 
+                Icons.info_outline,
+                'Trạng thái',
                 _formatStatus(selectedPoint.status),
                 textColor: _getStatusColor(selectedPoint.status)
               ),
@@ -837,14 +836,14 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           Row(
             children: [
               _buildInfoItem(
-                Icons.storage, 
-                'Công suất', 
+                Icons.storage,
+                'Công suất',
                 '${selectedPoint.capacity} kg'
               ),
               const SizedBox(width: 16),
               _buildInfoItem(
-                Icons.phone_outlined, 
-                'Liên hệ', 
+                Icons.phone_outlined,
+                'Liên hệ',
                 selectedPoint.phone ?? 'Chưa có thông tin'
               ),
             ],

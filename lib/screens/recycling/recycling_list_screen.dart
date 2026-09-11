@@ -14,7 +14,7 @@ import 'recycling_form_screen.dart';
 import '../../services/auth_service.dart';
 
 class RecyclingListScreen extends StatefulWidget {
-  const RecyclingListScreen({Key? key}) : super(key: key);
+  const RecyclingListScreen({super.key});
 
   @override
   State<RecyclingListScreen> createState() => _RecyclingListScreenState();
@@ -27,8 +27,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
   DateTime _endDate = DateTime.now();
   bool _isFilterExpanded = false;
   bool _isAdmin = false;
-  int _currentPage = 1;
-  final int _itemsPerPage = 10;
+  final int _currentPage = 1;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -230,7 +229,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 2),
@@ -256,7 +255,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
               border: OutlineInputBorder(),
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            value: _selectedStatus,
+            initialValue: _selectedStatus,
             items: const [
               DropdownMenuItem(
                 value: null,
@@ -396,7 +395,7 @@ class _RecyclingListScreenState extends State<RecyclingListScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(

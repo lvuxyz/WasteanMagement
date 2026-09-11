@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,16 +8,17 @@ import '../../services/auth_service.dart';
 import '../../repositories/user_repository.dart';
 import 'user_profile_event.dart';
 import 'user_profile_state.dart';
+import '../../utils/app_logger.dart';
 
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   final AuthService _authService = AuthService();
   final UserRepository? userRepository;
-  
+
   // Add cache variables
   UserProfile? _cachedProfile;
   DateTime? _lastFetchTime;
   static const int _cacheDurationSeconds = 10; // Cache valid for 10 seconds
-  
+
   UserProfileBloc({this.userRepository}) : super(UserProfileInitial()) {
     on<FetchUserProfile>(_onFetchUserProfile);
     on<RefreshUserProfile>(_onRefreshUserProfile);
@@ -34,7 +34,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       final userProfile = await _getUserProfile();
       emit(UserProfileLoaded(userProfile));
     } catch (e) {
-      developer.log('Error fetching user profile: $e');
+      AppLogger.w('Profile', 'Không lấy được hồ sơ người dùng: $e');
       emit(UserProfileError(e.toString()));
     }
   }
@@ -50,11 +50,11 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       } else {
         emit(UserProfileLoading());
       }
-      
+
       final userProfile = await _getUserProfile();
       emit(UserProfileLoaded(userProfile));
     } catch (e) {
-      developer.log('Error refreshing user profile: $e');
+      AppLogger.w('Profile', 'Không làm mới được hồ sơ người dùng: $e');
       // If refresh fails but we already had data, go back to loaded state
       if (state is UserProfileRefreshing) {
         emit(UserProfileLoaded((state as UserProfileRefreshing).userProfile));
@@ -75,7 +75,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       } else {
         emit(UserProfileLoading());
       }
-      
+
       // Try to use userRepository if available
       if (userRepository != null) {
         try {
@@ -85,22 +85,22 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
             phone: event.phone,
             address: event.address,
           );
-          
+
           emit(const UserProfileUpdateSuccess());
           // Reload profile after successful update
           add(const RefreshUserProfile());
           return;
         } catch (repoError) {
-          developer.log('UserRepository update error: $repoError. Falling back to direct API call.');
+          AppLogger.d('Profile', 'UserRepository lỗi khi cập nhật, chuyển sang gọi API trực tiếp · $repoError');
         }
       }
-      
+
       // Fall back to direct API call
       final token = await _authService.getToken();
       if (token == null) {
         throw Exception('Không tìm thấy token xác thực');
       }
-      
+
       // Make API request to update profile
       final response = await http.put(
         Uri.parse('${ApiConstants.baseUrl}/users/profile'),
@@ -115,9 +115,9 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
           if (event.address != null) 'address': event.address,
         }),
       );
-      
+
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         if (responseData['success'] == true) {
           emit(const UserProfileUpdateSuccess());
@@ -130,7 +130,7 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
         emit(UserProfileError(responseData['message'] ?? 'Lỗi khi cập nhật thông tin người dùng'));
       }
     } catch (e) {
-      developer.log('Error updating user profile: $e');
+      AppLogger.w('Profile', 'Không cập nhật được hồ sơ người dùng: $e');
       emit(UserProfileError(e.toString()));
     }
   }
@@ -138,23 +138,23 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
   /// Helper method to get user profile from repository or API
   Future<UserProfile> _getUserProfile() async {
     final now = DateTime.now();
-    
+
     // Check if we have a valid cache
     if (_cachedProfile != null && _lastFetchTime != null) {
       final cacheDuration = now.difference(_lastFetchTime!);
       if (cacheDuration.inSeconds < _cacheDurationSeconds) {
-        developer.log('Using cached user profile (cache age: ${cacheDuration.inSeconds}s)');
+        AppLogger.d('Profile', 'Hồ sơ lấy từ cache (${cacheDuration.inSeconds}s trước)');
         return _cachedProfile!;
       }
     }
-    
+
     // No valid cache, fetch from repository or API
-    developer.log('Fetching fresh user profile data');
-    
+    AppLogger.d('Profile', 'Lấy hồ sơ mới từ API');
+
     if (userRepository != null) {
       try {
         final user = await userRepository!.getUserProfile();
-        
+
         // If user has rawProfileData, it means we already have the full profile data
         if (user.rawProfileData != null) {
           // Create UserProfile from the raw data
@@ -162,33 +162,33 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
           _updateCache(profile);
           return profile;
         }
-        
+
         // Convert the User to UserProfile
         final profile = UserProfile.fromUserModel(user);
         _updateCache(profile);
         return profile;
       } catch (repoError) {
-        developer.log('UserRepository error: $repoError. Falling back to direct API call.');
+        AppLogger.d('Profile', 'UserRepository lỗi, chuyển sang gọi API trực tiếp · $repoError');
       }
     }
-    
+
     // Fall back to direct API call
     final token = await _authService.getToken();
     if (token == null) {
       throw Exception('Không tìm thấy token xác thực');
     }
-    
+
     // Make API request
     final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/api/v1/auth/me'), // Updated endpoint as specified
+      Uri.parse(ApiConstants.profile),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
-    
+
     final responseData = json.decode(response.body);
-    
+
     if (response.statusCode == 200) {
       if (responseData['success'] == true && responseData['data'] != null) {
         // Use the provided data structure from the response
@@ -204,11 +204,10 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
       throw Exception(errorMessage);
     }
   }
-  
+
   // Helper method to update the cache
   void _updateCache(UserProfile profile) {
     _cachedProfile = profile;
     _lastFetchTime = DateTime.now();
-    developer.log('Updated user profile cache');
   }
 } 

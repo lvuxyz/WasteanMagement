@@ -9,13 +9,13 @@ class ErrorView extends StatelessWidget {
   final VoidCallback onRetry;
 
   const ErrorView({
-    Key? key,
+    super.key,
     this.icon = Icons.error_outline,
     required this.title,
     required this.message,
     this.buttonText = 'Thử lại',
     required this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class ErrorView extends StatelessWidget {
             Icon(
               icon,
               size: 80,
-              color: Colors.red.withOpacity(0.8),
+              color: Colors.red.withValues(alpha: 0.8),
             ),
             SizedBox(height: 24),
             Text(

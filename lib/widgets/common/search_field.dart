@@ -10,14 +10,14 @@ class SearchField extends StatefulWidget {
   final FocusNode? focusNode; // Allow passing an external focusNode
 
   const SearchField({
-    Key? key,
+    super.key,
     required this.hintText,
     this.controller,
     this.onClear,
     this.value,
     this.onChanged,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
   State<SearchField> createState() => _SearchFieldState();
@@ -60,7 +60,7 @@ class _SearchFieldState extends State<SearchField> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),

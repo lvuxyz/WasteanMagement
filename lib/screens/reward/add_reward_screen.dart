@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/services/reward_service.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
+import 'package:wasteanmagement/utils/snackbar_utils.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/core/api/api_constants.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AddRewardScreen extends StatefulWidget {
-  const AddRewardScreen({Key? key}) : super(key: key);
+  const AddRewardScreen({super.key});
 
   @override
-  _AddRewardScreenState createState() => _AddRewardScreenState();
+  State<AddRewardScreen> createState() => _AddRewardScreenState();
 }
 
 class _AddRewardScreenState extends State<AddRewardScreen> {
@@ -47,7 +48,8 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
     });
     
     final isAdmin = await _authService.isAdmin();
-    
+    if (!mounted) return;
+
     setState(() {
       _isAdmin = isAdmin;
       _isCheckingAdmin = false;
@@ -56,12 +58,8 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
     if (!isAdmin) {
       // Show unauthorized message
       Future.delayed(Duration.zero, () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bạn không có quyền truy cập chức năng này'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (!mounted) return;
+        SnackBarUtils.showError(context, 'Bạn không có quyền truy cập chức năng này');
         Navigator.of(context).pop();
       });
     }
@@ -234,7 +232,7 @@ class _AddRewardScreenState extends State<AddRewardScreen> {
                   labelText: 'Chọn người dùng',
                   border: OutlineInputBorder(),
                 ),
-                value: _selectedUserId,
+                initialValue: _selectedUserId,
                 items: _users.map((user) {
                   final userId = user['user_id'] ?? user['id'];
                   final username = user['username'] ?? '';

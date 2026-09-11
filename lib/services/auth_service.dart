@@ -1,110 +1,98 @@
 import 'dart:convert';
-import 'dart:math' as Math;
-import 'dart:developer' as developer;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/storage_keys.dart';
+import '../utils/app_logger.dart';
 
 class AuthService {
+  static const String _tag = 'Auth';
+  static const Duration _adminCacheTtl = Duration(seconds: 10);
   static const String _tokenKey = SecureStorageKeys.token;
+
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-  
+
   // Cache cho admin status
   bool? _cachedAdminStatus;
   DateTime? _cachedAdminStatusTime;
-  
+
   Future<String?> getToken() async {
     try {
-      final token = await _secureStorage.read(key: _tokenKey);
-      developer.log('AuthService.getToken() from secure storage: ${token != null ? "Token found" : "No token found"}');
-      return token;
+      // Không log ở đây: hàm được gọi trước gần như mọi request nên mỗi lần
+      // log sẽ nhân đôi số dòng của một lượt gọi API mà không thêm thông tin.
+      return await _secureStorage.read(key: _tokenKey);
     } catch (e) {
-      developer.log('Error in getToken: $e', error: e);
+      AppLogger.e(_tag, 'Không đọc được token từ secure storage', error: e);
       return null;
     }
   }
-  
+
+  /// Kiểm tra quyền admin dựa trên `roles` trong payload của JWT.
+  ///
+  /// Toàn bộ nhánh xử lý đều kết thúc bằng đúng một dòng log dạng
+  /// `admin=<true/false> · <lý do>` thay vì bộ khung `===== ADMIN CHECK =====`
+  /// ba dòng như trước.
   Future<bool> isAdmin() async {
-    // Kiểm tra cache, nếu cache còn hiệu lực (dưới 10 giây) thì dùng giá trị cache
     final now = DateTime.now();
-    if (_cachedAdminStatus != null && _cachedAdminStatusTime != null) {
-      final cacheDuration = now.difference(_cachedAdminStatusTime!);
-      if (cacheDuration.inSeconds < 10) {
-        print('===== ADMIN CHECK =====');
-        print('Using cached admin status: $_cachedAdminStatus (cache age: ${cacheDuration.inSeconds}s)');
-        print('=====================');
+    final cachedAt = _cachedAdminStatusTime;
+    if (_cachedAdminStatus != null && cachedAt != null) {
+      final age = now.difference(cachedAt);
+      if (age < _adminCacheTtl) {
+        AppLogger.d(
+          _tag,
+          'admin=$_cachedAdminStatus · lấy từ cache (${age.inSeconds}s trước)',
+        );
         return _cachedAdminStatus!;
       }
     }
-    
+
     try {
       final token = await getToken();
-      print('===== ADMIN CHECK =====');
-      print('Checking admin status with token: ${token != null ? token.substring(0, Math.min(20, token.length)) : "null"}...');
-      
       if (token == null) {
-        print('ADMIN CHECK RESULT: Token is null, user is NOT ADMIN');
-        _updateAdminCache(false);
-        return false;
+        return _resolveAdmin(false, 'chưa có token');
       }
-      
-      // Decode JWT token
+
       final parts = token.split('.');
       if (parts.length != 3) {
-        print('ADMIN CHECK RESULT: Invalid token format, parts length: ${parts.length}, user is NOT ADMIN');
-        _updateAdminCache(false);
-        return false;
+        return _resolveAdmin(false, 'token sai định dạng JWT (${parts.length} phần)');
       }
-      
-      try {
-        final payload = parts[1];
-        String normalizedPayload = base64Url.normalize(payload);
-        final decoded = utf8.decode(base64Url.decode(normalizedPayload));
-        final payloadMap = json.decode(decoded);
-        
-        // Log the payload for debugging
-        print('JWT payload: $payloadMap');
-        
-        // Check if the roles array contains 'ADMIN'
-        if (payloadMap.containsKey('roles') && payloadMap['roles'] is List) {
-          final roles = List<String>.from(payloadMap['roles']);
-          final isAdmin = roles.contains('ADMIN') || roles.contains('admin');
-          print('ADMIN CHECK RESULT: User has roles: $roles, isAdmin: $isAdmin');
-          _updateAdminCache(isAdmin);
-          return isAdmin;
-        }
-        
-        print('ADMIN CHECK RESULT: Token does not contain roles or roles is not a list, user is NOT ADMIN');
-        _updateAdminCache(false);
-        return false;
-      } catch (e) {
-        print('ADMIN CHECK RESULT: Error parsing token payload: $e, user is NOT ADMIN');
-        _updateAdminCache(false);
-        return false;
+
+      final decoded = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payload = json.decode(decoded);
+
+      if (payload is! Map || payload['roles'] is! List) {
+        return _resolveAdmin(false, 'payload JWT không có mảng roles');
       }
+
+      final roles = List<String>.from(payload['roles']);
+      final isAdmin = roles.any((role) => role.toLowerCase() == 'admin');
+      return _resolveAdmin(
+        isAdmin,
+        'roles=${roles.isEmpty ? '[]' : roles.join(',')}, '
+        'userId=${payload['userId']}, username=${payload['username']}',
+      );
     } catch (e) {
-      print('ADMIN CHECK RESULT: Error in isAdmin(): $e, user is NOT ADMIN');
+      AppLogger.e(_tag, 'Không đọc được quyền admin từ token', error: e);
       _updateAdminCache(false);
       return false;
-    } finally {
-      print('=====================');
     }
   }
-  
-  // Hàm cập nhật cache
+
+  /// Ghi cache và in đúng một dòng kết luận cho lần kiểm tra quyền.
+  bool _resolveAdmin(bool isAdmin, String reason) {
+    _updateAdminCache(isAdmin);
+    AppLogger.i(_tag, 'admin=$isAdmin · $reason');
+    return isAdmin;
+  }
+
   void _updateAdminCache(bool status) {
     _cachedAdminStatus = status;
     _cachedAdminStatusTime = DateTime.now();
-    print('Updated admin status cache: $status');
   }
-  
+
   // Kiểm tra admin bỏ qua cache
   Future<bool> forceAdminCheck() async {
-    // Reset cache trước
     _cachedAdminStatus = null;
     _cachedAdminStatusTime = null;
-    print('Force admin check - ignoring cache');
-    
-    // Gọi isAdmin bình thường
+    AppLogger.d(_tag, 'Kiểm tra lại quyền admin, bỏ qua cache');
     return isAdmin();
   }
-} 
+}

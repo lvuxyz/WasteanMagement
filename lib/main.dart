@@ -30,14 +30,16 @@ import 'package:wasteanmagement/blocs/language/language_event.dart';
 import 'package:wasteanmagement/blocs/admin/admin_cubit.dart';
 import 'core/network/network_info.dart';
 import 'routes.dart';
-import 'generated/l10n.dart';
+import 'l10n/app_localizations.dart';
 import 'utils/app_colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'blocs/profile/profile_bloc.dart';
 
 Future<void> main() async {
-  await dotenv.dotenv.load(fileName: ".env");
+  // Phải khởi tạo binding trước: dotenv.load đọc .env qua rootBundle, mà
+  // rootBundle cần binding đã sẵn sàng mới nạp được asset.
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.dotenv.load(fileName: ".env");
   
   // Thiết lập màu sắc cho thanh trạng thái
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -162,7 +164,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -198,12 +200,12 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           locale: Locale(languageCode),
           localizationsDelegates: [
-            S.delegate,
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: S.delegate.supportedLocales,
+          supportedLocales: AppLocalizations.supportedLocales,
           initialRoute: AppRoutes.welcome,
           onGenerateRoute: AppRoutes.generateRoute,
         );

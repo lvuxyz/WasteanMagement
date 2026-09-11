@@ -9,11 +9,11 @@ class CustomSwitchField extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   const CustomSwitchField({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class CustomSwitchField extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.primaryGreen,
+          activeThumbColor: AppColors.primaryGreen,
         ),
       ],
     );

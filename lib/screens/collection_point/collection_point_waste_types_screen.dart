@@ -17,10 +17,10 @@ class CollectionPointWasteTypesScreen extends StatefulWidget {
   final String collectionPointName;
 
   const CollectionPointWasteTypesScreen({
-    Key? key,
+    super.key,
     required this.collectionPointId,
     required this.collectionPointName,
-  }) : super(key: key);
+  });
 
   @override
   State<CollectionPointWasteTypesScreen> createState() => _CollectionPointWasteTypesScreenState();
@@ -276,7 +276,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -421,7 +421,7 @@ class _CollectionPointWasteTypesScreenState extends State<CollectionPointWasteTy
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = '2.3.21'
     repositories {
         google()
         mavenCentral()
@@ -15,7 +15,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath 'com.android.tools.build:gradle:8.13.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -41,19 +41,30 @@ rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 
-    // Gộp tất cả các logic liên quan đến subprojects vào một khối duy nhất
-    project.evaluationDependsOn(":app")
+    // Module :app tự đặt compileSdk qua flutter.compileSdkVersion và đã được
+    // Gradle đánh giá xong ở thời điểm này, nên chỉ xử lý các module plugin.
+    if (project.path != ":app") {
+        project.evaluationDependsOn(":app")
 
-    gradle.projectsEvaluated {
-        if (project.hasProperty('android')) {
-            project.android {
-                try {
-                    if (!project.android.hasProperty('namespace') || project.android.namespace == null) {
-                        namespace = project.group ?: "com.example.namespace"
+        afterEvaluate {
+            if (project.hasProperty('android')) {
+                project.android {
+                    try {
+                        if (namespace == null) {
+                            namespace = project.group ?: "com.example.namespace"
+                        }
+                    } catch (Exception e) {
+                        // Bỏ qua lỗi nếu có
+                        println "Note: Could not set namespace for ${project.name}: ${e.message}"
                     }
-                } catch (Exception e) {
-                    // Bỏ qua lỗi nếu có
-                    println "Note: Could not set namespace for ${project.name}: ${e.message}"
+
+                    // Một số plugin (vd: mapbox_maps_flutter 2.11.0) vẫn ghim
+                    // compileSdk 33, trong khi các thư viện AndroidX mà chúng
+                    // phụ thuộc yêu cầu biên dịch với API 34 trở lên. Nâng sàn
+                    // compileSdk cho các module plugin để Gradle không chặn build.
+                    if (compileSdk != null && compileSdk < 34) {
+                        compileSdk = 36
+                    }
                 }
             }
         }

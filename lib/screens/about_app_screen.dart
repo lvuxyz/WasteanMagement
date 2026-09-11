@@ -3,7 +3,7 @@ import '../utils/app_colors.dart';
 import '../utils/constants.dart';
 
 class AboutAppScreen extends StatelessWidget {
-  const AboutAppScreen({Key? key}) : super(key: key);
+  const AboutAppScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class AboutAppScreen extends StatelessWidget {
               vertical: 6,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -491,7 +491,7 @@ class AboutAppScreen extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(

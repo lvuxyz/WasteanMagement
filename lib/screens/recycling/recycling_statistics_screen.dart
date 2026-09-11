@@ -16,7 +16,7 @@ import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 
 class RecyclingStatisticsScreen extends StatefulWidget {
-  const RecyclingStatisticsScreen({Key? key}) : super(key: key);
+  const RecyclingStatisticsScreen({super.key});
 
   @override
   State<RecyclingStatisticsScreen> createState() => _RecyclingStatisticsScreenState();
@@ -180,7 +180,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 2),
@@ -220,7 +220,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
               border: OutlineInputBorder(),
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            value: _selectedWasteTypeId,
+            initialValue: _selectedWasteTypeId,
             items: [
               const DropdownMenuItem<String>(
                 value: null,
@@ -231,7 +231,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
                   value: wasteType['id'] as String,
                   child: Text(wasteType['name'] as String),
                 );
-              }).toList(),
+              }),
             ],
             onChanged: (value) {
               setState(() {
@@ -405,7 +405,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(50),
             ),
             child: Icon(
@@ -758,7 +758,7 @@ class _RecyclingStatisticsScreenState extends State<RecyclingStatisticsScreen> w
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

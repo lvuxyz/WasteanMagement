@@ -14,11 +14,11 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
   final bool isAdmin;
 
   const WasteTypeCollectionPointsTab({
-    Key? key,
+    super.key,
     required this.wasteTypeId,
     required this.collectionPoints,
     required this.isAdmin,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +114,10 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                 return showAdminFeatures
                   ? ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.pushNamed(
-                          context,
+                        // StatelessWidget nên không có `mounted`; giữ sẵn
+                        // Navigator trước async gap thay vì tra lại context.
+                        final navigator = Navigator.of(context);
+                        navigator.pushNamed(
                           '/waste-type/collection-points',
                           arguments: wasteTypeId,
                         ).then((result) {
@@ -123,9 +125,8 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                           if (result == true) {
                             // This is part of waste management functionality
                             // Reload this screen with updated data
-                            Navigator.of(context).pop();  // Close current screen
-                            Navigator.pushReplacementNamed(
-                              context,
+                            navigator.pop();  // Close current screen
+                            navigator.pushReplacementNamed(
                               '/waste-type/details',
                               arguments: wasteTypeId,
                             );
@@ -156,7 +157,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -169,7 +170,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   _getCapacityColor(capacityPercentage),
-                  _getCapacityColor(capacityPercentage).withOpacity(0.7),
+                  _getCapacityColor(capacityPercentage).withValues(alpha: 0.7),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -192,7 +193,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(point.status).withOpacity(0.1),
+                        color: _getStatusColor(point.status).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -220,10 +221,10 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(point.status).withOpacity(0.1),
+                              color: _getStatusColor(point.status).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _getStatusColor(point.status).withOpacity(0.3),
+                                color: _getStatusColor(point.status).withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -288,7 +289,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${capacityPercentage}%',
+                          '$capacityPercentage%',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -412,7 +413,7 @@ class WasteTypeCollectionPointsTab extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

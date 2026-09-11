@@ -8,9 +8,10 @@ import '../../blocs/transaction/transaction_state.dart';
 import '../../models/transaction.dart';
 import '../../services/auth_service.dart';
 import '../../repositories/transaction_repository.dart';
+import '../../utils/app_logger.dart';
 
 class TransactionManagementScreen extends StatefulWidget {
-  const TransactionManagementScreen({Key? key}) : super(key: key);
+  const TransactionManagementScreen({super.key});
 
   @override
   State<TransactionManagementScreen> createState() => _TransactionManagementScreenState();
@@ -21,7 +22,6 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
   final ScrollController _scrollController = ScrollController();
   String _selectedFilterOption = 'all';
   final Map<int, bool> _deletingItems = {}; // Track which items are being deleted
-  final Map<int, bool> _updatingItems = {}; // Track which items are being updated
   bool _isAdmin = false;
 
   @override
@@ -56,7 +56,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
             try {
               final bloc = context.read<TransactionBloc>();
               final state = bloc.state;
-              
+
               if (!state.hasReachedMax) {
                 if (_isAdmin) {
                   bloc.add(FetchTransactions(
@@ -73,12 +73,12 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                 }
               }
             } catch (e) {
-              print('Error in onScroll: $e');
+              AppLogger.w('Transaction', 'Lỗi khi cuộn danh sách: $e');
             }
             return const SizedBox.shrink();
           }
         );
-        
+
         // Chèn builder widget vào widget tree tạm thời để nó được rendered
         // và có thể sử dụng BlocProvider
         final overlay = Overlay.of(context);
@@ -87,9 +87,9 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
             child: builderWidget,
           ),
         );
-        
+
         overlay.insert(entry);
-        
+
         // Xóa sau khi đã thực hiện
         Future.microtask(() {
           entry.remove();
@@ -110,63 +110,11 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
     // context.read<TransactionBloc>().add(SearchTransactions(_searchController.text));
   }
 
-
-  void _updateTransactionStatus(int transactionId, String status) {
-    // Đánh dấu là đang cập nhật để hiển thị loading
-    setState(() {
-      _updatingItems[transactionId] = true;
-    });
-    
-    // Sử dụng widget Builder để lấy context chứa BlocProvider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final builderWidget = Builder(
-        builder: (innerContext) {
-          try {
-            // Gửi sự kiện cập nhật qua BlocProvider
-            innerContext.read<TransactionBloc>().add(
-              UpdateTransactionStatus(
-                transactionId: transactionId,
-                status: status,
-              ),
-            );
-          } catch (e) {
-            print("Error sending update status event: $e");
-          }
-          return const SizedBox.shrink();
-        }
-      );
-      
-      // Chèn builder widget vào widget tree tạm thời
-      final overlay = Overlay.of(context);
-      final entry = OverlayEntry(
-        builder: (context) => Positioned(
-          child: builderWidget,
-        ),
-      );
-      
-      overlay.insert(entry);
-      
-      // Xóa sau khi đã thực hiện
-      Future.microtask(() {
-        entry.remove();
-      });
-    });
-    
-    // Xóa trạng thái loading sau 2 giây
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _updatingItems.remove(transactionId);
-        });
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // Lấy TransactionRepository từ context cha
     final transactionRepository = Provider.of<TransactionRepository>(context, listen: false);
-    
+
     return BlocProvider<TransactionBloc>(
       create: (context) {
         // Create a new TransactionBloc
@@ -236,14 +184,14 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
       {'value': 'completed', 'label': 'Hoàn thành'},
       {'value': 'rejected', 'label': 'Đã hủy'},
     ];
-    
+
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: statuses.map((status) => 
+          children: statuses.map((status) =>
             _buildFilterTab(status['value']!, status['label']!)
           ).toList(),
         ),
@@ -253,7 +201,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
 
   Widget _buildFilterTab(String value, String label) {
     final bool isSelected = _selectedFilterOption == value;
-    
+
     return Builder(
       builder: (context) {
         return Padding(
@@ -267,7 +215,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                   setState(() {
                     _selectedFilterOption = value;
                   });
-                  
+
                   // Fetch transactions with the new filter
                   try {
                     if (_isAdmin) {
@@ -280,7 +228,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                       ));
                     }
                   } catch (e) {
-                    print('Error applying filter: $e');
+                    AppLogger.w('Transaction', 'Lỗi khi áp dụng bộ lọc: $e');
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Lỗi khi lọc giao dịch: $e'),
@@ -327,11 +275,11 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
         } else if (state.status == TransactionStatus.failure) {
           return _buildErrorState(state.errorMessage ?? 'Không thể tải danh sách giao dịch');
         }
-        
+
         if (state.transactions.isEmpty) {
           return _buildEmptyState();
         }
-        
+
         return ListView.separated(
           controller: _scrollController,
           itemCount: state.hasReachedMax
@@ -347,14 +295,14 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                 ),
               );
             }
-                
+
             return _buildTransactionItem(state.transactions[index]);
           },
         );
       },
     );
   }
-  
+
   Widget _buildErrorState(String errorMessage) {
     return Builder(
       builder: (context) {
@@ -429,8 +377,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
 
   Widget _buildTransactionItem(Transaction transaction) {
     final isDeleting = _deletingItems[transaction.transactionId] ?? false;
-    final isUpdating = _updatingItems[transaction.transactionId] ?? false;
-    
+
     // Show loading indicators if necessary
     if (isDeleting) {
       return const Center(
@@ -440,7 +387,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
         ),
       );
     }
-    
+
     return Builder(
       builder: (innerContext) {
         return Card(
@@ -466,7 +413,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -489,7 +436,7 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withOpacity(0.1),
+                          color: _getStatusColor(transaction.status).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -598,55 +545,11 @@ class _TransactionManagementScreenState extends State<TransactionManagementScree
                     },
                   ),
                 ),
-                if (_isAdmin)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (isUpdating)
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                      ],
-                    ),
-                  ),
               ],
             ),
           ),
         );
       }
-    );
-  }
-
-  Widget _buildStatusButton(BuildContext context, Transaction transaction, String status, String label) {
-    final bool isCurrentStatus = transaction.status == status;
-    final Color statusColor = _getStatusColor(status);
-    
-    return ElevatedButton(
-      onPressed: isCurrentStatus 
-          ? null 
-          : () => _updateTransactionStatus(transaction.transactionId, status),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isCurrentStatus ? statusColor : statusColor.withOpacity(0.1),
-        foregroundColor: isCurrentStatus ? Colors.white : statusColor,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        disabledBackgroundColor: statusColor,
-        disabledForegroundColor: Colors.white,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 

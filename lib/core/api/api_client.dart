@@ -1,12 +1,14 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'package:http/http.dart' as http;
-import 'dart:developer' as developer;
 import '../error/exceptions.dart';
 import './api_response.dart';
+import '../../utils/app_logger.dart';
 import '../../utils/secure_storage.dart';
 
 class ApiClient {
+  static const String _tag = 'API';
+  static const Duration _timeout = Duration(seconds: 15);
+
   final http.Client client;
   final SecureStorage secureStorage;
 
@@ -15,220 +17,179 @@ class ApiClient {
     required this.secureStorage,
   });
 
-  // GET request
-  Future<ApiResponse> get(String url, {Map<String, String>? headers}) async {
+  Future<ApiResponse> get(String url, {Map<String, String>? headers}) =>
+      _send('GET', url, headers: headers);
+
+  Future<ApiResponse> post(
+    String url, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) =>
+      _send('POST', url, body: body, headers: headers);
+
+  Future<ApiResponse> put(
+    String url, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) =>
+      _send('PUT', url, body: body, headers: headers);
+
+  Future<ApiResponse> patch(
+    String url, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) =>
+      _send('PATCH', url, body: body, headers: headers);
+
+  Future<ApiResponse> delete(String url, {Map<String, String>? headers}) =>
+      _send('DELETE', url, headers: headers);
+
+  /// Điểm đi qua duy nhất của mọi request.
+  ///
+  /// Gom về một chỗ để mỗi lượt gọi API chỉ sinh đúng hai dòng log — một dòng
+  /// `→` lúc gửi và một dòng `←`/`x` lúc nhận — thay vì mỗi HTTP method tự log
+  /// theo một kiểu (trước đây GET/PATCH log rất nhiều còn POST/PUT/DELETE thì
+  /// im lặng hoàn toàn).
+  Future<ApiResponse> _send(
+    String method,
+    String url, {
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    AppLogger.request(method, url, body: body);
+    final stopwatch = Stopwatch()..start();
+
+    http.Response response;
     try {
-      developer.log('Đang gửi GET request đến: $url');
-      final token = await secureStorage.getToken();
-      
-      if (token != null) {
-        developer.log('Auth token được sử dụng: ${token.substring(0, math.min(10, token.length))}...');
-      } else {
-        developer.log('Không có token xác thực');
-      }
-      
-      final requestHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-        ...?headers,
+      final requestHeaders = await _buildHeaders(headers);
+      final uri = Uri.parse(url);
+      final encodedBody = body == null ? null : json.encode(body);
+
+      final future = switch (method) {
+        'GET' => client.get(uri, headers: requestHeaders),
+        'POST' =>
+          client.post(uri, headers: requestHeaders, body: encodedBody),
+        'PUT' => client.put(uri, headers: requestHeaders, body: encodedBody),
+        'PATCH' =>
+          client.patch(uri, headers: requestHeaders, body: encodedBody),
+        'DELETE' => client.delete(uri, headers: requestHeaders),
+        _ => throw ServerException('HTTP method không được hỗ trợ: $method'),
       };
 
-      developer.log('Headers: $requestHeaders');
-
-      final response = await client.get(
-        Uri.parse(url),
-        headers: requestHeaders,
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          developer.log('Timeout khi kết nối tới $url', error: 'Request timeout');
-          throw NetworkException('Kết nối tới máy chủ quá thời gian. Vui lòng thử lại sau.');
-        },
+      response = await future.timeout(
+        _timeout,
+        onTimeout: () => throw NetworkException(
+          'Kết nối tới máy chủ quá thời gian (${_timeout.inSeconds}s). '
+          'Vui lòng thử lại sau.',
+        ),
       );
-
-      developer.log('Đã nhận phản hồi từ $url với mã: ${response.statusCode}');
-      
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        developer.log('Phản hồi thành công, độ dài nội dung: ${response.body.length}');
-      } else {
-        developer.log('Phản hồi lỗi: ${response.statusCode} - ${response.body}', error: 'API Error');
-      }
-
-      return _processResponse(response);
-    } catch (e) {
-      developer.log('Lỗi kết nối: ${e.toString()}', error: e);
-      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
+    } on NetworkException catch (error) {
+      AppLogger.w(
+        _tag,
+        'x $method ${AppLogger.shortUrl(url)} '
+        '(${stopwatch.elapsedMilliseconds}ms) · ${error.message}',
+      );
+      rethrow;
+    } catch (error) {
+      AppLogger.e(
+        _tag,
+        'x $method ${AppLogger.shortUrl(url)} '
+        '(${stopwatch.elapsedMilliseconds}ms) · không gửi được request',
+        error: error,
+      );
+      throw NetworkException('Không thể kết nối đến máy chủ: $error');
     }
+
+    AppLogger.response(
+      method,
+      url,
+      response.statusCode,
+      elapsedMs: stopwatch.elapsedMilliseconds,
+      bodyLength: response.bodyBytes.length,
+      errorMessage: response.statusCode >= 400
+          ? _extractErrorMessage(response.body)
+          : null,
+    );
+
+    return _processResponse(response);
   }
 
-  // POST request
-  Future<ApiResponse> post(String url, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
-    try {
-      final token = await secureStorage.getToken();
-      final requestHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-        ...?headers,
-      };
-
-      final response = await client.post(
-        Uri.parse(url),
-        body: body != null ? json.encode(body) : null,
-        headers: requestHeaders,
-      );
-
-      return _processResponse(response);
-    } catch (e) {
-      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
-    }
+  Future<Map<String, String>> _buildHeaders(Map<String, String>? extra) async {
+    final token = await secureStorage.getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+      ...?extra,
+    };
   }
 
-  // PUT request
-  Future<ApiResponse> put(String url, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
-    try {
-      final token = await secureStorage.getToken();
-      final requestHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-        ...?headers,
-      };
-
-      final response = await client.put(
-        Uri.parse(url),
-        body: body != null ? json.encode(body) : null,
-        headers: requestHeaders,
-      );
-
-      return _processResponse(response);
-    } catch (e) {
-      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
-    }
-  }
-
-  // DELETE request
-  Future<ApiResponse> delete(String url, {Map<String, String>? headers}) async {
-    try {
-      final token = await secureStorage.getToken();
-      final requestHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-        ...?headers,
-      };
-
-      final response = await client.delete(
-        Uri.parse(url),
-        headers: requestHeaders,
-      );
-
-      return _processResponse(response);
-    } catch (e) {
-      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
-    }
-  }
-
-  // PATCH request
-  Future<ApiResponse> patch(String url, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
-    try {
-      developer.log('Đang gửi PATCH request đến: $url');
-      developer.log('Body: ${body != null ? json.encode(body) : 'null'}');
-      
-      final token = await secureStorage.getToken();
-      
-      if (token != null) {
-        developer.log('Auth token được sử dụng: ${token.substring(0, math.min(10, token.length))}...');
-      } else {
-        developer.log('Không có token xác thực');
-      }
-      
-      final requestHeaders = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-        ...?headers,
-      };
-
-      developer.log('Headers: $requestHeaders');
-
-      final response = await client.patch(
-        Uri.parse(url),
-        body: body != null ? json.encode(body) : null,
-        headers: requestHeaders,
-      ).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          developer.log('Timeout khi kết nối tới $url', error: 'Request timeout');
-          throw NetworkException('Kết nối tới máy chủ quá thời gian. Vui lòng thử lại sau.');
-        },
-      );
-
-      developer.log('Đã nhận phản hồi từ $url với mã: ${response.statusCode}');
-      
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        developer.log('Phản hồi thành công, độ dài nội dung: ${response.body.length}');
-      } else {
-        developer.log('Phản hồi lỗi: ${response.statusCode} - ${response.body}', error: 'API Error');
-      }
-
-      return _processResponse(response);
-    } catch (e) {
-      developer.log('Lỗi kết nối: ${e.toString()}', error: e);
-      throw NetworkException('Không thể kết nối đến máy chủ: ${e.toString()}');
-    }
-  }
-
-  // Xử lý phản hồi
+  /// Chuyển phản hồi HTTP thành [ApiResponse] hoặc ném exception tương ứng.
+  ///
+  /// Không log ở đây: mọi thông tin về mã trạng thái và lỗi của server đã nằm
+  /// trong dòng `←`/`x` mà [_send] in ra ngay trước đó.
   ApiResponse _processResponse(http.Response response) {
-    developer.log('Đang xử lý phản hồi với mã: ${response.statusCode}');
-    
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      // Thành công
-      Map<String, dynamic> responseData;
-      try {
-        if (response.body.isEmpty) {
-          developer.log('Phản hồi rỗng từ server');
-          responseData = {'message': 'Thành công', 'success': true};
-        } else {
-          developer.log('Đang phân tích phản hồi JSON: ${response.body.substring(0, math.min(200, response.body.length))}...');
-          responseData = json.decode(response.body);
-          developer.log('Phân tích JSON thành công');
-        }
-      } catch (e) {
-        developer.log('Lỗi phân tích dữ liệu JSON: ${e.toString()}', error: e);
-        developer.log('Nội dung gây lỗi: ${response.body.substring(0, math.min(200, response.body.length))}...');
-        responseData = {'message': 'Lỗi phân tích dữ liệu phản hồi', 'success': false};
-      }
+    final statusCode = response.statusCode;
 
+    if (statusCode >= 200 && statusCode < 300) {
       return ApiResponse(
-        statusCode: response.statusCode,
-        data: responseData,
+        statusCode: statusCode,
+        data: _decodeBody(response),
       );
-    } else if (response.statusCode == 401) {
-      // Không được phép
-      developer.log('Lỗi 401 Unauthorized', error: 'Auth Error');
-      throw UnauthorizedException('Phiên đăng nhập hết hạn hoặc không hợp lệ');
-    } else if (response.statusCode == 403) {
-      // Bị cấm truy cập
-      developer.log('Lỗi 403 Forbidden', error: 'Auth Error');
-      throw UnauthorizedException('Không có quyền truy cập tài nguyên này');
-    } else if (response.statusCode == 404) {
-      // Không tìm thấy
-      developer.log('Lỗi 404 Not Found: ${response.body}', error: 'Not Found');
-      throw ServerException('Không tìm thấy tài nguyên yêu cầu');
-    } else {
-      // Lỗi khác
-      try {
-        developer.log('Lỗi server ${response.statusCode}: ${response.body}', error: 'Server Error');
-        final errorData = json.decode(response.body);
-        final errorMessage = errorData['message'] ?? 'Đã xảy ra lỗi';
-        throw ServerException(errorMessage);
-      } catch (e) {
-        developer.log('Lỗi khi xử lý phản hồi lỗi: ${e.toString()}', error: e);
-        throw ServerException('Đã xảy ra lỗi: ${response.statusCode} - ${response.body}');
-      }
     }
+
+    final serverMessage = _extractErrorMessage(response.body);
+
+    switch (statusCode) {
+      case 401:
+        throw UnauthorizedException(
+          serverMessage ?? 'Phiên đăng nhập hết hạn hoặc không hợp lệ',
+        );
+      case 403:
+        throw UnauthorizedException(
+          serverMessage ?? 'Không có quyền truy cập tài nguyên này',
+        );
+      case 404:
+        throw ServerException(
+          serverMessage ?? 'Không tìm thấy tài nguyên yêu cầu',
+        );
+      default:
+        throw ServerException(
+          serverMessage ?? 'Máy chủ trả về lỗi $statusCode',
+        );
+    }
+  }
+
+  Map<String, dynamic> _decodeBody(http.Response response) {
+    if (response.body.isEmpty) {
+      return {'message': 'Thành công', 'success': true};
+    }
+    try {
+      final decoded = json.decode(response.body);
+      if (decoded is Map<String, dynamic>) return decoded;
+      return {'data': decoded, 'success': true};
+    } catch (error) {
+      AppLogger.e(
+        _tag,
+        'Không phân tích được JSON trả về · ${AppLogger.preview(response.body)}',
+        error: error,
+      );
+      return {'message': 'Lỗi phân tích dữ liệu phản hồi', 'success': false};
+    }
+  }
+
+  /// Lấy `message` từ body lỗi của server; trả về `null` nếu body không phải
+  /// JSON có `message` (khi đó phía gọi tự dùng thông điệp mặc định).
+  String? _extractErrorMessage(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map && decoded['message'] is String) {
+        return decoded['message'] as String;
+      }
+    } catch (_) {
+      // Body không phải JSON — cắt bớt cho vừa một dòng log.
+    }
+    return AppLogger.preview(body, maxLength: 160);
   }
 }

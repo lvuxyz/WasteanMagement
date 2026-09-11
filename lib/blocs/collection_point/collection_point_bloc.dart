@@ -1,9 +1,9 @@
-import 'dart:developer' as developer;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../repositories/collection_point_repository.dart';
 import '../../models/collection_point.dart';
 import 'collection_point_event.dart';
 import 'collection_point_state.dart';
+import '../../utils/app_logger.dart';
 
 class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointState> {
   final CollectionPointRepository repository;
@@ -37,17 +37,17 @@ class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointStat
       ) async {
     emit(const CollectionPointLoading());
     try {
-      developer.log('Đang tải chi tiết điểm thu gom với ID: ${event.collectionPointId}');
+      AppLogger.d('CollectionPoint', 'Đang tải chi tiết điểm thu gom với ID: ${event.collectionPointId}');
       final collectionPoint = await repository.getCollectionPointById(event.collectionPointId);
       if (collectionPoint != null) {
-        developer.log('Đã tải chi tiết điểm thu gom: ${collectionPoint.name}');
+        AppLogger.d('CollectionPoint', 'Đã tải chi tiết điểm thu gom: ${collectionPoint.name}');
         emit(CollectionPointDetailsLoaded(collectionPoint: collectionPoint));
       } else {
-        developer.log('Không tìm thấy điểm thu gom với ID: ${event.collectionPointId}');
+        AppLogger.w('CollectionPoint', 'Không tìm thấy điểm thu gom id=${event.collectionPointId}');
         emit(const CollectionPointError('Không tìm thấy điểm thu gom này'));
       }
     } catch (e) {
-      developer.log('Lỗi khi tải chi tiết điểm thu gom: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Lỗi khi tải chi tiết điểm thu gom', error: e);
       emit(CollectionPointError('Không thể tải chi tiết điểm thu gom: $e'));
     }
   }
@@ -67,7 +67,7 @@ class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointStat
         capacity: event.capacity,
         status: event.status,
       );
-      
+
       if (collectionPoint != null) {
         emit(CollectionPointCreated(collectionPoint: collectionPoint));
         // Load lại danh sách sau khi tạo thành công
@@ -76,7 +76,7 @@ class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointStat
         emit(const CollectionPointError('Không thể tạo điểm thu gom'));
       }
     } catch (e) {
-      developer.log('Lỗi khi tạo điểm thu gom trong bloc: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Lỗi khi tạo điểm thu gom trong bloc', error: e);
       emit(CollectionPointError('Không thể tạo điểm thu gom: $e'));
     }
   }
@@ -90,12 +90,12 @@ class CollectionPointBloc extends Bloc<CollectionPointEvent, CollectionPointStat
       final query = event.query.toLowerCase();
 
       List<CollectionPoint> filteredList;
-      
+
       if (query.isEmpty) {
         filteredList = currentState.collectionPoints;
       } else {
         filteredList = currentState.collectionPoints
-            .where((point) => 
+            .where((point) =>
                 point.name.toLowerCase().contains(query) ||
                 point.address.toLowerCase().contains(query))
             .toList();

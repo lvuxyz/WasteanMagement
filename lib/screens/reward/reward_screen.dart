@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'dart:developer' as developer;
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
@@ -11,11 +10,12 @@ import 'package:wasteanmagement/screens/reward/reward_rankings_screen.dart';
 import 'package:wasteanmagement/utils/app_colors.dart';
 import 'package:wasteanmagement/widgets/common/loading_indicator.dart';
 import 'package:wasteanmagement/widgets/common/error_view.dart';
+import '../../utils/app_logger.dart';
 
 class RewardScreen extends StatefulWidget {
   final bool isInTabView;
 
-  const RewardScreen({Key? key, this.isInTabView = true}) : super(key: key);
+  const RewardScreen({super.key, this.isInTabView = true});
 
   @override
   State<RewardScreen> createState() => _RewardScreenState();
@@ -69,7 +69,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         : null;
 
     if (fromDateStr != null || toDateStr != null) {
-      developer.log('Applying date filter - From: $fromDateStr, To: $toDateStr');
+      AppLogger.d('Reward', 'Applying date filter - From: $fromDateStr, To: $toDateStr');
     }
 
     _rewardBloc.add(LoadMyRewards(
@@ -95,8 +95,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Colors.black87,
-            ),
-            dialogBackgroundColor: Colors.white,
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
@@ -109,7 +108,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         _selectedToDate = DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
         _currentPage = 1;
       });
-      developer.log('Date range selected: ${_selectedFromDate!.toIso8601String()} - ${_selectedToDate!.toIso8601String()}');
+      AppLogger.d('Reward', 'Chọn khoảng ngày · ${_selectedFromDate!.toIso8601String()} → ${_selectedToDate!.toIso8601String()}');
     }
   }
 
@@ -202,7 +201,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             offset: const Offset(0, 1),
             blurRadius: 3,
           ),
@@ -230,7 +229,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                     padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.leaderboard_rounded,
-                      color: AppColors.primaryGreen.withOpacity(0.8),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.8),
                       size: 22,
                     ),
                   ),
@@ -245,7 +244,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                     padding: const EdgeInsets.all(6.0),
                     child: Icon(
                       Icons.insert_chart_rounded,
-                      color: AppColors.primaryGreen.withOpacity(0.8),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.8),
                       size: 22,
                     ),
                   ),
@@ -261,7 +260,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
   Widget _buildRewardsContent(MyRewardsLoaded state) {
     // Get the bottom padding to account for navigation bar
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return CustomScrollView(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -326,7 +325,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.15),
+            color: Colors.green.withValues(alpha: 0.15),
             offset: const Offset(0, 3),
             blurRadius: 8,
           ),
@@ -337,7 +336,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         child: InkWell(
           onTap: _navigateToStatistics,
           borderRadius: BorderRadius.circular(10),
-          splashColor: Colors.white.withOpacity(0.1),
+          splashColor: Colors.white.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -345,7 +344,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -407,7 +406,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(8),
         boxShadow: _isFilterExpanded ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             offset: const Offset(0, 1),
             blurRadius: 4,
           ),
@@ -443,7 +442,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.1),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
@@ -661,7 +660,7 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -675,10 +674,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           height: 36,
           decoration: BoxDecoration(
             color: isPositive
-                ? Colors.green.withOpacity(0.1)
+                ? Colors.green.withValues(alpha: 0.1)
                 : isZero
-                ? Colors.orange.withOpacity(0.1)
-                : Colors.red.withOpacity(0.1),
+                ? Colors.orange.withValues(alpha: 0.1)
+                : Colors.red.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -715,10 +714,10 @@ class _RewardScreenState extends State<RewardScreen> with WidgetsBindingObserver
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: isPositive
-                ? Colors.green.withOpacity(0.1)
+                ? Colors.green.withValues(alpha: 0.1)
                 : isZero
                 ? Colors.transparent
-                : Colors.red.withOpacity(0.1),
+                : Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(

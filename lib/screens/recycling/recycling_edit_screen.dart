@@ -14,9 +14,9 @@ class RecyclingEditScreen extends StatefulWidget {
   final RecyclingProcess process;
 
   const RecyclingEditScreen({
-    Key? key,
+    super.key,
     required this.process,
-  }) : super(key: key);
+  });
 
   @override
   State<RecyclingEditScreen> createState() => _RecyclingEditScreenState();
@@ -56,9 +56,9 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
     'cancelled': 'Đã hủy',
   };
   
-  bool _showProcessedDetails = false;
-  bool _showQualityMetrics = false;
-  bool _showOutputDetails = false;
+  final bool _showProcessedDetails = false;
+  final bool _showQualityMetrics = false;
+  final bool _showOutputDetails = false;
 
   @override
   void initState() {
@@ -142,6 +142,7 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
       });
       
       // Sau khi chọn ngày, hiển thị time picker
+      if (!context.mounted) return;
       _selectEndTime(context);
     }
   }
@@ -417,7 +418,7 @@ class _RecyclingEditScreenState extends State<RecyclingEditScreen> {
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              value: _selectedStatus,
+              initialValue: _selectedStatus,
               items: _statuses.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,

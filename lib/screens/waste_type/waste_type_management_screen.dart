@@ -9,10 +9,10 @@ import '../../utils/app_colors.dart';
 import 'waste_type_details_screen.dart';
 import 'waste_type_edit_screen.dart';
 import 'waste_type_collection_points_screen.dart';
-import 'dart:developer' as developer;
+import '../../utils/app_logger.dart';
 
 class WasteTypeManagementScreen extends StatefulWidget {
-  const WasteTypeManagementScreen({Key? key}) : super(key: key);
+  const WasteTypeManagementScreen({super.key});
 
   @override
   State<WasteTypeManagementScreen> createState() => _WasteTypeManagementScreenState();
@@ -21,7 +21,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _selectedFilterOption = 'all';
-  
+
   // Lưu tham chiếu đến bloc để tránh sử dụng context.read trong các callback
   late WasteTypeBloc _wasteTypeBloc;
   late AdminCubit _adminCubit;
@@ -30,25 +30,25 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    
+
     // Lưu tham chiếu đến bloc
     _wasteTypeBloc = context.read<WasteTypeBloc>();
     _adminCubit = context.read<AdminCubit>();
-    
+
     // Load data when screen initializes
     _wasteTypeBloc.add(LoadWasteTypes());
-    
+
     // Kích hoạt kiểm tra trạng thái admin và thử áp dụng giá trị mặc định
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Kích hoạt kiểm tra admin status
       _adminCubit.checkAdminStatus();
-      
+
       // Hiển thị thông báo nếu không phải admin
       await Future.delayed(Duration(seconds: 1));
       if (mounted) {
         final isAdmin = _adminCubit.state;
         if (!isAdmin) {
-          developer.log('User is not admin, showing view-only mode');
+          AppLogger.d('WasteType', 'Không phải admin nên chỉ hiển thị chế độ xem');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Bạn đang ở chế độ xem. Chỉ quản trị viên mới có thể thêm, sửa hoặc xóa.'),
@@ -182,7 +182,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
       listeners: [
         BlocListener<AdminCubit, bool>(
           listener: (context, isAdmin) {
-            developer.log('AdminCubit listener triggered: isAdmin = $isAdmin');
+            AppLogger.d('WasteType', 'AdminCubit listener triggered: isAdmin = $isAdmin');
           },
         ),
         BlocListener<WasteTypeBloc, WasteTypeState>(
@@ -251,8 +251,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
         ),
         floatingActionButton: BlocBuilder<AdminCubit, bool>(
           builder: (context, isAdmin) {
-            developer.log('FloatingActionButton BlocBuilder: isAdmin = $isAdmin');
-            return isAdmin 
+            return isAdmin
               ? FloatingActionButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/waste-type/add').then((_) {
@@ -277,7 +276,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -312,7 +311,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                       fillColor: Colors.grey.shade50,
                     ),
                   ),
-                  
+
                   // Filter options
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -330,7 +329,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                 ],
               ),
             ),
-            
+
             // List of waste types
             Expanded(
               child: BlocConsumer<WasteTypeBloc, WasteTypeState>(
@@ -344,7 +343,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
                   if (state is WasteTypeLoaded) {
                     var wasteTypes = state.filteredWasteTypes;
-                    
+
                     // Apply additional filter based on selected option
                     if (_selectedFilterOption == 'recyclable') {
                       wasteTypes = wasteTypes.where((type) => type.recyclable).toList();
@@ -368,11 +367,10 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
                         itemCount: wasteTypes.length,
                         itemBuilder: (context, index) {
                           final wasteType = wasteTypes[index];
-                          
+
                           // Use BlocBuilder to get the latest admin status
                           return BlocBuilder<AdminCubit, bool>(
                             builder: (context, isAdmin) {
-                              developer.log('WasteTypeListItem BlocBuilder: isAdmin = $isAdmin');
                               return WasteTypeListItem(
                                 wasteType: wasteType,
                                 onView: () => _navigateToDetails(wasteType.id),
@@ -402,7 +400,7 @@ class _WasteTypeManagementScreenState extends State<WasteTypeManagementScreen> {
 
   Widget _buildFilterChip(String value, String label) {
     final isSelected = _selectedFilterOption == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {

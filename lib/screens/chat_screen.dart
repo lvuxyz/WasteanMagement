@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 class ChatScreen extends StatefulWidget {
   static const String routeName = '/chat';
 
-  const ChatScreen({Key? key}) : super(key: key);
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -71,10 +71,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      // Handler cũ luôn trả true, tức không bao giờ chặn pop — nó chỉ dựng cờ
+      // để chặn thao tác focus trong lúc màn hình đang bị đóng. Nên giữ
+      // canPop mặc định (true) và chuyển phần dựng cờ sang callback.
+      onPopInvokedWithResult: (didPop, result) {
         _isNavigating = true;
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -87,7 +89,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -117,7 +119,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     'Trợ lý quản lý chất thải',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -128,7 +130,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           backgroundColor: AppColors.primaryGreen,
           foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: AppColors.primaryGreen.withOpacity(0.3),
+          shadowColor: AppColors.primaryGreen.withValues(alpha: 0.3),
           leadingWidth: 30,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, size: 20),
@@ -190,7 +192,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.1),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: const Text('🤖', style: TextStyle(fontSize: 40)),
@@ -261,8 +263,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryGreen.withOpacity(0.1),
-                  AppColors.primaryGreen.withOpacity(0.05),
+                  AppColors.primaryGreen.withValues(alpha: 0.1),
+                  AppColors.primaryGreen.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -318,10 +320,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.primaryGreen.withOpacity(0.1),
+          color: AppColors.primaryGreen.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.primaryGreen.withOpacity(0.3),
+            color: AppColors.primaryGreen.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -350,7 +352,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 3,
                   offset: const Offset(0, 1),
                 ),
@@ -373,7 +375,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             width: 6,
                             height: 6 + (_typingAnimation.value * 4),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryGreen.withOpacity(
+                              color: AppColors.primaryGreen.withValues(alpha: 
                                   0.3 + (_typingAnimation.value * 0.7)
                               ),
                               borderRadius: BorderRadius.circular(3),
@@ -484,7 +486,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -524,7 +526,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primaryGreen,
-                    AppColors.primaryGreen.withOpacity(0.8),
+                    AppColors.primaryGreen.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -532,7 +534,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryGreen.withOpacity(0.3),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -618,8 +620,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
     required this.message,
     required this.isUser,
     required this.time,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -636,7 +637,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text('🤖', style: TextStyle(fontSize: 14)),
@@ -672,7 +673,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text('👤', style: TextStyle(fontSize: 12)),
@@ -696,7 +697,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 gradient: isUser ? LinearGradient(
-                  colors: [AppColors.primaryGreen, AppColors.primaryGreen.withOpacity(0.8)],
+                  colors: [AppColors.primaryGreen, AppColors.primaryGreen.withValues(alpha: 0.8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ) : null,
@@ -707,7 +708,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -730,7 +731,7 @@ class _EnhancedMessageBubble extends StatelessWidget {
                     child: Text(
                       time,
                       style: TextStyle(
-                        color: isUser ? Colors.white.withOpacity(0.8) : Colors.black45,
+                        color: isUser ? Colors.white.withValues(alpha: 0.8) : Colors.black45,
                         fontSize: 11,
                       ),
                     ),

@@ -8,29 +8,30 @@ import '../blocs/recycling_progress/recycling_progress_bloc.dart';
 import '../blocs/recycling_progress/recycling_progress_event.dart';
 import '../blocs/recycling_progress/recycling_progress_state.dart';
 import '../repositories/recycling_progress_repository.dart';
+import '../repositories/waste_type_repository.dart';
 import '../utils/app_colors.dart';
+import '../utils/snackbar_utils.dart';
 import '../core/network/network_info.dart';
 import '../data/datasources/local_data_source.dart';
 import '../data/datasources/remote_data_source.dart';
 import '../models/waste_type_model.dart';
 import '../core/api/api_client.dart';
-import '../utils/secure_storage.dart';
-import 'package:http/http.dart' as http;
+import '../utils/app_logger.dart';
 
 class RecyclingProgressScreen extends StatelessWidget {
-  const RecyclingProgressScreen({Key? key}) : super(key: key);
+  const RecyclingProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => RecyclingProgressBloc(
         repository: RecyclingProgressRepository(
+          // Dùng lại ApiClient và WasteTypeRepository do main.dart cung cấp
+          // thay vì dựng http.Client + SecureStorage riêng cho màn hình này.
           remoteDataSource: RemoteDataSource(
-            apiClient: ApiClient(
-              client: http.Client(),
-              secureStorage: SecureStorage(),
-            ),
+            apiClient: context.read<ApiClient>(),
           ),
+          wasteTypeRepository: context.read<WasteTypeRepository>(),
           localDataSource: LocalDataSource(),
           networkInfo: NetworkInfoImpl(),
         ),
@@ -41,7 +42,7 @@ class RecyclingProgressScreen extends StatelessWidget {
 }
 
 class RecyclingProgressView extends StatefulWidget {
-  const RecyclingProgressView({Key? key}) : super(key: key);
+  const RecyclingProgressView({super.key});
 
   @override
   State<RecyclingProgressView> createState() => _RecyclingProgressViewState();
@@ -63,16 +64,25 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
 
   Future<void> _loadWasteTypes() async {
     final repository = context.read<RecyclingProgressBloc>().repository;
-    final types = await repository.getWasteTypes();
-    setState(() {
-      _wasteTypes = types;
-    });
+    try {
+      final types = await repository.getWasteTypes();
+      if (!mounted) return;
+      setState(() {
+        _wasteTypes = types;
+      });
+    } catch (e) {
+      // Bộ lọc loại rác chỉ là tiện ích phụ: nếu không tải được thì để trống
+      // và báo nhẹ, không chặn phần thống kê vốn tải bằng luồng riêng.
+      AppLogger.e('RecycleProgress', 'Không tải được danh sách loại rác cho bộ lọc', error: e);
+      if (!mounted) return;
+      SnackBarUtils.showError(context, 'Không tải được danh sách loại rác để lọc');
+    }
   }
 
   void _fetchStatistics() {
     final formattedStartDate = DateFormat('yyyy-MM-dd').format(_startDate);
     final formattedEndDate = DateFormat('yyyy-MM-dd').format(_endDate);
-    
+
     context.read<RecyclingProgressBloc>().add(
       FetchRecyclingStatistics(
         fromDate: formattedStartDate,
@@ -125,23 +135,18 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
         child: BlocConsumer<RecyclingProgressBloc, RecyclingProgressState>(
           listener: (context, state) {
             if (state is RecyclingProgressError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              SnackBarUtils.showError(context, state.message);
             }
           },
           builder: (context, state) {
             if (state is RecyclingProgressInitial) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is RecyclingProgressLoading || state is RecyclingStatisticsLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is RecyclingProgressLoaded) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -168,18 +173,18 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                             : const SizedBox.shrink(),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Statistics section
                     RecyclingStatistics(
                       wasteTypeQuantities: state.wasteTypeQuantities,
                       totalWeight: state.totalWeight,
                       apiStatistics: state.statistics,
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Records section
                     const Text(
                       'Lịch sử tái chế',
@@ -189,7 +194,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     if (state.filteredRecords.isEmpty)
                       const Center(
                         child: Padding(
@@ -204,14 +209,14 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
                         ),
                       )
                     else
-                      ...state.filteredRecords.map((record) => 
+                      ...state.filteredRecords.map((record) =>
                         RecyclingRecordItem(record: record),
                       ),
                   ],
                 ),
               );
             }
-            
+
             return const Center(
               child: Text('Có lỗi xảy ra khi tải dữ liệu'),
             );
@@ -221,11 +226,7 @@ class _RecyclingProgressViewState extends State<RecyclingProgressView> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: Navigate to add new recycling record screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Chức năng thêm bản ghi tái chế sẽ được phát triển sau'),
-            ),
-          );
+          SnackBarUtils.showInfo(context, 'Chức năng thêm bản ghi tái chế sẽ được phát triển sau');
         },
         backgroundColor: AppColors.primaryGreen,
         child: const Icon(Icons.add),

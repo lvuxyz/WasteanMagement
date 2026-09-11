@@ -11,9 +11,7 @@ import 'package:wasteanmagement/screens/about_app_screen.dart';
 import 'package:wasteanmagement/screens/language_selection_screen.dart';
 import 'package:wasteanmagement/screens/login_screen.dart';
 import 'package:wasteanmagement/screens/view_profile_screen.dart';
-import 'package:wasteanmagement/utils/secure_storage.dart';
-import 'package:wasteanmagement/repositories/user_repository.dart';
-import '../generated/l10n.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 
@@ -21,9 +19,9 @@ class ProfileScreen extends StatefulWidget {
   final String? username;
 
   const ProfileScreen({
-    Key? key,
+    super.key,
     this.username,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -32,7 +30,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -151,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
@@ -413,73 +411,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // FUNCTION NÀY CHỈ DÙNG ĐỂ DEBUG - XÓA KHI RELEASE
-  Future<void> _showTokenInfo(BuildContext context) async {
-    final secureStorage = SecureStorage();
-    final userRepository = context.read<UserRepository>();
-    
-    // Lấy token
-    String? token = await secureStorage.getToken();
-    
-    if (!mounted) return;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Thông tin token (Debug)'),
-        content: token != null 
-          ? SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Token hiện tại:'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SelectableText(
-                      token,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : const Text('Không có token'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Đóng'),
-          ),
-          if (token != null)
-            TextButton(
-              onPressed: () async {
-                await userRepository.logout();
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã xóa token'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  // Chuyển về màn hình đăng nhập
-                  context.read<AuthBloc>().add(LogoutRequested());
-                }
-              },
-              child: const Text('Xóa Token', style: TextStyle(color: Colors.red)),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildLogoutButton(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),

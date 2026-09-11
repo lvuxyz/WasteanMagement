@@ -14,15 +14,14 @@ import '../../core/api/api_client.dart';
 import '../../utils/secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'recycling_edit_screen.dart';
-import 'package:intl/intl.dart';
 
 class RecyclingDetailScreen extends StatefulWidget {
   final String processId;
 
   const RecyclingDetailScreen({
-    Key? key,
+    super.key,
     required this.processId,
-  }) : super(key: key);
+  });
 
   @override
   State<RecyclingDetailScreen> createState() => _RecyclingDetailScreenState();
@@ -155,6 +154,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                             builder: (context) => RecyclingEditScreen(process: process),
                           ),
                         ).then((_) {
+                          if (!context.mounted) return;
                           context.read<RecyclingBloc>().add(
                             GetRecyclingProcessDetail(widget.processId),
                           );
@@ -270,8 +270,8 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
             colors: [
-              statusColor.withOpacity(0.7),
-              statusColor.withOpacity(0.3),
+              statusColor.withValues(alpha: 0.7),
+              statusColor.withValues(alpha: 0.3),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -284,7 +284,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -335,7 +335,7 @@ class _RecyclingDetailScreenState extends State<RecyclingDetailScreen> {
                   children: [
                     LinearProgressIndicator(
                       value: progressValue,
-                      backgroundColor: Colors.white.withOpacity(0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(4),

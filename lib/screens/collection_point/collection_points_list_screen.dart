@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,9 +12,10 @@ import '../../blocs/admin/admin_cubit.dart';
 import '../../blocs/collection_point/collection_point_bloc.dart';
 import '../../blocs/collection_point/collection_point_event.dart';
 import '../../blocs/collection_point/collection_point_state.dart';
+import '../../utils/app_logger.dart';
 
 class CollectionPointsListScreen extends StatefulWidget {
-  const CollectionPointsListScreen({Key? key}) : super(key: key);
+  const CollectionPointsListScreen({super.key});
 
   @override
   State<CollectionPointsListScreen> createState() => _CollectionPointsListScreenState();
@@ -26,38 +26,36 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   late CollectionPointRepository _repository;
   late CollectionPointBloc _collectionPointBloc;
   late AdminCubit _adminCubit;
-  
-  bool get _isAdmin => context.read<AdminCubit>().state;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Store a reference to AdminCubit
     _adminCubit = context.read<AdminCubit>();
-    
+
     final apiClient = context.read<ApiClient>();
     _repository = CollectionPointRepository(apiClient: apiClient);
     _collectionPointBloc = CollectionPointBloc(repository: _repository);
     _searchController.addListener(_onSearchChanged);
-    
+
     _collectionPointBloc.add(LoadCollectionPoints());
-    
+
     // Check admin status after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Check admin status
       await _adminCubit.checkAdminStatus();
-      
+
       // If no admin role is detected, force admin status to true
       // for this management screen specifically
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
         final currentState = _adminCubit.state;
-        developer.log('Admin status after check: $currentState');
-        
+        AppLogger.d('CollectionPoint', 'Quyền admin sau khi kiểm tra: $currentState');
+
         if (!currentState) {
           // When on the collection point management screen, set admin rights
-          developer.log('Setting admin status to true for collection point management screen');
+          AppLogger.d('CollectionPoint', 'Bật quyền admin cho màn hình quản lý điểm thu gom');
           _adminCubit.forceUpdateAdminStatus(true);
         }
       }
@@ -94,11 +92,11 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
       arguments: collectionPoint.collectionPointId,
     );
   }
-  
+
   void _navigateToCreateScreen() {
     bool isAdmin = _adminCubit.state;
-    developer.log('Đang cố gắng tạo điểm thu gom, isAdmin: $isAdmin');
-    
+    AppLogger.d('CollectionPoint', 'Đang cố gắng tạo điểm thu gom, isAdmin: $isAdmin');
+
     if (!isAdmin) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -108,7 +106,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
       );
       return;
     }
-    
+
     Navigator.pushNamed(
       context,
       '/collection-points/create',
@@ -120,8 +118,8 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
   @override
   Widget build(BuildContext context) {
     final isAdmin = context.watch<AdminCubit>().state;
-    developer.log('Build UI cho màn hình Collection Points với quyền admin: $isAdmin');
-    
+    AppLogger.d('CollectionPoint', 'Dựng UI màn hình điểm thu gom · admin=$isAdmin');
+
     return BlocProvider.value(
       value: _collectionPointBloc,
       child: Scaffold(
@@ -169,11 +167,11 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             } else if (state is CollectionPointsLoaded) {
               return _buildCollectionPointsList(state);
             }
-            
+
             return const LoadingView(message: 'Đang tải...');
           },
         ),
-        floatingActionButton: isAdmin 
+        floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: _navigateToCreateScreen,
               backgroundColor: AppColors.primaryGreen,
@@ -238,14 +236,14 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             },
           ),
         ),
-        
+
         if (isAdmin)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               child: const Text(
                 '⚠️ Bạn đang đăng nhập với quyền Admin',
                 style: TextStyle(
@@ -256,7 +254,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               ),
             ),
           ),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
@@ -265,7 +263,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -290,7 +288,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
             ],
           ),
         ),
-        
+
         Expanded(
           child: filteredCollectionPoints.isEmpty && state.searchQuery.isNotEmpty
               ? Center(
@@ -325,7 +323,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
 
   Widget _buildCollectionPointItem(BuildContext context, CollectionPoint collectionPoint) {
     final currentLoad = collectionPoint.currentLoad ?? 0;
-    final capacityPercentage = 
+    final capacityPercentage =
         collectionPoint.capacity > 0
           ? ((currentLoad / collectionPoint.capacity) * 100).clamp(0.0, 100.0).toInt()
           : 0;
@@ -342,7 +340,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+              color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -355,7 +353,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -395,10 +393,10 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(collectionPoint.status).withOpacity(0.1),
+                        color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getStatusColor(collectionPoint.status).withOpacity(0.3),
+                          color: _getStatusColor(collectionPoint.status).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -414,7 +412,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   ],
                 ),
               ),
-              
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Row(
@@ -425,7 +423,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                           Container(
                             padding: EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
@@ -449,14 +447,14 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                         ],
                       ),
                     ),
-                    
+
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
+                        color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getCapacityColor(capacityPercentage).withOpacity(0.3),
+                          color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -472,11 +470,11 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                   ],
                 ),
               ),
-              
+
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(16),
                   ),
@@ -511,7 +509,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
                     Container(
                       width: 1,
                       height: 24,
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withValues(alpha: 0.2),
                     ),
                     Expanded(
                       child: BlocBuilder<AdminCubit, bool>(
@@ -578,7 +576,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         return Colors.blue;
     }
   }
-  
+
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'active':
@@ -593,7 +591,7 @@ class _CollectionPointsListScreenState extends State<CollectionPointsListScreen>
         return Icons.info_outline;
     }
   }
-  
+
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'active':

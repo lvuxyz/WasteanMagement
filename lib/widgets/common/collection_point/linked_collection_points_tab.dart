@@ -7,10 +7,10 @@ class LinkedCollectionPointsTab extends StatelessWidget {
   final Function(CollectionPoint) onRemoveCollectionPoint;
 
   const LinkedCollectionPointsTab({
-    Key? key,
+    super.key,
     required this.linkedCollectionPoints,
     required this.onRemoveCollectionPoint,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

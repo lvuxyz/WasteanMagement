@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:developer' as developer;
 import '../../blocs/collection_point/collection_point_bloc.dart';
 import '../../blocs/collection_point/collection_point_event.dart';
 import '../../blocs/collection_point/collection_point_state.dart';
 import '../../models/collection_point.dart';
 import '../../models/waste_type_model.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/snackbar_utils.dart';
 import '../../widgets/common/loading_view.dart';
 import '../../widgets/common/error_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import '../../utils/app_logger.dart';
 
 class CollectionPointDetailsScreen extends StatefulWidget {
   final int collectionPointId;
 
   const CollectionPointDetailsScreen({
-    Key? key,
+    super.key,
     required this.collectionPointId,
-  }) : super(key: key);
+  });
 
   @override
   State<CollectionPointDetailsScreen> createState() =>
@@ -84,7 +85,7 @@ class _CollectionPointDetailsScreenState
             height: 200,
             child: _buildMapView(collectionPoint),
           ),
-          
+
           // Basic information
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -107,30 +108,30 @@ class _CollectionPointDetailsScreenState
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Address
                 _buildInfoRow(
-                  Icons.location_on, 
+                  Icons.location_on,
                   collectionPoint.address,
                   onTap: () => _launchMaps(collectionPoint.latitude, collectionPoint.longitude),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Operating hours
                 _buildInfoRow(
-                  Icons.access_time, 
+                  Icons.access_time,
                   'Giờ mở cửa: ${collectionPoint.operatingHours}',
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Capacity and current load
                 _buildCapacityRow(collectionPoint),
                 const SizedBox(height: 16),
-                
+
                 // Coordinates
                 _buildCoordinatesRow(collectionPoint),
                 const SizedBox(height: 24),
-                
+
                 // Waste types section
                 _buildWasteTypesSection(collectionPoint),
               ],
@@ -160,7 +161,7 @@ class _CollectionPointDetailsScreenState
         ),
         onMapCreated: (MapboxMap mapController) {
           _mapController = mapController;
-          
+
           // Disable gestures for better performance
           mapController.gestures.updateSettings(
             GesturesSettings(
@@ -173,11 +174,11 @@ class _CollectionPointDetailsScreenState
               pitchEnabled: false,
             ),
           );
-          
+
           // Add marker
           _addMarker(
             mapController,
-            collectionPoint.latitude, 
+            collectionPoint.latitude,
             collectionPoint.longitude,
             collectionPoint.name,
           );
@@ -185,16 +186,16 @@ class _CollectionPointDetailsScreenState
       ),
     );
   }
-  
+
   Future<void> _addMarker(
-    MapboxMap mapController, 
-    double latitude, 
+    MapboxMap mapController,
+    double latitude,
     double longitude,
     String title,
   ) async {
     try {
       final pointAnnotationManager = await mapController.annotations.createPointAnnotationManager();
-      
+
       final options = PointAnnotationOptions(
         geometry: Point(
           coordinates: Position(longitude, latitude),
@@ -203,21 +204,21 @@ class _CollectionPointDetailsScreenState
         textField: title,
         textSize: 12.0,
         textOffset: [0.0, 1.5],
-        textColor: Colors.black.value,
+        textColor: Colors.black.toARGB32(),
         textHaloWidth: 1.0,
-        textHaloColor: Colors.white.value,
+        textHaloColor: Colors.white.toARGB32(),
       );
-      
+
       await pointAnnotationManager.create(options);
     } catch (e) {
-      developer.log('Error adding marker: $e', error: e);
+      AppLogger.e('CollectionPoint', 'Không thêm được marker lên bản đồ', error: e);
     }
   }
 
   Widget _buildStatusBadge(String status) {
     Color color;
     String text;
-    
+
     switch (status.toLowerCase()) {
       case 'active':
         color = Colors.green;
@@ -235,17 +236,17 @@ class _CollectionPointDetailsScreenState
         color = Colors.blue;
         text = status;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 10,
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.5),
+          color: color.withValues(alpha: 0.5),
         ),
       ),
       child: Text(
@@ -298,16 +299,16 @@ class _CollectionPointDetailsScreenState
     final currentLoad = collectionPoint.currentLoad ?? 0;
     final capacity = collectionPoint.capacity.toDouble();
     final percentage = capacity > 0 ? (currentLoad / capacity * 100).clamp(0.0, 100.0) : 0.0;
-    
+
     Color getCapacityColor(double percentage) {
       if (percentage > 90) return Colors.red;
       if (percentage > 70) return Colors.orange;
       if (percentage > 50) return Colors.amber;
       return AppColors.primaryGreen;
     }
-    
+
     final color = getCapacityColor(percentage);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -404,7 +405,7 @@ class _CollectionPointDetailsScreenState
 
   Widget _buildWasteTypesSection(CollectionPoint collectionPoint) {
     final wasteTypes = collectionPoint.wasteTypes;
-    
+
     if (wasteTypes == null || wasteTypes.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -432,7 +433,7 @@ class _CollectionPointDetailsScreenState
         ),
       );
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -457,7 +458,7 @@ class _CollectionPointDetailsScreenState
           ],
         ),
         const SizedBox(height: 16),
-        ...wasteTypes.map((wasteType) => _buildWasteTypeItem(wasteType)).toList(),
+        ...wasteTypes.map((wasteType) => _buildWasteTypeItem(wasteType)),
       ],
     );
   }
@@ -467,10 +468,10 @@ class _CollectionPointDetailsScreenState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: wasteType.color.withOpacity(0.05),
+        color: wasteType.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: wasteType.color.withOpacity(0.3),
+          color: wasteType.color.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -500,8 +501,8 @@ class _CollectionPointDetailsScreenState
                 ),
                 decoration: BoxDecoration(
                   color: wasteType.recyclable
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.red.withOpacity(0.1),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -588,12 +589,9 @@ class _CollectionPointDetailsScreenState
     try {
       await launchUrl(Uri.parse(url));
     } catch (e) {
-      developer.log('Could not launch maps: $e', error: e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể mở ứng dụng bản đồ'),
-        ),
-      );
+      AppLogger.e('CollectionPoint', 'Không mở được ứng dụng bản đồ', error: e);
+      if (!mounted) return;
+      SnackBarUtils.showError(context, 'Không thể mở ứng dụng bản đồ');
     }
   }
 } 

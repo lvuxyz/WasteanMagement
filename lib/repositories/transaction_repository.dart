@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
+import '../utils/app_logger.dart';
 
 class TransactionRepository {
   final ApiClient apiClient;
@@ -27,12 +28,10 @@ class TransactionRepository {
       queryParams['status'] = status;
     }
 
-    // Sử dụng URL chính xác cho admin
-    final String adminUrl = 'http://103.27.239.248:3000/api/v1/transactions';
-    String url = isAdmin 
-        ? adminUrl // Admin API endpoint chính xác
-        : ApiConstants.transactions; // Regular API endpoint
-    
+    // Admin và người dùng thường cùng dùng một endpoint; trước đây admin bị
+    // gắn cứng địa chỉ máy chủ nên không đổi theo API_BASE_URL được.
+    String url = ApiConstants.transactions;
+
     if (queryParams.isNotEmpty) {
       url += '?';
       url += queryParams.entries
@@ -41,18 +40,18 @@ class TransactionRepository {
     }
 
     try {
-      print('Fetching transactions with isAdmin=$isAdmin from URL: $url');
+      AppLogger.d('Transaction', 'Lấy danh sách giao dịch · isAdmin=$isAdmin');
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transactions API response: ${response.data}');
-        return TransactionResponse.fromJson(response.data);
+        final result = TransactionResponse.fromJson(response.data);
+        AppLogger.d('Transaction',
+            'Nhận ${result.data.length} giao dịch (trang ${result.pagination.page}/${result.pagination.pages}, tổng ${result.pagination.total})');
+        return result;
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load transactions: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactions: $e');
       throw Exception('Failed to load transactions: $e');
     }
   }
@@ -96,18 +95,17 @@ class TransactionRepository {
     }
 
     try {
-      print('Fetching my transactions from: $url');
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('My transactions API response: ${response.data}');
-        return TransactionResponse.fromJson(response.data);
+        final result = TransactionResponse.fromJson(response.data);
+        AppLogger.d('Transaction',
+            'Nhận ${result.data.length} giao dịch của tôi (trang ${result.pagination.page}/${result.pagination.pages})');
+        return result;
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
         throw Exception('Failed to load my transactions: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getMyTransactions: $e');
       throw Exception('Failed to load my transactions: $e');
     }
   }
@@ -129,7 +127,7 @@ class TransactionRepository {
           'unit': unit,
         };
 
-        print('Creating transaction with data: $data');
+        AppLogger.d('Transaction', 'Tạo giao dịch · ${AppLogger.preview(data)}');
         final response = await apiClient.post(
           ApiConstants.transactions,
           body: data,
@@ -144,7 +142,7 @@ class TransactionRepository {
           'message': message,
           'data': response.data['data']
         };
-      } 
+      }
       // If there's an image, use multipart request
       else {
         // Get token
@@ -173,20 +171,22 @@ class TransactionRepository {
         // Add image file
         final fileExtension = path.extension(proofImage.path).replaceAll('.', '');
         final contentType = _getMimeType(fileExtension);
-        
+
         request.files.add(await http.MultipartFile.fromPath(
           'proof_image', // This MUST be 'proof_image', not 'proof_image_url'
           proofImage.path,
           contentType: MediaType.parse(contentType),
         ));
 
-        print('Sending multipart request with image to: ${ApiConstants.transactions}');
-        
+        AppLogger.d('Transaction',
+            '→ POST ${AppLogger.shortUrl(ApiConstants.transactions)} (multipart, kèm ảnh)');
+
         // Send request
         final streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
 
-        print('Transaction API response: ${response.statusCode}, ${response.body}');
+        AppLogger.d('Transaction',
+            '← ${response.statusCode} POST ${AppLogger.shortUrl(ApiConstants.transactions)} (multipart)');
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final responseData = json.decode(response.body);
@@ -211,80 +211,76 @@ class TransactionRepository {
         }
       }
     } catch (e) {
-      print('Exception in createTransaction: $e');
+      AppLogger.e('Transaction', 'Tạo giao dịch thất bại', error: e);
       throw Exception('Failed to create transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> updateTransactionStatus({
     required int transactionId,
     required String status,
   }) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId/status';
-      print('Updating transaction status: $url with status: $status');
-      
+      AppLogger.d('Transaction', 'Đổi trạng thái giao dịch $transactionId sang $status');
+
       final Map<String, dynamic> data = {
         'status': status,
       };
-      
+
       final response = await apiClient.patch(url, body: data);
-      
+
       // Convert response to expected format
       final bool isSuccess = response.isSuccess;
       final String message = response.message;
-      
+
       return {
         'success': isSuccess,
         'message': message,
         'data': response.data['data']
       };
     } catch (e) {
-      print('Exception in updateTransactionStatus: $e');
+      AppLogger.e('Transaction', 'Đổi trạng thái giao dịch thất bại', error: e);
       throw Exception('Failed to update transaction status: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> deleteTransaction(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Deleting transaction: $url');
-      
+
       final response = await apiClient.delete(url);
-      
+
       // Convert response to expected format
       final bool isSuccess = response.isSuccess;
       final String message = response.message;
-      
+
       return {
         'success': isSuccess,
         'message': message,
       };
     } catch (e) {
-      print('Exception in deleteTransaction: $e');
+      AppLogger.e('Transaction', 'Xóa giao dịch thất bại', error: e);
       throw Exception('Failed to delete transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getTransactionById(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Fetching transaction details: $url');
-      
+
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transaction details response: ${response.data}');
-        return {
+return {
           'success': true,
           'data': response.data['data'],
         };
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
-        throw Exception('Failed to load transaction details: ${response.data['message']}');
+throw Exception('Failed to load transaction details: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactionById: $e');
+      AppLogger.e('Transaction', 'Không lấy được chi tiết giao dịch', error: e);
       throw Exception('Failed to load transaction details: $e');
     }
   }
@@ -299,8 +295,7 @@ class TransactionRepository {
   }) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId';
-      print('Updating transaction: $url');
-      
+
       // If there's no image, use the standard API client
       if (proofImage == null) {
         final Map<String, dynamic> data = {
@@ -309,19 +304,19 @@ class TransactionRepository {
           'quantity': quantity,
           'unit': unit,
         };
-        
+
         final response = await apiClient.put(url, body: data);
-        
+
         // Convert response to expected format
         final bool isSuccess = response.isSuccess;
         final String message = response.message;
-        
+
         return {
           'success': isSuccess,
           'message': message,
           'data': response.data['data']
         };
-      } 
+      }
       // If there's an image, use multipart request
       else {
         // Get token
@@ -350,20 +345,22 @@ class TransactionRepository {
         // Add image file
         final fileExtension = path.extension(proofImage.path).replaceAll('.', '');
         final contentType = _getMimeType(fileExtension);
-        
+
         request.files.add(await http.MultipartFile.fromPath(
           'proof_image', // This MUST be 'proof_image', not 'proof_image_url'
           proofImage.path,
           contentType: MediaType.parse(contentType),
         ));
 
-        print('Sending multipart PUT request with image to: $url');
-        
+        AppLogger.d('Transaction',
+            '→ PUT ${AppLogger.shortUrl(url)} (multipart, kèm ảnh)');
+
         // Send request
         final streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
 
-        print('Transaction update API response: ${response.statusCode}, ${response.body}');
+        AppLogger.d('Transaction',
+            '← ${response.statusCode} PUT ${AppLogger.shortUrl(url)} (multipart)');
 
         if (response.statusCode >= 200 && response.statusCode < 300) {
           final responseData = json.decode(response.body);
@@ -388,30 +385,27 @@ class TransactionRepository {
         }
       }
     } catch (e) {
-      print('Exception in updateTransaction: $e');
+      AppLogger.e('Transaction', 'Cập nhật giao dịch thất bại', error: e);
       throw Exception('Failed to update transaction: $e');
     }
   }
-  
+
   Future<Map<String, dynamic>> getTransactionHistory(int transactionId) async {
     try {
       final String url = '${ApiConstants.transactions}/$transactionId/history';
-      print('Fetching transaction history: $url');
-      
+
       final response = await apiClient.get(url);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('Transaction history response: ${response.data}');
-        return {
+return {
           'success': true,
           'data': response.data['data'],
         };
       } else {
-        print('API error: Status ${response.statusCode}, ${response.data['message']}');
-        throw Exception('Failed to load transaction history: ${response.data['message']}');
+throw Exception('Failed to load transaction history: ${response.data['message']}');
       }
     } catch (e) {
-      print('Exception in getTransactionHistory: $e');
+      AppLogger.e('Transaction', 'Không lấy được lịch sử giao dịch', error: e);
       throw Exception('Failed to load transaction history: $e');
     }
   }

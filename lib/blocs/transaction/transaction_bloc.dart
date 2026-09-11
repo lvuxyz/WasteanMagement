@@ -4,15 +4,16 @@ import 'package:wasteanmagement/blocs/transaction/transaction_state.dart';
 import 'package:wasteanmagement/repositories/transaction_repository.dart';
 import 'package:wasteanmagement/services/auth_service.dart';
 import 'package:wasteanmagement/models/transaction.dart';
+import '../../utils/app_logger.dart';
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository transactionRepository;
   final AuthService _authService = AuthService();
 
   // ignore: avoid_print
-  void _log(String message) => print(message);
+  void _log(String message) => AppLogger.d('Transaction', message);
 
-  TransactionBloc({required this.transactionRepository}) 
+  TransactionBloc({required this.transactionRepository})
       : super(const TransactionState()) {
     on<FetchTransactions>(_onFetchTransactions);
     on<FetchMyTransactions>(_onFetchMyTransactions);
@@ -30,7 +31,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     if (state.hasReachedMax && event.page > state.currentPage) return;
-    
+
     try {
       if (state.status == TransactionStatus.initial) {
         emit(state.copyWith(status: TransactionStatus.loading));
@@ -52,8 +53,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
       emit(state.copyWith(
         status: TransactionStatus.success,
-        transactions: event.page > 1 
-            ? [...state.transactions, ...newTransactions] 
+        transactions: event.page > 1
+            ? [...state.transactions, ...newTransactions]
             : newTransactions,
         hasReachedMax: hasReachedMax,
         currentPage: event.page,
@@ -73,7 +74,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     if (state.hasReachedMax && event.page > state.currentPage) return;
-    
+
     try {
       if (state.status == TransactionStatus.initial) {
         emit(state.copyWith(status: TransactionStatus.loading));
@@ -98,8 +99,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
       emit(state.copyWith(
         status: TransactionStatus.success,
-        transactions: event.page > 1 
-            ? [...state.transactions, ...newTransactions] 
+        transactions: event.page > 1
+            ? [...state.transactions, ...newTransactions]
             : newTransactions,
         hasReachedMax: hasReachedMax,
         currentPage: event.page,
@@ -119,27 +120,27 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     emit(const TransactionState(status: TransactionStatus.loading));
-    
+
     try {
       // Lấy token để kiểm tra
       final token = await _authService.getToken();
       _log('RefreshTransactions - checking token: ${token != null ? "Token found" : "No token"}');
-      
+
       final isAdmin = await _authService.isAdmin();
       _log('RefreshTransactions - User is admin: $isAdmin');
-      
+
       if (isAdmin) {
         _log('Fetching all transactions as admin with admin API endpoint');
         final response = await transactionRepository.getTransactions(
-          page: 1, 
+          page: 1,
           limit: 10,
           isAdmin: true, // Đảm bảo đặt cờ isAdmin=true
         );
-        
+
         if (!response.success) {
           throw Exception(response.message);
         }
-        
+
         emit(TransactionState(
           status: TransactionStatus.success,
           transactions: response.data,
@@ -150,11 +151,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       } else {
         _log('Fetching my transactions as regular user with my-transactions endpoint');
         final response = await transactionRepository.getMyTransactions(page: 1, limit: 10);
-        
+
         if (!response.success) {
           throw Exception(response.message);
         }
-        
+
         emit(TransactionState(
           status: TransactionStatus.success,
           transactions: response.data,
@@ -178,7 +179,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   ) async {
     try {
       emit(state.copyWith(status: TransactionStatus.loading));
-      
+
       final response = await transactionRepository.createTransaction(
         collectionPointId: event.collectionPointId,
         wasteTypeId: event.wasteTypeId,
@@ -186,11 +187,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         unit: event.unit,
         proofImage: event.proofImage,
       );
-      
+
       if (!response['success']) {
         throw Exception(response['message']);
       }
-      
+
       // After creating, refresh the list
       add(RefreshTransactions());
     } catch (e) {
@@ -254,14 +255,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       ));
     }
   }
-  
+
   Future<void> _onSearchTransactions(
     SearchTransactions event,
     Emitter<TransactionState> emit,
   ) async {
     try {
       emit(state.copyWith(status: TransactionStatus.loading));
-      
+
       // This would be implemented with actual API search
       // For now, just refresh transactions
       add(RefreshTransactions());
@@ -319,7 +320,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       );
 
       List<TransactionHistory> history = [];
-      
+
       if (result['success'] && result['data'] != null) {
         final historyData = result['data'] as List<dynamic>;
         history = historyData

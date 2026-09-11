@@ -8,11 +8,11 @@ class RecyclingStatistics extends StatelessWidget {
   final RecyclingStatisticsData? apiStatistics;
   
   const RecyclingStatistics({
-    Key? key,
+    super.key,
     required this.wasteTypeQuantities,
     required this.totalWeight,
     this.apiStatistics,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class RecyclingStatistics extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -66,10 +66,10 @@ class RecyclingStatistics extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.primaryGreen.withOpacity(0.3),
+                color: AppColors.primaryGreen.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -184,9 +184,9 @@ class RecyclingStatistics extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -286,7 +286,7 @@ class RecyclingStatistics extends StatelessWidget {
           Container(
             height: 4,
             decoration: BoxDecoration(
-              color: barColor.withOpacity(0.2),
+              color: barColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2),
             ),
             child: FractionallySizedBox(
@@ -313,7 +313,7 @@ class RecyclingStatistics extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -335,10 +335,10 @@ class RecyclingStatistics extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.primaryGreen.withOpacity(0.3),
+                color: AppColors.primaryGreen.withValues(alpha: 0.3),
               ),
             ),
             child: Row(

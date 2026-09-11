@@ -11,14 +11,14 @@ class WasteTypeItem extends StatelessWidget {
   final VoidCallback? onActionPressed;
 
   const WasteTypeItem({
-    Key? key,
+    super.key,
     required this.wasteType,
     this.onTap,
     this.actionButtonText,
     this.actionButtonIcon,
     this.actionButtonColor,
     this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class WasteTypeItem extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: _getTypeColor(wasteType.recyclable).withOpacity(0.1),
+                          color: _getTypeColor(wasteType.recyclable).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -84,8 +84,8 @@ class WasteTypeItem extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: wasteType.recyclable
-                                    ? Colors.green.withOpacity(0.1)
-                                    : Colors.grey.withOpacity(0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.grey.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -180,13 +180,13 @@ class WasteTypeItem extends StatelessWidget {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: actionButtonColor?.withOpacity(0.05) ?? Colors.blue.withOpacity(0.05),
+                color: actionButtonColor?.withValues(alpha: 0.05) ?? Colors.blue.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(12),
                 ),
                 border: Border(
                   top: BorderSide(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),

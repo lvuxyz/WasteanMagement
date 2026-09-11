@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../generated/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import '../../utils/app_colors.dart';
 import '../common/custom_text_field.dart';
 
@@ -33,7 +33,7 @@ class _RegistrationFormFieldsState extends State<RegistrationFormFields> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
+    final l10n = AppLocalizations.of(context);
     final fullNameLabel = l10n.fullName;
     final fullNameHint = l10n.enterFullName;
     final fullNameRequired = l10n.fullNameRequired;

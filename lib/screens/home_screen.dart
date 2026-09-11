@@ -21,6 +21,7 @@ import '../utils/app_colors.dart';
 import 'package:wasteanmagement/blocs/reward/reward_bloc.dart';
 import 'package:wasteanmagement/blocs/reward/reward_event.dart';
 import 'package:wasteanmagement/blocs/reward/reward_state.dart';
+import '../utils/app_logger.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Ensure profile data is loaded
     Future.microtask(() {
+      // Microtask chạy sau khi initState kết thúc; màn hình có thể đã bị gỡ
+      // trước lúc đó (ví dụ người dùng thoát ngay), khi ấy context không còn
+      // dùng được nữa.
+      if (!mounted) return;
       final profileState = context.read<ProfileBloc>().state;
       if (profileState is! ProfileLoaded) {
         context.read<ProfileBloc>().add(LoadProfile());
@@ -55,12 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _onItemTapped(int index){
-    // Navigation functionality would go here
-    // For example: switch to a different screen based on index
-    // Currently not implemented in the UI
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             // Admin status is now available
-            print('Home screen - User is admin: $isAdmin');
+            AppLogger.d('Home', 'Màn hình chính · admin=$isAdmin');
             return _buildHomePage(isAdmin);
           }
       ),
@@ -150,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
           end: Alignment.bottomRight,
           colors: [
             AppColors.primaryGreen,
-            AppColors.primaryGreen.withOpacity(0.8),
+            AppColors.primaryGreen.withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -167,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Xin chào,',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -195,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Hãy cùng bảo vệ môi trường xanh!',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -204,11 +203,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
               ),
               child: CircleAvatar(
                 radius: 28,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 child: const Icon(
                   Icons.person,
                   color: Colors.white,
@@ -246,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryGreen.withOpacity(0.3),
+                color: AppColors.primaryGreen.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
                 spreadRadius: 0,
@@ -268,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -313,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -335,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             'Rác đã xử lý',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12,
                             ),
                           ),
@@ -374,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pushNamed(context, '/recycling-progress');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.all(12),
@@ -474,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -487,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -597,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 8,
                   offset: const Offset(0, 2),
@@ -615,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 8,
                   offset: const Offset(0, 2),
@@ -636,7 +635,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 8,
                   offset: const Offset(0, 2),
@@ -684,7 +683,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       spreadRadius: 1,
                       blurRadius: 8,
                       offset: const Offset(0, 2),
@@ -731,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: _getCapacityColor(capacityPercentage).withOpacity(0.1),
+                                    color: _getCapacityColor(capacityPercentage).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -779,8 +778,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: point.status.toLowerCase() == 'active'
-                                          ? AppColors.primaryGreen.withOpacity(0.1)
-                                          : Colors.grey.withOpacity(0.1),
+                                          ? AppColors.primaryGreen.withValues(alpha: 0.1)
+                                          : Colors.grey.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -920,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -935,7 +934,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: wasteType.color.withOpacity(0.1),
+                              color: wasteType.color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -997,7 +996,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final isAdmin = snapshot.data ?? false;
         if (!isAdmin) {
-          print('Regular user, but trying to build admin transaction list');
+          AppLogger.d('Home', 'Người dùng thường nhưng đang dựng danh sách giao dịch của admin');
         }
 
         return BlocProvider(
@@ -1005,7 +1004,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final apiClient = context.read<ApiClient>();
             final transactionRepository = TransactionRepository(apiClient: apiClient);
 
-            print('Building all transactions list for admin. Admin status: $isAdmin');
+            AppLogger.d('Home', 'Dựng danh sách toàn bộ giao dịch · admin=$isAdmin');
             return TransactionBloc(
               transactionRepository: transactionRepository,
             )..add(FetchTransactions(limit: 3)); // Reduced limit to 3 for home screen
@@ -1043,7 +1042,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: () {
-                            print('Retrying all transactions fetch');
+                            AppLogger.d('Home', 'Tải lại toàn bộ giao dịch');
                             context.read<TransactionBloc>().add(RefreshTransactions());
                           },
                           icon: const Icon(Icons.refresh, size: 16),
@@ -1067,7 +1066,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 8,
                         offset: const Offset(0, 2),
@@ -1109,7 +1108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       spreadRadius: 1,
                       blurRadius: 8,
                       offset: const Offset(0, 2),
@@ -1239,7 +1238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 8,
                     offset: const Offset(0, 2),
@@ -1281,7 +1280,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   spreadRadius: 1,
                   blurRadius: 8,
                   offset: const Offset(0, 2),
@@ -1360,7 +1359,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -1408,7 +1407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withOpacity(0.1),
+                color: AppColors.primaryGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Row(
@@ -1434,7 +1433,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 : Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getStatusColor(transaction.status).withOpacity(0.1),
+                color: _getStatusColor(transaction.status).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
